@@ -121,7 +121,7 @@ jobs:
           "
           sed -i "s/^APP_UID=.*/APP_UID=$(id -u)/; s/^APP_GID=.*/APP_GID=$(id -g)/; s/^APP_ENV=.*/APP_ENV=test/" .env
       - name: Start core stack and load seed users
-        run: make up && make fixtures
+        run: make up && make worker && make fixtures
       - name: Playwright (axe, screenshots, phone viewports)
         run: make e2e
         env:
@@ -135,7 +135,7 @@ jobs:
           retention-days: 7
       - name: Container logs on failure
         if: failure()
-        run: docker compose --project-directory . -f infra/compose.yaml --profile core logs --no-color --tail=200
+        run: docker compose --project-directory . -f infra/compose.yaml --profile core --profile worker logs --no-color --tail=200
       - name: Stop stack
         if: always()
-        run: docker compose --project-directory . -f infra/compose.yaml --profile core --profile e2e down -v
+        run: docker compose --project-directory . -f infra/compose.yaml --profile core --profile worker --profile e2e down -v

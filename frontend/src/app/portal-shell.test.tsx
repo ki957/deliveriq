@@ -54,7 +54,11 @@ describe("portal shell", () => {
   });
 
   it("shows Kitchen Settings only to roles with the permission", async () => {
-    mockApi({ "GET /api/v1/me": () => json({ ...KITCHEN_MANAGER, permissions: ["kitchen.orders.view"] }) });
+    // Kitchen Staff permissions: no mode change; recipes are visible to both kitchen roles.
+    mockApi({
+      "GET /api/v1/me": () =>
+        json({ ...KITCHEN_MANAGER, permissions: ["kitchen.orders.view", "kitchen.recipes.view"] }),
+    });
     renderAt("/kitchen");
     const [nav] = await screen.findAllByRole("navigation", { name: "Kitchen navigation" });
     if (!nav) throw new Error("navigation not rendered");

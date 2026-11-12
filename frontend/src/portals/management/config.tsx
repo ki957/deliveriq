@@ -1,6 +1,9 @@
 import {
   BarChart3,
   ChefHat,
+  ClipboardCheck,
+  Database,
+  Megaphone,
   ClipboardList,
   CreditCard,
   FileCode2,
@@ -17,9 +20,17 @@ import {
 } from "lucide-react";
 
 import type { PortalConfig } from "@/app/portal-config";
+import { MenuPublicationPage, RecipeSignoffDetailPage, RecipeSignoffPage } from "@/features/approvals";
+import { PipelinePage, PipelinesOverview, RunPage } from "@/features/data-pipelines";
+import { RequirePermission } from "@/shared/auth/require-permission";
 
-// #10 §13 navigation, permission-derived (MG-10). Later features (AI Copilot, AI model settings,
-// Data Pipelines) stay hidden until their tasks build them (DDR-100).
+const gate = (permission: string, page: React.ReactNode) => (
+  <RequirePermission permission={permission}>{page}</RequirePermission>
+);
+
+// #10 §13 navigation, permission-derived (MG-10). Later features (AI Copilot, AI model settings)
+// stay hidden until their tasks build them (DDR-100). Task 5C adds Data & Pipelines (MG-12),
+// Menu Publication and Recipe Sign-off (DDR-108).
 export const managementConfig: PortalConfig = {
   portal: "management",
   title: "Management",
@@ -33,6 +44,40 @@ export const managementConfig: PortalConfig = {
     { to: "/management/customers", label: "Customers & Support", Icon: Headset, task: 10 },
     { to: "/management/payments", label: "Payments & Promotions", Icon: CreditCard, task: 10 },
     { to: "/management/reports", label: "Reports & Analytics", Icon: BarChart3, task: 13 },
+    {
+      to: "/management/menu-publication",
+      label: "Menu Publication",
+      Icon: Megaphone,
+      task: 5,
+      permission: "menu.publish",
+      element: gate("menu.publish", <MenuPublicationPage />),
+    },
+    {
+      to: "/management/recipe-signoff",
+      label: "Recipe Sign-off",
+      Icon: ClipboardCheck,
+      task: 5,
+      permission: "recipes.signoff.product_owner",
+      element: gate("recipes.signoff.product_owner", <RecipeSignoffPage />),
+      routes: [
+        {
+          path: "recipe-signoff/:versionId",
+          element: gate("recipes.signoff.product_owner", <RecipeSignoffDetailPage />),
+        },
+      ],
+    },
+    {
+      to: "/management/data-pipelines",
+      label: "Data & Pipelines",
+      Icon: Database,
+      task: 5,
+      permission: "pipelines.view",
+      element: gate("pipelines.view", <PipelinesOverview />),
+      routes: [
+        { path: "data-pipelines/runs/:runId", element: gate("pipelines.view", <RunPage />) },
+        { path: "data-pipelines/:pipeline", element: gate("pipelines.view", <PipelinePage />) },
+      ],
+    },
     {
       to: "/management/staff",
       label: "Staff & Access",

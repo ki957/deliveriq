@@ -18,6 +18,8 @@ export interface NavItem {
   end?: boolean;
   /** Custom page instead of the "Not built yet" placeholder. */
   element?: ReactNode;
+  /** Extra pages under this item without their own nav entry, relative to the portal (e.g. "recipes/:id"). */
+  routes?: { path: string; element: ReactNode }[];
 }
 
 export interface PortalConfig {

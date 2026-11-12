@@ -690,6 +690,8 @@ export interface components {
             display_name: string;
             /** Implemented */
             implemented: boolean;
+            /** Inputs */
+            inputs: string[];
             /** Is Heavy */
             is_heavy: boolean;
             last_run: components["schemas"]["RunSummaryOut"] | null;

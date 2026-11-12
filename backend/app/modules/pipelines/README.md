@@ -25,5 +25,5 @@
 
 ## Assumptions and integration points
 
-- `TRIGGERABLE` in `service.py` lists pipelines that have code; later tasks add P2 (7), P3 (8), K1–K3 (12).
+- `TRIGGERABLE` in `service.py` lists pipelines that have code; later tasks add P2 (Task 12), P3 (14), K3 (15), K2 (16) and K1 (17).
 - The UI polls run detail every 2 s until WebSockets (Task 11).

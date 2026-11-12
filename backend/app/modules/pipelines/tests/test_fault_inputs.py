@@ -73,3 +73,17 @@ def test_fault_files_are_never_copied_into_images() -> None:
         or "pyproject" in line
         for line in copies
     )
+
+
+@pytest.mark.parametrize(
+    ("app_env", "expected"),
+    [("local", ["sop", "fault:records", "fault:structural"]), ("production", ["sop"])],
+)
+def test_listed_inputs_follow_the_environment(
+    monkeypatch: pytest.MonkeyPatch, app_env: str, expected: list[str]
+) -> None:
+    monkeypatch.setattr(
+        service, "get_settings", lambda: SimpleNamespace(is_local_or_test=app_env != "production")
+    )
+    assert service.available_inputs("p1_sop") == expected
+    assert service.available_inputs("p2_elt") == []

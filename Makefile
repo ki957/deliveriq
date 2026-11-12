@@ -111,11 +111,15 @@ fixtures: env-check
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-all
 
 # Playwright in the pinned container against the running core stack (needs `make up` + `make fixtures`).
+# Needs the core stack, the worker and fixtures (`make up worker fixtures`). Each run adds one fresh
+# `TEST – E2E <n>` DRAFT recipe for the workflow spec (DDR-108).
 e2e: env-check
+	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-recipe
 	$(COMPOSE) --profile e2e run --rm e2e
 
 # Regenerate screenshot baselines after an intended UI change; review the diff before committing.
 e2e-update: env-check
+	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-recipe
 	PLAYWRIGHT_ARGS="--update-snapshots" $(COMPOSE) --profile e2e run --rm e2e
 
 frontend-check:

@@ -284,7 +284,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 5 — Pipeline framework, SOP ETL (P1), approval and publication workflows
 
-- **Status:** M1 complete (PR #6, `main` green). Plan and decision sheet approved (DDR-101–DDR-106). Delivered as 5A (worker, job queue, P1 import; PR #7 merged), 5B (fault injection, fixtures, workflow APIs, production fixture check; branch `task-05b-fixtures-workflows`, built and verified, in review; values DDR-107) and 5C (UI).
+- **Status:** M1 complete (PR #6, `main` green). Plan and decision sheet approved (DDR-101–DDR-106). Delivered as 5A (worker, job queue, P1 import; PR #7 merged), 5B (fault injection, fixtures, workflow APIs, production fixture check; PR #8 merged; values DDR-107) and 5C (UI; branch `task-05c-ui`, built and verified, in review; decisions DDR-108).
 - **Depends on:** Tasks 0 (registry), 3, 4.
 - **Guidance:**
   - Per `KITCHEN_SOURCE_VALIDATION.md` §7–9.
