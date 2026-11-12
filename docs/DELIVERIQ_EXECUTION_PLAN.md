@@ -270,7 +270,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 4 — Identity, RBAC and portal shells
 
-- **Status:** Task 3 merged (PR #4). Decision sheet approved (DDR-95–DDR-100). Delivered as **4A** (backend identity, sessions, RBAC; branch `task-04-identity-shells`) and **4B** (frontend scaffold and shells). 4A approved by owner with two clarifications of DDR-98/99: session cookies are Secure in production only (local and test run over plain HTTP), and the test-only scope router is mounted in `local` and `test` (never production).
+- **Status:** Task 3 merged (PR #4). Decision sheet approved (DDR-95–DDR-100). Delivered as **4A** (backend identity, sessions, RBAC; branch `task-04-identity-shells`) and **4B** (frontend scaffold and shells). 4A approved by owner with two clarifications of DDR-98/99: session cookies are Secure in production only (local and test run over plain HTTP), and the test-only scope router is mounted in `local` and `test` (never production). 4A merged (PR #5). 4B implemented on branch `task-04b-portal-shells` (2026-11-12), awaiting owner review: frontend scaffold, generated API client, shared login, four shells, `e2e` Compose profile with pinned Playwright, 13 screenshot baselines, CI `frontend` and `e2e` jobs.
 - **Depends on:** Task 3; DDR-21, DDR-22, DDR-23, DDR-24 (decided). Concrete status-colour values are shown to the owner for review (DDR-21).
 - **Gated features:** lost-mobile recovery (B, DDR-41). Placeholders (out of POC scope): MOCK_OTP instead of real SMS (DDR-40), labelled wordmark (DDR-08), "image unavailable" state (DDR-47).
 - **Acceptance criteria:**

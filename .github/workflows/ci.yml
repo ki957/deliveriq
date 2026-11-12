@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 # Actions pinned to commit SHAs (tag in the comment). DOCKER_DEPLOYMENT_DESIGN §11.
-# frontend, e2e and images jobs are added with the frontend scaffold (Task 4) and later tasks.
+# The images job is added with later tasks.
 jobs:
   # DDR-60: committed source copies must match the hashes recorded in the inventory.
   source-integrity:
@@ -66,3 +66,64 @@ jobs:
       - name: Stop stack
         if: always()
         run: docker compose --project-directory . -f infra/compose.yaml --profile core down -v
+
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Type check
+        run: npm run typecheck
+      - name: Lint and format
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: API client drift check (DDR-81)
+        run: npm run api:check
+      - name: Build
+        run: npx vite build
+
+  # Playwright in the same pinned container as local runs, so screenshot baselines match.
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Create CI .env (random throwaway passwords)
+        run: |
+          python3 -c "
+          import secrets, pathlib
+          src = pathlib.Path('.env.example').read_text()
+          lines = [l.replace('=change-me', '=' + secrets.token_urlsafe(24)) for l in src.splitlines()]
+          pathlib.Path('.env').write_text('\n'.join(lines) + '\n')
+          "
+          sed -i "s/^APP_UID=.*/APP_UID=$(id -u)/; s/^APP_GID=.*/APP_GID=$(id -g)/; s/^APP_ENV=.*/APP_ENV=test/" .env
+      - name: Start core stack and load seed users
+        run: make up && make fixtures
+      - name: Playwright (axe, screenshots, phone viewports)
+        run: make e2e
+        env:
+          CI: "1"
+      - name: Upload failure artefacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: e2e-results
+          path: tests/e2e/test-results
+          retention-days: 7
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose --project-directory . -f infra/compose.yaml --profile core logs --no-color --tail=200
+      - name: Stop stack
+        if: always()
+        run: docker compose --project-directory . -f infra/compose.yaml --profile core --profile e2e down -v

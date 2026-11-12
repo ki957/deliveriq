@@ -146,6 +146,34 @@ services:
     networks: [backend, edge]
     logging: *default-logging
 
+  # e2e profile (Task 4B): pinned Playwright image builds and previews the SPA against the api,
+  # then runs Chromium suites (axe, screenshots, phone viewports). On demand only (DDR-62).
+  e2e:
+    profiles: [e2e]
+    image: mcr.microsoft.com/playwright:v1.65.0-noble@sha256:9beb546099e11f52d62e505537914870e01a67e0e6b00ae41da4775324e73dbe
+    working_dir: /work
+    command: ["bash", "/work/tests/e2e/run.sh"]
+    environment:
+      VITE_API_PROXY: http://api:8000
+      E2E_BASE_URL: http://127.0.0.1:4173
+      PLAYWRIGHT_ARGS: ${PLAYWRIGHT_ARGS:-}
+      CI: ${CI:-}
+      HOST_UID: ${APP_UID:-1000}
+      HOST_GID: ${APP_GID:-1000}
+    volumes:
+      - ./frontend:/work/frontend:ro
+      - ./tests/e2e:/work/tests/e2e
+      - e2e_npm_cache:/tmp/home/.npm
+    depends_on:
+      api:
+        condition: service_healthy
+    shm_size: 1gb
+    mem_limit: 2g
+    restart: "no"
+    # backend: reach the api; edge: npm registry for `npm ci` inside the container.
+    networks: [backend, edge]
+    logging: *default-logging
+
 networks:
   # Internal: no outbound route. Redis and the migrate job live only here.
   backend:
@@ -155,3 +183,4 @@ networks:
 
 volumes:
   pg_data:
+  e2e_npm_cache:
