@@ -1,0 +1,175 @@
+/* DeliverIQ design tokens (DDR-21, DDR-22, DDR-100).
+ * One token structure; each portal sets its own values via [data-portal]. Palettes are never mixed
+ * (SH-01). Foreground values were contrast-checked (src/shared/theme/contrast.test.ts). */
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-focus-ring: var(--focus-ring);
+  --color-nav: var(--nav);
+  --color-nav-foreground: var(--nav-foreground);
+  --color-nav-active: var(--nav-active);
+  --color-nav-active-foreground: var(--nav-active-foreground);
+  --color-status-info: var(--status-info);
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-danger: var(--status-danger);
+  --color-status-neutral: var(--status-neutral);
+  --radius-control: 0.375rem;
+  --radius-panel: 0.5rem;
+}
+
+:root {
+  /* Semantic status colours: identical in every portal; white text >= 5.02:1 (DDR-100). */
+  --status-info: #1d4ed8;
+  --status-success: #15803d;
+  --status-warning: #b45309;
+  --status-danger: #b91c1c;
+  --status-neutral: #4b5563;
+  --status-foreground: #ffffff;
+}
+
+/* Customer: Palette B (DDR-01). White fails AA on #A8C9CB and #F45B0B, so text is #101010. */
+[data-portal="customer"] {
+  --primary: #a8c9cb;
+  --primary-foreground: #101010;
+  --secondary: #ffffff;
+  --secondary-foreground: #101010;
+  --accent: #f45b0b;
+  --accent-foreground: #101010;
+  --background: #ffffff;
+  --surface: #ffffff;
+  --muted: #f4f7f7;
+  --border: #c9d6d7;
+  --text: #101010;
+  --text-muted: #4b5563;
+  --focus-ring: #101010;
+  --nav: #ffffff;
+  --nav-foreground: #101010;
+  --nav-active: #a8c9cb;
+  --nav-active-foreground: #101010;
+}
+
+/* Kitchen (DDR-04): primary #D5360C with white text; secondary #E6D58D with #101010. */
+[data-portal="kitchen"] {
+  --primary: #d5360c;
+  --primary-foreground: #ffffff;
+  --secondary: #e6d58d;
+  --secondary-foreground: #101010;
+  --accent: #101010;
+  --accent-foreground: #ffffff;
+  --background: #ffffff;
+  --surface: #ffffff;
+  --muted: #f5f5f4;
+  --border: #d6d3d1;
+  --text: #101010;
+  --text-muted: #4b5563;
+  --focus-ring: #101010;
+  --nav: #101010;
+  --nav-foreground: #ffffff;
+  --nav-active: #e6d58d;
+  --nav-active-foreground: #101010;
+}
+
+/* Delivery: Palette A (DDR-02): near-black surfaces, yellow primary, purple secondary/selected. */
+[data-portal="delivery"] {
+  --primary: #fff21a;
+  --primary-foreground: #101010;
+  --secondary: #a66bff;
+  --secondary-foreground: #101010;
+  --accent: #a66bff;
+  --accent-foreground: #101010;
+  --background: #171717;
+  --surface: #262626;
+  --muted: #262626;
+  --border: #525252;
+  --text: #ffffff;
+  --text-muted: #d4d4d4;
+  --focus-ring: #fff21a;
+  --nav: #101010;
+  --nav-foreground: #ffffff;
+  --nav-active: #a66bff;
+  --nav-active-foreground: #101010;
+}
+
+/* Management (DDR-05): navy navigation, blue actions, red used sparingly. */
+[data-portal="management"] {
+  --primary: #255dce;
+  --primary-foreground: #ffffff;
+  --secondary: #021861;
+  --secondary-foreground: #ffffff;
+  --accent: #de1110;
+  --accent-foreground: #ffffff;
+  --background: #f3f5fa;
+  --surface: #ffffff;
+  --muted: #f3f5fa;
+  --border: #cbd2e1;
+  --text: #101010;
+  --text-muted: #4b5563;
+  --focus-ring: #255dce;
+  --nav: #021861;
+  --nav-foreground: #ffffff;
+  --nav-active: #ffffff;
+  --nav-active-foreground: #021861;
+}
+
+/* Neutral landing page (no portal chosen yet). */
+[data-portal="none"] {
+  --primary: #101010;
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;
+  --secondary-foreground: #101010;
+  --accent: #101010;
+  --accent-foreground: #ffffff;
+  --background: #ffffff;
+  --surface: #ffffff;
+  --muted: #f5f5f5;
+  --border: #d4d4d4;
+  --text: #101010;
+  --text-muted: #4b5563;
+  --focus-ring: #101010;
+  --nav: #ffffff;
+  --nav-foreground: #101010;
+  --nav-active: #101010;
+  --nav-active-foreground: #ffffff;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+  body {
+    @apply bg-background text-text font-sans antialiased;
+  }
+  /* 2 px visible focus ring (DDR-21). Navigation surfaces override --focus-ring locally. */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .on-nav {
+    --focus-ring: var(--nav-foreground);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}

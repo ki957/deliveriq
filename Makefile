@@ -3,7 +3,8 @@
 # are added with those services (Tasks 4, 5, 9, 15B).
 
 .PHONY: help install lint format typecheck imports test test-integration verify-sources openapi \
-        openapi-check check env-check build up down restart ps logs migrate stats fixtures
+        openapi-check check env-check build up down restart ps logs migrate stats fixtures \
+        e2e e2e-update frontend-check
 
 UV := env -u VIRTUAL_ENV uv
 PY_PATH := PYTHONPATH=backend
@@ -25,6 +26,9 @@ help:
 	@echo "  ps / logs        Status / follow logs"
 	@echo "  migrate          Run Alembic migrations once"
 	@echo "  fixtures         Load local/test seed users (refused outside local/test)"
+	@echo "  e2e              Playwright suites in the pinned container (axe, screenshots, phones)"
+	@echo "  e2e-update       Regenerate screenshot baselines (review before committing)"
+	@echo "  frontend-check   Frontend typecheck, lint, unit tests, API client check, build"
 	@echo "  stats            docker stats snapshot"
 	@echo "  test-integration Integration tests against the running core stack"
 
@@ -87,6 +91,17 @@ stats:
 # Reads .env in a subshell; values are exported to the test process only, never printed.
 fixtures: env-check
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-users
+
+# Playwright in the pinned container against the running core stack (needs `make up` + `make fixtures`).
+e2e: env-check
+	$(COMPOSE) --profile e2e run --rm e2e
+
+# Regenerate screenshot baselines after an intended UI change; review the diff before committing.
+e2e-update: env-check
+	PLAYWRIGHT_ARGS="--update-snapshots" $(COMPOSE) --profile e2e run --rm e2e
+
+frontend-check:
+	cd frontend && npm run typecheck && npm run lint && npm test && npm run api:check && npm run build
 
 test-integration: env-check
 	@set -a; . ./.env; set +a; \
