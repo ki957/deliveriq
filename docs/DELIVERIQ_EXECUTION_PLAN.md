@@ -179,7 +179,7 @@ Requested only when the task needs them. Secrets go in a git-ignored local `.env
 
 | Item | Needed for |
 |---|---|
-| GitHub repository + local authentication (`gh auth login` or SSH) | Task 1 |
+| GitHub repository + local authentication: **done** — public repo `https://github.com/ki957/deliveriq`, SSH via host alias `github-kiro` (remote `git@github-kiro:ki957/deliveriq.git`; other clones may use `git@github.com:`) | Task 1 |
 | Groq API key (free tier) in local `.env`; its rate limits recorded in `ai_models.yaml` | Task 15 (live calls only) |
 | Optional: OpenRouter (or other OpenAI-compatible) API key in local `.env` | Any time after Task 15; config only |
 | GitHub fine-grained token scoped to repository contents + pull requests, in local `.env` / Actions secrets | Task 15C |
@@ -226,6 +226,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 1 — Repository bootstrap
 
+- **Status:** Task 0 merged (PR #1). Task 1 implemented on branch `task-01-repo-bootstrap` (2026-11-12), awaiting owner review. Runtime dependency groups `api` and `worker` are defined empty and filled by Tasks 2 and 5; `frontend/package.json` has no dependencies until the Task 4 scaffold. Docker Makefile targets are added in Task 2.
 - **Depends on:** Task 0; GitHub repository + local auth (§5.3).
 - **Acceptance criteria:** Repository layout per `CODE_STRUCTURE_DESIGN.md` §2; `pyproject.toml` + `uv.lock` with groups `api`, `worker`, `dev` (DDR-83); `package.json` + committed `package-lock.json`; `.gitignore` excludes `.env`; `.env.example` has placeholders only; steering file references the planning docs.
 

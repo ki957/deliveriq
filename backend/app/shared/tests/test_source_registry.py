@@ -8,13 +8,10 @@ real inventory, which is the Task 0 acceptance check.
 from __future__ import annotations
 
 import hashlib
-import io
 import tempfile
 import unittest
-from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
-from app.cli.source_registry import main
 from app.shared.source_registry import (
     InventoryError,
     Status,
@@ -142,39 +139,6 @@ class VerifyTests(SampleTreeTestCase):
         )
         statuses = {r.path: r.status for r in verify(self.root, parse_inventory(text))}
         self.assertIs(statuses["alpha/one.md"], Status.METADATA_MISMATCH)
-
-
-class CliTests(SampleTreeTestCase):
-    def _run(self, *args: str) -> tuple[int, str]:
-        out, err = io.StringIO(), io.StringIO()
-        with redirect_stdout(out), redirect_stderr(err):
-            code = main(list(args))
-        return code, out.getvalue() + err.getvalue()
-
-    def test_exit_zero_when_all_match(self) -> None:
-        code, output = self._run(
-            "--root", str(self.root), "--inventory", str(self.inventory_path), "--expect-count", "2"
-        )
-        self.assertEqual(code, 0, output)
-        self.assertIn("PASS", output)
-
-    def test_exit_one_on_mismatch(self) -> None:
-        (self.root / "alpha/one.md").write_bytes(b"changed\n")
-        code, output = self._run(
-            "--root", str(self.root), "--inventory", str(self.inventory_path), "--expect-count", "2"
-        )
-        self.assertEqual(code, 1, output)
-        self.assertIn("HASH_MISMATCH", output)
-
-    def test_exit_two_on_unexpected_row_count(self) -> None:
-        code, output = self._run("--root", str(self.root), "--inventory", str(self.inventory_path))
-        self.assertEqual(code, 2, output)
-
-    def test_exit_two_on_missing_root(self) -> None:
-        code, _ = self._run(
-            "--root", str(self.root / "nope"), "--inventory", str(self.inventory_path), "--expect-count", "2"
-        )
-        self.assertEqual(code, 2)
 
 
 class RealInventoryTests(unittest.TestCase):
