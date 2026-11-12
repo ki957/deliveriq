@@ -18,7 +18,10 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(StarletteHTTPException)
     async def http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
         code = "not_found" if exc.status_code == 404 else f"http_{exc.status_code}"
-        return JSONResponse(error_body(code, str(exc.detail)), status_code=exc.status_code)
+        # Keep the exception's headers (e.g. Retry-After on 429).
+        return JSONResponse(
+            error_body(code, str(exc.detail)), status_code=exc.status_code, headers=exc.headers
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:

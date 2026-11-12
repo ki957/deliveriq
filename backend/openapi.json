@@ -1,6 +1,95 @@
 {
   "components": {
     "schemas": {
+      "DeviceOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "created_at",
+          "expires_at"
+        ],
+        "title": "DeviceOut",
+        "type": "object"
+      },
+      "GrantOut": {
+        "properties": {
+          "kitchen_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kitchen Id"
+          },
+          "region_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Id"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        },
+        "required": [
+          "role",
+          "region_id",
+          "kitchen_id"
+        ],
+        "title": "GrantOut",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
       "LiveResponse": {
         "properties": {
           "status": {
@@ -14,6 +103,157 @@
         ],
         "title": "LiveResponse",
         "type": "object"
+      },
+      "MeOut": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Permissions",
+            "type": "array"
+          },
+          "portals": {
+            "items": {
+              "$ref": "#/components/schemas/Portal"
+            },
+            "title": "Portals",
+            "type": "array"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/GrantOut"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "display_name",
+          "roles",
+          "permissions",
+          "portals"
+        ],
+        "title": "MeOut",
+        "type": "object"
+      },
+      "OtpRequestIn": {
+        "properties": {
+          "mobile": {
+            "examples": [
+              "+91 98765 43210"
+            ],
+            "maxLength": 20,
+            "minLength": 10,
+            "title": "Mobile",
+            "type": "string"
+          },
+          "portal": {
+            "$ref": "#/components/schemas/Portal"
+          }
+        },
+        "required": [
+          "mobile",
+          "portal"
+        ],
+        "title": "OtpRequestIn",
+        "type": "object"
+      },
+      "OtpRequestOut": {
+        "properties": {
+          "expires_in_seconds": {
+            "default": 300,
+            "title": "Expires In Seconds",
+            "type": "integer"
+          },
+          "resend_after_seconds": {
+            "default": 30,
+            "title": "Resend After Seconds",
+            "type": "integer"
+          },
+          "status": {
+            "const": "sent_if_eligible",
+            "default": "sent_if_eligible",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "title": "OtpRequestOut",
+        "type": "object"
+      },
+      "OtpVerifyIn": {
+        "properties": {
+          "code": {
+            "pattern": "^\\d{6}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "device_label": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Label"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "mobile": {
+            "maxLength": 20,
+            "minLength": 10,
+            "title": "Mobile",
+            "type": "string"
+          },
+          "portal": {
+            "$ref": "#/components/schemas/Portal"
+          },
+          "trust_device": {
+            "default": false,
+            "title": "Trust Device",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "mobile",
+          "portal",
+          "code"
+        ],
+        "title": "OtpVerifyIn",
+        "type": "object"
+      },
+      "Portal": {
+        "enum": [
+          "customer",
+          "kitchen",
+          "delivery",
+          "management"
+        ],
+        "title": "Portal",
+        "type": "string"
       },
       "ReadyResponse": {
         "properties": {
@@ -43,6 +283,70 @@
         ],
         "title": "ReadyResponse",
         "type": "object"
+      },
+      "Role": {
+        "enum": [
+          "CUSTOMER",
+          "DELIVERY_AGENT",
+          "KITCHEN_STAFF",
+          "KITCHEN_MANAGER",
+          "REGIONAL_MANAGER",
+          "CENTRAL_ADMIN"
+        ],
+        "title": "Role",
+        "type": "string"
+      },
+      "TrustedLoginIn": {
+        "properties": {
+          "portal": {
+            "$ref": "#/components/schemas/Portal"
+          }
+        },
+        "required": [
+          "portal"
+        ],
+        "title": "TrustedLoginIn",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
       }
     }
   },
@@ -52,6 +356,225 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/otp/request": {
+      "post": {
+        "operationId": "request_otp_api_v1_auth_otp_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpRequestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Otp",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/otp/verify": {
+      "post": {
+        "operationId": "verify_otp_api_v1_auth_otp_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpVerifyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Otp",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/trusted-login": {
+      "post": {
+        "operationId": "trusted_login_api_v1_auth_trusted_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrustedLoginIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Trusted Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "me_api_v1_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Me",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/devices": {
+      "get": {
+        "operationId": "my_devices_api_v1_me_devices_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceOut"
+                  },
+                  "title": "Response My Devices Api V1 Me Devices Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "My Devices",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/devices/{device_id}": {
+      "delete": {
+        "operationId": "revoke_my_device_api_v1_me_devices__device_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke My Device",
+        "tags": [
+          "me"
+        ]
+      }
+    },
     "/health/live": {
       "get": {
         "operationId": "live_health_live_get",

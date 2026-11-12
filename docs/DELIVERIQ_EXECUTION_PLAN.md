@@ -270,6 +270,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 4 — Identity, RBAC and portal shells
 
+- **Status:** Task 3 merged (PR #4). Decision sheet approved (DDR-95–DDR-100). Delivered as **4A** (backend identity, sessions, RBAC; branch `task-04-identity-shells`) and **4B** (frontend scaffold and shells).
 - **Depends on:** Task 3; DDR-21, DDR-22, DDR-23, DDR-24 (decided). Concrete status-colour values are shown to the owner for review (DDR-21).
 - **Gated features:** lost-mobile recovery (B, DDR-41). Placeholders (out of POC scope): MOCK_OTP instead of real SMS (DDR-40), labelled wordmark (DDR-08), "image unavailable" state (DDR-47).
 - **Acceptance criteria:**

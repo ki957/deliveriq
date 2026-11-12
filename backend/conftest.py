@@ -18,6 +18,8 @@ TEST_ENV = {
     "DB_USER": "app_api",
     "DB_PASSWORD": "unit-test-only",
     "REDIS_URL": "redis://redis.invalid:6379/0",
+    "OTP_ADAPTER": "mock",
+    "OTP_PEPPER": "unit-test-pepper-not-secret",
 }
 
 
