@@ -1,0 +1,154 @@
+# DeliverIQ local stack (DOCKER_DEPLOYMENT_DESIGN.md). Run through the Makefile, which uses
+#   docker compose --project-directory . -f infra/compose.yaml
+# so paths below are relative to the repository root and `.env` is read from there.
+#
+# Profiles in Task 2: core (postgres, redis, migrate, api).
+# worker (Task 5), osrm (Task 9), e2e/demo (Task 4 onward) and agent (Task 15B) are added by the
+# tasks that build those services, so no profile starts a container without real code behind it.
+
+name: deliveriq
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-backend-build: &backend-build
+  context: .
+  dockerfile: infra/backend/Dockerfile
+  target: api
+  args:
+    APP_UID: ${APP_UID:-1000}
+    APP_GID: ${APP_GID:-1000}
+
+x-backend-env: &backend-env
+  APP_ENV: ${APP_ENV:?set APP_ENV in .env}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+  REDIS_URL: redis://redis:6379/0
+
+services:
+  postgres:
+    profiles: [core]
+    build:
+      context: infra/postgres
+    image: deliveriq-postgres:local
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?set POSTGRES_SUPERUSER_PASSWORD in .env}
+      APP_MIGRATOR_PASSWORD: ${APP_MIGRATOR_PASSWORD:?}
+      APP_API_PASSWORD: ${APP_API_PASSWORD:?}
+      P1_SOP_PASSWORD: ${P1_SOP_PASSWORD:?}
+      P2_ELT_PASSWORD: ${P2_ELT_PASSWORD:?}
+      P3_SYNTH_PASSWORD: ${P3_SYNTH_PASSWORD:?}
+      RAG_CUSTOMER_PASSWORD: ${RAG_CUSTOMER_PASSWORD:?}
+      RAG_KITCHEN_PASSWORD: ${RAG_KITCHEN_PASSWORD:?}
+      RAG_MANAGEMENT_PASSWORD: ${RAG_MANAGEMENT_PASSWORD:?}
+    # DDR-62 memory settings.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=64MB
+      - -c
+      - max_connections=20
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      # Host port 5433 by default: the owner's host already runs PostgreSQL on 5432.
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 768m
+    restart: unless-stopped
+    networks: [backend, edge]
+    logging: *default-logging
+
+  redis:
+    profiles: [core]
+    image: redis:7.4-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
+    # DDR-62: 64 MB cap, no persistence (Redis is never a durable queue).
+    command: ["redis-server", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    read_only: true
+    mem_limit: 128m
+    restart: unless-stopped
+    networks: [backend]
+    logging: *default-logging
+
+  migrate:
+    profiles: [core]
+    build: *backend-build
+    image: deliveriq-backend:api
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      <<: *backend-env
+      DB_USER: app_migrator
+      DB_PASSWORD: ${APP_MIGRATOR_PASSWORD:?}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    read_only: true
+    restart: "no"
+    networks: [backend]
+    logging: *default-logging
+
+  api:
+    profiles: [core]
+    build: *backend-build
+    image: deliveriq-backend:api
+    # Dev: source bind-mounted read-only with --reload (DOCKER_DEPLOYMENT_DESIGN §9).
+    command: ["uvicorn", "app.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000",
+              "--workers", "1", "--reload", "--reload-dir", "/srv/backend/app"]
+    environment:
+      <<: *backend-env
+      DB_USER: app_api
+      DB_PASSWORD: ${APP_API_PASSWORD:?}
+    volumes:
+      - ./backend/app:/srv/backend/app:ro
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3).status == 200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [backend, edge]
+    logging: *default-logging
+
+networks:
+  # Internal: no outbound route. Redis and the migrate job live only here.
+  backend:
+    internal: true
+  # Ordinary bridge used only to publish localhost ports (internal networks cannot publish ports).
+  edge: {}
+
+volumes:
+  pg_data:

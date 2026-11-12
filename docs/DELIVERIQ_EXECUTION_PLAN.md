@@ -232,6 +232,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 2 — Engineering foundation
 
+- **Status:** Task 1 merged (PR #2). Task 2 implemented on branch `task-02-engineering-foundation` (2026-11-12), awaiting owner review; four design deviations listed in the task report await owner approval before `DOCKER_DEPLOYMENT_DESIGN.md` is updated.
 - **Depends on:** Task 1; DDR-28 (decided); approved `DOCKER_DEPLOYMENT_DESIGN.md`.
 - **Guidance:** Compose profiles `core`, `worker`, `osrm`, `e2e`, `agent` (DDR-62); no Dagster, MinIO or MongoDB; Vite on the host in dev. Follow `DOCKER_DEPLOYMENT_DESIGN.md`. Host setup is performed by Kiro CLI; changes to the owner's shell/user configuration require owner confirmation at the time (DDR-79).
 - **Acceptance criteria:**
