@@ -1,6 +1,6 @@
 # DeliverIQ — Docker & Deployment Design
 
-**Version:** 1.4 (2026-11-12; v1.0 approved 2026-11-12; v1.3 aligns AI egress and keys with `RAG_AI_DESIGN.md`, DDR-85; v1.4 records four owner-approved Task 2 deviations, §17)
+**Version:** 1.5 (2026-11-12; v1.0 approved 2026-11-12; v1.3 aligns AI egress and keys with `RAG_AI_DESIGN.md`, DDR-85; v1.4 records four owner-approved Task 2 deviations, §17; v1.5 adds Task 5A deviations 6–7)
 **Status:** Approved design; `core` profile implemented in Task 2
 **Scope:** Local containerised stack for the portfolio demo (DDR-49) on the target laptop, plus GitHub Actions CI. Out of scope: cloud hosting, Kubernetes, TLS, production secret management, backups beyond local dump/restore.
 **Related:** `DELIVERIQ_EXECUTION_PLAN.md` v2.3 (Tasks 2, 15B, 15C, 21, 22), `DESIGN_DECISION_REGISTER.md` (DDR-48, 55, 59, 60, 62, 63, 65, 67, 70, 71).
@@ -140,7 +140,7 @@ GitHub Actions secrets only. Tests use the mock LLM adapter by default, so CI ne
 ```text
 postgres (pg_isready) ─► migrate (must complete successfully) ─► api (/health/ready: DB + Redis)
 redis (redis-cli ping) ──────────────────────────────────────────┘
-api ready ─► worker (heartbeat row in ops + /health)
+api ready ─► worker (recent heartbeat row in ops.workers; §17 #7)
 osrm-prep (completes) ─► osrm (/health)
 egress-proxy (healthy) ─► agent
 ```
@@ -157,6 +157,7 @@ egress-proxy (healthy) ─► agent
 |---|---|
 | `make up` / `make down` | Start/stop `core` (data preserved) |
 | `make worker` | Add the worker |
+| `make db-roles` | Create any missing DB roles on an existing volume (run by `make up` before migrations; §17 #6) |
 | `make osrm-setup` | One-time Chennai extract download + graph prep |
 | `make osrm` | Start osrm (stops e2e/agent first) |
 | `make migrate` / `make seed-test` | Migrations; test fixtures (local/test only) |
@@ -250,3 +251,5 @@ Branch protection on `main` requires these checks.
 | 3 | Networks `backend`, `agent_net`, `egress` | Plus `edge` for published ports | Docker cannot publish ports from an `internal` network; Redis and `migrate` stay internal-only |
 | 4 | All profiles defined in Task 2 | Each profile is added with the task that builds its service (`e2e`/`demo` Task 4+, `worker` Task 5, `osrm` Task 9, `agent` Task 15B) | No profile starts a container without real code behind it |
 | 5 (Task 4B, approved 2026-11-12) | `e2e` runs headless against the `demo` web service | `e2e` builds the SPA with `vite build` and serves it with `vite preview` inside the pinned Playwright image, proxying `/api` to `api:8000`; it joins `backend` and `edge` (npm registry for `npm ci`); works on copies in `/tmp`, writing only screenshots and failure artefacts back to the repo | No `demo`/`web` image exists yet; keeps screenshot baselines identical locally and in CI |
+| 6 (Task 5A, approved 2026-11-12) | DB roles are created only by the Postgres init script on an empty volume | The init script is idempotent; `make up` starts postgres, runs it (`make db-roles`), then migrates | The ninth role `worker` (DDR-105) must exist on volumes created before Task 5; migration 0007 fails with a clear message if it is missing |
+| 7 (Task 5A, approved 2026-11-12) | Worker health: heartbeat row in `ops` + `/health` | Health check `python -m app.worker --health`: a heartbeat from this host within 30 s; no HTTP endpoint | The worker serves no HTTP; a recent heartbeat proves the loop and DB access |

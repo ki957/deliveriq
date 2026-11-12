@@ -71,3 +71,33 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()  # type: ignore[call-arg]  # values come from the environment
+
+
+class PipelineRoleSettings(BaseSettings):
+    """Worker-only: each job connects as its own pipeline role (DDR-63). Missing roles fail that job."""
+
+    model_config = SettingsConfigDict(env_file=None, extra="ignore", frozen=True)
+
+    p1_sop: SecretStr | None = Field(default=None, validation_alias="P1_SOP_PASSWORD")
+    p2_elt: SecretStr | None = Field(default=None, validation_alias="P2_ELT_PASSWORD")
+    p3_synth: SecretStr | None = Field(default=None, validation_alias="P3_SYNTH_PASSWORD")
+    rag_customer: SecretStr | None = Field(default=None, validation_alias="RAG_CUSTOMER_PASSWORD")
+    rag_kitchen: SecretStr | None = Field(default=None, validation_alias="RAG_KITCHEN_PASSWORD")
+    rag_management: SecretStr | None = Field(default=None, validation_alias="RAG_MANAGEMENT_PASSWORD")
+    # Read-only inputs mounted into the worker (DOCKER_DEPLOYMENT_DESIGN §7).
+    source_root: str = Field(default="/srv/data/source", validation_alias="SOURCE_ROOT")
+    inventory_path: str = Field(
+        default="/srv/docs/SOURCE_DOCUMENT_INVENTORY.md", validation_alias="INVENTORY_PATH"
+    )
+    test_inputs_root: str = Field(default="/srv/test_inputs", validation_alias="TEST_INPUTS_ROOT")
+
+    def url_for(self, settings: Settings, role: str) -> URL:
+        secret = getattr(self, role, None)
+        if not isinstance(secret, SecretStr):
+            raise KeyError(f"no credentials configured for pipeline role {role}")
+        return settings.database_url.set(username=role, password=secret.get_secret_value())
+
+
+@lru_cache(maxsize=1)
+def get_pipeline_roles() -> PipelineRoleSettings:
+    return PipelineRoleSettings()

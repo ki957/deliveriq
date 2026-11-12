@@ -9,6 +9,8 @@ Alembic revisions in `versions/`, run by the one-off `migrate` service as `app_m
 | 0003 | Transition data for six machines; orders, order items, payments, delivery assignments |
 | 0004 | Outbox, `raw.events`, `synthetic.events`, pipeline-runs framework tables, `audit.events`, append-only triggers |
 | 0005 | Production-safe seeds (region, synthetic kitchen fixture, config, pipeline registry) and least-privilege grants |
+| 0006 | Identity: OTP challenges, sessions, trusted devices, revocation trigger (DDR-96–DDR-99) |
+| 0007 | Worker grants, `ops.workers`, `ops.cancel_run()`, run report and failure class, P1 staging tables, SOP lineage columns, recipe review queue and its submit block (DDR-102–DDR-105). Needs the `worker` role: `make up` runs `make db-roles` first |
 
 ## How rules are enforced
 
@@ -22,7 +24,7 @@ Alembic revisions in `versions/`, run by the one-off `migrate` service as `app_m
 ## Downgrade / forward-fix policy
 
 1. **Every revision has a working `downgrade()`.** The full chain is tested: each step down to base, then up to head, then base and head again, on a throwaway stack.
-2. **Downgrades are for local and test only.** They drop data (0001's downgrade drops every schema). Never run them against a database whose data matters.
+2. **Downgrades are for local and test only.** They drop data (0001's downgrade drops every schema). Never run them against a database whose data matters. Below 0005 they need a database without runtime rows: 0005 removes its seeds, which pipeline runs, imported recipes and fixture users reference. 0007 downgrades with data in place.
 3. **Applied revisions are never edited.** A mistake found after a revision is merged to `main` is fixed by a **new forward revision**. The one exception is a revision not yet merged (still on its task branch).
 4. **Seeds hold no fixture rows.** TEST dishes, users, opening stock and test orders are loaded by the fixture loader (local/test only, Task 5), never by migrations.
 

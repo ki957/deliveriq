@@ -58,22 +58,24 @@ jobs:
           sed -i "s/^APP_UID=.*/APP_UID=$(id -u)/; s/^APP_GID=.*/APP_GID=$(id -g)/; s/^APP_ENV=.*/APP_ENV=test/" .env
       - name: Start core stack (Postgres + PostGIS + pgvector, Redis, migrate, API)
         run: make up
+      - name: Start the worker (P1 runs end to end in the integration tests)
+        run: make worker
       - name: Integration tests
         run: make test-integration
       - name: Container logs on failure
         if: failure()
         run: |
-          C="docker compose --project-directory . -f infra/compose.yaml --profile core"
+          C="docker compose --project-directory . -f infra/compose.yaml --profile core --profile worker"
           $C ps -a
           $C logs --no-color --tail=200
           # Also publish the last lines of each service as annotations, readable without signing in.
-          for s in migrate api postgres; do
+          for s in migrate api worker postgres; do
             msg=$($C logs --no-color --no-log-prefix --tail=25 "$s" 2>&1 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
             echo "::error title=${s} logs::${msg}"
           done
       - name: Stop stack
         if: always()
-        run: docker compose --project-directory . -f infra/compose.yaml --profile core down -v
+        run: docker compose --project-directory . -f infra/compose.yaml --profile core --profile worker down -v
 
   frontend:
     runs-on: ubuntu-24.04
