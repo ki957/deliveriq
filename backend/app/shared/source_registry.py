@@ -14,7 +14,7 @@ from __future__ import annotations
 import hashlib
 import re
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path, PurePosixPath
 
 _CHUNK_SIZE = 1 << 16
@@ -31,7 +31,7 @@ class InventoryError(ValueError):
     """The inventory could not be parsed into a valid list of expected sources."""
 
 
-class Status(str, Enum):
+class Status(StrEnum):
     OK = "OK"
     MISSING = "MISSING"
     HASH_MISMATCH = "HASH_MISMATCH"

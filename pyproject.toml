@@ -1,0 +1,65 @@
+[project]
+name = "deliveriq"
+version = "0.1.0"
+description = "DeliverIQ cloud-kitchen platform (portfolio POC)"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+# Dependency groups per DDR-83. Runtime groups are filled by the tasks that need them
+# (api from Task 2, worker from Task 5); every version is pinned exactly.
+[dependency-groups]
+api = []
+worker = []
+dev = [
+    "import-linter==2.16",
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+    "ruff==0.17.4",
+]
+
+[tool.uv]
+# The backend is run from source (backend/ on the path); packaging is added when the CLI entry point is.
+package = false
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["backend"]
+addopts = "-ra --strict-markers"
+markers = [
+    "unit: fast tests without external services",
+    "integration: tests against real Postgres/Redis",
+    "security: RBAC, scope and isolation tests",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+src = ["backend"]
+# Python only: never let the formatter touch Markdown (data/source copies are hash-checked).
+include = ["*.py", "*.pyi"]
+extend-exclude = ["data/source"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# assert is the pytest idiom; subprocess/tempfile use in tests is controlled.
+"backend/**/tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "backend"
+packages = ["app"]
+strict = true
+warn_unreachable = true
+
+[tool.importlinter]
+root_packages = ["app"]
+
+[[tool.importlinter.contracts]]
+name = "Shared code does not depend on entry points"
+type = "forbidden"
+source_modules = ["app.shared"]
+forbidden_modules = ["app.cli"]
