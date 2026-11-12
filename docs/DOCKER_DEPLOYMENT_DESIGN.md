@@ -1,7 +1,7 @@
 # DeliverIQ — Docker & Deployment Design
 
-**Version:** 1.3 (2026-11-12; v1.0 approved 2026-11-12; v1.3 aligns AI egress and keys with `RAG_AI_DESIGN.md`, DDR-85)
-**Status:** Approved design; implementation not started (Task 2)
+**Version:** 1.4 (2026-11-12; v1.0 approved 2026-11-12; v1.3 aligns AI egress and keys with `RAG_AI_DESIGN.md`, DDR-85; v1.4 records four owner-approved Task 2 deviations, §17)
+**Status:** Approved design; `core` profile implemented in Task 2
 **Scope:** Local containerised stack for the portfolio demo (DDR-49) on the target laptop, plus GitHub Actions CI. Out of scope: cloud hosting, Kubernetes, TLS, production secret management, backups beyond local dump/restore.
 **Related:** `DELIVERIQ_EXECUTION_PLAN.md` v2.3 (Tasks 2, 15B, 15C, 21, 22), `DESIGN_DECISION_REGISTER.md` (DDR-48, 55, 59, 60, 62, 63, 65, 67, 70, 71).
 
@@ -34,7 +34,7 @@ These steps are executed by Kiro CLI during the build stage. Any change to the o
 
 | Service | Image | Profile | Purpose | `mem_limit` (start) | RAM estimate* |
 |---|---|---|---|---|---|
-| `postgres` | Custom: PostGIS 16 + pgvector | `core` | Source of truth, analytics, RAG vectors | 768 MB | 300–500 MB |
+| `postgres` | Custom: pgvector 0.8.1 / PG16 (bookworm) + PostGIS 3 (§17) | `core` | Source of truth, analytics, RAG vectors | 768 MB | 300–500 MB |
 | `redis` | Redis 7 alpine | `core` | WebSocket fan-out, rate limits, cache | 128 MB | 30–64 MB |
 | `migrate` | `deliveriq-backend` (api target) | `core`, one-off | `alembic upgrade head`, then exits | — | short-lived |
 | `api` | `deliveriq-backend` (api target) | `core` | FastAPI, one Uvicorn worker | 512 MB | 150–300 MB |
@@ -71,7 +71,7 @@ Makefile targets stop conflicting profiles before starting `e2e`, `osrm` or `age
   - Dependencies come from `uv.lock` (DDR-83). The `api` target installs the uv `api` group only; the `worker` target installs `api` + `worker` (dbt, ONNX Runtime).
   - `migrate` uses the `api` target.
 - **UID/GID:** build args `APP_UID`/`APP_GID` default to the host user's IDs, so bind-mounted files stay owned by the owner under rootful Docker.
-- **Postgres:** PostGIS 16 base plus the pgvector extension; init scripts create roles (§6.3) and extensions.
+- **Postgres:** `pgvector/pgvector:0.8.1-pg16-bookworm` base plus `postgresql-16-postgis-3` from PGDG (§17); init scripts create roles (§6.3) and extensions.
 - **Agent:** based on the backend image plus git and test tooling; no database client configuration.
 - **Frontend demo:** multi-stage Node 26 build → nginx alpine static image.
 - All base images are pinned to exact tags at build time, and the tags are recorded in the repo.
@@ -81,10 +81,11 @@ Makefile targets stop conflicting profiles before starting `e2e`, `osrm` or `age
 | Network | Members | Notes |
 |---|---|---|
 | `backend` (internal) | postgres, redis, migrate, api, worker, osrm, web, e2e | App traffic |
+| `edge` | api, postgres (and later osrm, web) | Plain bridge used only to publish `127.0.0.1` ports; internal networks cannot publish (§17) |
 | `agent_net` (internal) | agent, egress-proxy | Agent has no route to `backend` |
 | `egress` | egress-proxy only | Outbound internet; proxy allowlist = GitHub + configured LLM provider hosts (generated from `ai_models.yaml` at `make agent`) |
 
-Published ports bind to `127.0.0.1` only: API 8000, Postgres 5432 (local tools), OSRM 5000 (when running), web 8080 (demo). Redis is not published.
+Published ports bind to `127.0.0.1` only: API 8000, Postgres 5433 by default (`POSTGRES_HOST_PORT`; the owner's host already uses 5432), OSRM 5000 (when running), web 8080 (demo). Redis is not published.
 
 ## 6. Configuration and secrets
 
@@ -234,7 +235,17 @@ Branch protection on `main` requires these checks.
 
 ## 16. Open items affecting this design
 
-- Exact image tags pinned at Task 2.
-- Real `mem_limit` values after measurement.
+- ~~Exact image tags pinned at Task 2.~~ Done: base images pinned by digest in the Dockerfiles and Compose.
+- Real `mem_limit` values after measurement. Task 2 idle baseline (`core`): api 90 MiB, postgres 25 MiB, redis 5 MiB. Loaded values measured with worker/e2e (Tasks 5, 6).
+- Conda auto-activation (§2 step 2) not yet changed: not needed so far (uv and containers ignore conda); owner to confirm when wanted.
 - Egress proxy allowlist hostnames confirmed when the provider and GitHub endpoints are configured (Task 15B).
 - Node 26 / Vite compatibility confirmed at frontend scaffold.
+
+## 17. Deviations approved during Task 2 (owner, 2026-11-12)
+
+| # | Design said | Implemented | Reason |
+|---|---|---|---|
+| 1 | PostGIS 16 base image + pgvector | `pgvector/pgvector:0.8.1-pg16-bookworm` + PostGIS 3 (3.7.0) from PGDG apt | `postgis/postgis:16-3.5` is Debian bullseye; its PGDG apt repository returns 404, so pgvector could not be installed |
+| 2 | Postgres on host port 5432 | Host port 5433 by default (`POSTGRES_HOST_PORT`) | The owner's laptop already runs a PostgreSQL service on 5432; it was left untouched |
+| 3 | Networks `backend`, `agent_net`, `egress` | Plus `edge` for published ports | Docker cannot publish ports from an `internal` network; Redis and `migrate` stay internal-only |
+| 4 | All profiles defined in Task 2 | Each profile is added with the task that builds its service (`e2e`/`demo` Task 4+, `worker` Task 5, `osrm` Task 9, `agent` Task 15B) | No profile starts a container without real code behind it |
