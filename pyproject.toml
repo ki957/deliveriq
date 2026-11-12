@@ -61,6 +61,8 @@ allowed-confusables = ["–"]
 "backend/conftest.py" = ["S105"]
 # Migrations build static DDL from module constants, never from input.
 "backend/migrations/**" = ["S608", "E501"]
+# Integration tests embed long JSON request bodies and SQL inline for readability.
+"backend/**/tests/*_integration.py" = ["S101", "S105", "S106", "E501"]
 
 [tool.mypy]
 python_version = "3.12"

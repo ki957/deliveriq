@@ -76,3 +76,18 @@ def test_access_log_line_has_correlation_id(caplog: pytest.LogCaptureFixture) ->
     record = records[-1]
     assert record.__dict__["path"] == "/echo"
     assert record.__dict__["status"] == 200
+
+
+def test_http_error_keeps_exception_headers() -> None:
+    from fastapi import HTTPException
+
+    app = _app()
+
+    @app.get("/limited")
+    def limited() -> None:
+        raise HTTPException(status_code=429, detail="slow down", headers={"Retry-After": "30"})
+
+    response = TestClient(app).get("/limited")
+    assert response.status_code == 429
+    assert response.headers["Retry-After"] == "30"
+    assert response.json()["code"] == "http_429"

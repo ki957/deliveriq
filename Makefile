@@ -3,7 +3,7 @@
 # are added with those services (Tasks 4, 5, 9, 15B).
 
 .PHONY: help install lint format typecheck imports test test-integration verify-sources openapi \
-        openapi-check check env-check build up down restart ps logs migrate stats
+        openapi-check check env-check build up down restart ps logs migrate stats fixtures
 
 UV := env -u VIRTUAL_ENV uv
 PY_PATH := PYTHONPATH=backend
@@ -24,6 +24,7 @@ help:
 	@echo "  up / down        Start / stop core services (data volume preserved)"
 	@echo "  ps / logs        Status / follow logs"
 	@echo "  migrate          Run Alembic migrations once"
+	@echo "  fixtures         Load local/test seed users (refused outside local/test)"
 	@echo "  stats            docker stats snapshot"
 	@echo "  test-integration Integration tests against the running core stack"
 
@@ -84,6 +85,9 @@ stats:
 	docker stats --no-stream --format "table {{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.CPUPerc}}"
 
 # Reads .env in a subshell; values are exported to the test process only, never printed.
+fixtures: env-check
+	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-users
+
 test-integration: env-check
 	@set -a; . ./.env; set +a; \
 	DELIVERIQ_INTEGRATION=1 \

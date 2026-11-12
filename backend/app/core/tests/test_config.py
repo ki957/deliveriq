@@ -25,6 +25,7 @@ def test_app_env_must_be_local_test_or_production(
 
 def test_production_is_not_local_or_test(test_env: dict[str, str], monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("OTP_ADAPTER", "disabled")  # mock is refused in production
     assert not Settings().is_local_or_test  # type: ignore[call-arg]
 
 

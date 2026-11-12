@@ -1,0 +1,73 @@
+"""Local/test fixture loader (plan §5.2 control 2; DDR-99).
+
+    docker compose --project-directory . -f infra/compose.yaml --profile core \\
+        run --rm migrate python -m app.cli.fixtures load-users
+
+Loads the six #15 §4 seed users and role assignments. Their mobile numbers are the #15 placeholder
+range, accepted only in local/test. Refuses to run unless APP_ENV is local or test. Idempotent.
+Later tasks add TEST dishes, recipes and stock to this loader.
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from collections.abc import Sequence
+
+from sqlalchemy import text
+
+from app.core.config import get_settings
+from app.core.db import get_engine
+
+# (display_name, mobile, role, region_code, kitchen_code) from #15 §4 and §4.1.
+SEED_USERS: tuple[tuple[str, str, str, str | None, str | None], ...] = (
+    ("Demo Customer", "+910000000001", "CUSTOMER", None, None),
+    ("Demo Delivery Agent", "+910000000002", "DELIVERY_AGENT", "REG-CHN-001", None),
+    ("Demo Kitchen Staff", "+910000000003", "KITCHEN_STAFF", "REG-CHN-001", "KIT-CHN-001"),
+    ("Demo Kitchen Manager", "+910000000004", "KITCHEN_MANAGER", "REG-CHN-001", "KIT-CHN-001"),
+    ("Demo Regional Manager", "+910000000005", "REGIONAL_MANAGER", "REG-CHN-001", None),
+    ("Demo Central Administrator", "+910000000006", "CENTRAL_ADMIN", None, None),
+)
+
+
+def load_users() -> int:
+    created = 0
+    with get_engine().begin() as conn:
+        for name, mobile, role, region_code, kitchen_code in SEED_USERS:
+            user_id = conn.execute(
+                text(
+                    "INSERT INTO app.users (display_name, mobile_e164) VALUES (:n, :m) "
+                    "ON CONFLICT (mobile_e164) DO UPDATE SET display_name = EXCLUDED.display_name "
+                    "RETURNING id"
+                ),
+                {"n": name, "m": mobile},
+            ).scalar_one()
+            result = conn.execute(
+                text(
+                    "INSERT INTO app.role_assignments (user_id, role, region_id, kitchen_id) "
+                    "SELECT :u, :role, (SELECT id FROM app.regions WHERE code = :rc), "
+                    "       (SELECT id FROM app.kitchens WHERE code = :kc) "
+                    "WHERE NOT EXISTS (SELECT 1 FROM app.role_assignments "
+                    "                  WHERE user_id = :u AND role = :role AND revoked_at IS NULL)"
+                ),
+                {"u": user_id, "role": role, "rc": region_code, "kc": kitchen_code},
+            )
+            created += result.rowcount
+    return created
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Load local/test fixtures")
+    parser.add_argument("command", choices=["load-users"])
+    parser.parse_args(argv)
+    settings = get_settings()
+    if not settings.is_local_or_test:
+        print("refused: fixtures load only when APP_ENV is local or test", file=sys.stderr)
+        return 2
+    created = load_users()
+    print(f"seed users ready ({len(SEED_USERS)}); role grants created: {created}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -257,6 +257,19 @@ All entries below were approved by the product owner on 2026-11-12.
 | DDR-93 | **System prompts v1** for Operational Actions and Builder Agent approved as written in `RAG_AI_DESIGN.md` §13. Closes DDR-73. |
 | DDR-94 | **Knowledge document list approved:** K-C1–C3 (CA), K-K1–K3 (KM), K-M1–M3 (CA) per `RAG_AI_DESIGN.md` §15, stored under `knowledge/<portal>/`, approval keyed by content SHA-256. Content approval in-app remains open under DDR-46. |
 
+#### Identity and portal shells (Task 4 decision sheet, approved 2026-11-12)
+
+Sources define OTP login, sessions, trusted devices and RBAC (PL-02–PL-06, Phase 2 §8, #15 §4) but not their parameters. The owner approved the following values.
+
+| DDR | Decision |
+|---|---|
+| DDR-95 | **Task 4 delivered as two PRs:** 4A backend identity, sessions and RBAC; 4B frontend scaffold and four portal shells. |
+| DDR-96 | **Login OTP:** 6 digits; 5-minute expiry; 5 wrong attempts per code; 30 s resend cooldown; at most 5 requests per mobile and 20 per IP per 15 minutes, then a 15-minute lockout. Only HMAC-SHA256 hashes with a server pepper (`OTP_PEPPER`) are stored. MOCK_OTP (`123456`) only in `local`/`test`; startup fails otherwise. India mobiles only (`+91` + 10 digits starting 6–9); the #15 placeholder test range `+9100000xxxxx` is accepted only in `local`/`test`. |
+| DDR-97 | **Registration and eligibility:** a new number at the customer portal becomes a Customer (name required at sign-up; email required before the first order, Task 6). Staff portals never create accounts. Staff without a CUSTOMER role cannot log in as customers (PL-03). Responses never reveal whether a number is registered. |
+| DDR-98 | **Sessions:** opaque random token in an HttpOnly, SameSite=Lax cookie; only its hash is stored; no JWT. 2-hour idle and 24-hour absolute expiry. Unsafe requests require a CSRF header; cross-origin access only from configured dev origins. Trusted device: optional after OTP login, skips OTP for 7 days from that login (not sliding), listable and revocable by the user. Any role change or deactivation immediately revokes all of the user's sessions and trusted devices. Redis unavailable: OTP requests fail closed; existing sessions (PostgreSQL) keep working. |
+| DDR-99 | **RBAC:** permission codes (`area.action`) in a code catalogue with a role→permission map; `GET /api/v1/me` returns roles, scopes and permissions. Portal chosen by URL (`/customer`, `/kitchen`, `/delivery`, `/management`) with one shared, portal-themed login. Scope guards tested now through a test-only router (never mounted in production); real endpoints reuse them in Tasks 6–10. Staff accounts only via the local/test fixture loader (six #15 seed users) until Task 10. Auth events (OTP request without code, login success/failure, logout, revocations) go to `audit.events`. |
+| DDR-100 | **Portal shells:** source-listed navigation; unbuilt screens show a labelled "Not built yet (Task N)" page; later Management features hidden until built. Placeholder wordmark "DeliverIQ" with a visible "Placeholder logo" badge (DDR-08); "Image unavailable" state (DDR-47). Status colours (closes the DDR-21 values): info `#1D4ED8`, success `#15803D`, warning `#B45309`, danger `#B91C1C`, neutral `#4B5563` (white text ≥ 5.02:1). Text on palette colours: `#101010` on `#A8C9CB`, `#F45B0B`, `#FFF21A`, `#A66BFF`, `#E6D58D`; white on `#D5360C`, `#021861`, `#255DCE`, `#DE1110`. Frontend libraries per the approved stack plus `@fontsource-variable/inter`, `openapi-typescript`, Vitest/Testing Library, Playwright + axe; all pinned. |
+
 ---
 
 ## Part B — Former proposals, approved as written (Decided 2026-11-12)
