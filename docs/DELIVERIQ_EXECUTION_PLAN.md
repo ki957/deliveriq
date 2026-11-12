@@ -245,6 +245,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 3 — Data model and migrations
 
+- **Status:** Task 2 merged (PR #3). Task 3 implemented on branch `task-03-data-model` (2026-11-12), awaiting owner review. Migrations 0001–0005; policy in `backend/migrations/README.md`. Columns are limited to what the state machines, leak controls and acceptance need; checkout/money (Tasks 6–7), stock (8), GPS (9), identity sessions/OTP (4) and RAG tables (15–17) are added by the tasks that own them.
 - **Depends on:** Task 2; DDR-25, DDR-27, DDR-29 (decided).
 - **Guidance:**
   - Schemas per DDR-25.

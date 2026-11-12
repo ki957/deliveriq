@@ -52,11 +52,15 @@ extend-exclude = ["data/source"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+# The en dash is required: synthetic dish names start with "TEST – " (DDR-48).
+allowed-confusables = ["–"]
 
 [tool.ruff.lint.per-file-ignores]
 # assert is the pytest idiom; subprocess/tempfile use in tests is controlled.
 "backend/**/tests/**" = ["S101", "S105", "S106"]
 "backend/conftest.py" = ["S105"]
+# Migrations build static DDL from module constants, never from input.
+"backend/migrations/**" = ["S608", "E501"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -73,6 +77,18 @@ name = "Shared code does not depend on entry points"
 type = "forbidden"
 source_modules = ["app.shared"]
 forbidden_modules = ["app.cli", "app.main"]
+
+[[tool.importlinter.contracts]]
+name = "Domain layers are pure (no app infrastructure)"
+type = "forbidden"
+source_modules = [
+    "app.modules.orders.domain",
+    "app.modules.payments.domain",
+    "app.modules.delivery.domain",
+    "app.modules.recipes.domain",
+    "app.modules.menu.domain",
+]
+forbidden_modules = ["app.core", "app.shared", "app.cli", "app.main"]
 
 [[tool.importlinter.contracts]]
 name = "Core does not depend on business modules or entry points"
