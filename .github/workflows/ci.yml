@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # DDR-60: committed source copies must match the hashes recorded in the inventory.
+  # Further jobs (backend, frontend, e2e) are added from Task 2 per DOCKER_DEPLOYMENT_DESIGN.md §11.
+  source-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify source copies against the inventory
+        run: PYTHONPATH=backend python -m app.cli.source_registry --root data/source --inventory docs/SOURCE_DOCUMENT_INVENTORY.md
+      - name: Registry unit tests
+        run: python -m unittest discover -s backend -t backend -p 'test_*.py' -v
