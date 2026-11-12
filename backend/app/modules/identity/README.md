@@ -26,4 +26,4 @@
 ## Assumptions and integration points
 
 - Staff accounts come from the local/test fixture loader (`make fixtures`) until the Management staff screens (Task 10).
-- Expired OTP challenges and sessions are kept; a purge job is added with the worker (Task 5).
+- Expired OTP challenges and sessions are kept. The purge job is deferred to Task 11 (worker timer); its retention period is not defined yet and is asked then (DDR-107).

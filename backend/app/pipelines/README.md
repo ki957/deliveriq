@@ -1,6 +1,6 @@
 # Pipelines: framework, worker and P1 SOP import
 
-**Purpose and scope:** the shared run framework, the single heartbeating worker and P1, the SOP master-data ETL (DATA_PIPELINE_DESIGN §2.3, §5, §11; KITCHEN_SOURCE_VALIDATION §7–9; DDR-63, DDR-67, DDR-102–DDR-105). Fault injection, fixtures and the recipe workflow are 5B.
+**Purpose and scope:** the shared run framework, the single heartbeating worker and P1, the SOP master-data ETL (DATA_PIPELINE_DESIGN §2.3, §5, §11; KITCHEN_SOURCE_VALIDATION §7–9; DDR-63, DDR-67, DDR-102–DDR-105). Fault inputs (5B): `backend/test_inputs/p1/test_fault_cards.md` (one card per DDR-65 fault plus a clean card) and `test_structural_fault.md`; fault runs stop at staging.
 
 | Item | Value |
 |---|---|

@@ -52,6 +52,12 @@ class Permission(StrEnum):
     KITCHEN_MODE_CHANGE = "kitchen.mode.change"
     KITCHEN_ETA_UPDATE = "kitchen.eta.update"
     KITCHEN_UNAVAILABILITY_REQUEST = "kitchen.unavailability.request"
+    # Recipe workflow (DDR-10, DDR-54, DDR-103, DDR-105, DDR-107): KM submits, returns, validates,
+    # rejects and activates; KM records four sign-offs; KS and KM view the review queue; KM acknowledges.
+    KITCHEN_RECIPES_WORKFLOW = "kitchen.recipes.workflow"
+    KITCHEN_RECIPES_SIGNOFF = "kitchen.recipes.signoff"
+    KITCHEN_REVIEW_VIEW = "kitchen.review.view"
+    KITCHEN_REVIEW_ACKNOWLEDGE = "kitchen.review.acknowledge"
     # Delivery
     DELIVERY_ASSIGNMENTS_VIEW = "delivery.assignments.view"
     # Management (Matrix §5.1)
@@ -70,6 +76,8 @@ class Permission(StrEnum):
     # Data & Pipelines (DDR-106): CA everywhere, RM own region (view only)
     PIPELINES_VIEW = "pipelines.view"
     PIPELINES_OPERATE = "pipelines.operate"
+    # The product-owner sign-off is recorded by a CA account (DDR-106); includes reading recipes to sign.
+    RECIPES_PRODUCT_OWNER_SIGNOFF = "recipes.signoff.product_owner"
 
 
 P = Permission
@@ -80,6 +88,7 @@ _KITCHEN_SHARED = frozenset(
         P.KITCHEN_RECIPES_VIEW,
         P.KITCHEN_LOW_STOCK_VIEW,
         P.KITCHEN_UNAVAILABILITY_REQUEST,
+        P.KITCHEN_REVIEW_VIEW,
     }
 )
 _MGMT_SHARED = frozenset(
@@ -109,6 +118,9 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
         P.KITCHEN_STOCK_ADJUST,
         P.KITCHEN_MODE_CHANGE,
         P.KITCHEN_ETA_UPDATE,
+        P.KITCHEN_RECIPES_WORKFLOW,
+        P.KITCHEN_RECIPES_SIGNOFF,
+        P.KITCHEN_REVIEW_ACKNOWLEDGE,
     },
     Role.REGIONAL_MANAGER: _MGMT_SHARED,
     Role.CENTRAL_ADMIN: _MGMT_SHARED
@@ -118,6 +130,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
         P.MGMT_GLOBAL_SETTINGS,
         P.MGMT_AUDIT_GLOBAL,
         P.PIPELINES_OPERATE,
+        P.RECIPES_PRODUCT_OWNER_SIGNOFF,
     },
 }
 

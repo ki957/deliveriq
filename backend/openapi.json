@@ -1,6 +1,21 @@
 {
   "components": {
     "schemas": {
+      "AcknowledgeIn": {
+        "properties": {
+          "note": {
+            "maxLength": 1000,
+            "minLength": 3,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "title": "AcknowledgeIn",
+        "type": "object"
+      },
       "CancelOut": {
         "properties": {
           "outcome": {
@@ -16,6 +31,119 @@
           "outcome"
         ],
         "title": "CancelOut",
+        "type": "object"
+      },
+      "CustomerMenuItemOut": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "image_is_placeholder": {
+            "title": "Image Is Placeholder",
+            "type": "boolean"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "is_veg": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Veg"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "prep_time_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prep Time Minutes"
+          },
+          "price_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Paise"
+          },
+          "spice_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spice Level"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "price_paise",
+          "is_veg",
+          "spice_level",
+          "prep_time_minutes",
+          "image_url",
+          "image_is_placeholder",
+          "category",
+          "is_test_fixture"
+        ],
+        "title": "CustomerMenuItemOut",
         "type": "object"
       },
       "DeviceOut": {
@@ -176,6 +304,144 @@
         "title": "IngestionErrorOut",
         "type": "object"
       },
+      "IngredientLineOut": {
+        "properties": {
+          "ingredient_id": {
+            "format": "uuid",
+            "title": "Ingredient Id",
+            "type": "string"
+          },
+          "line_no": {
+            "title": "Line No",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "original_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Text"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "string"
+          },
+          "source_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Line"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "line_no",
+          "ingredient_id",
+          "name",
+          "quantity",
+          "unit",
+          "source_line",
+          "original_text"
+        ],
+        "title": "IngredientLineOut",
+        "type": "object"
+      },
+      "LineageOut": {
+        "properties": {
+          "source_card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Card Id"
+          },
+          "source_line_end": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Line End"
+          },
+          "source_line_start": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Line Start"
+          },
+          "source_page_ref": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Page Ref"
+          },
+          "source_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Path"
+          },
+          "source_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Sha256"
+          }
+        },
+        "required": [
+          "source_path",
+          "source_sha256",
+          "source_card_id",
+          "source_line_start",
+          "source_line_end",
+          "source_page_ref"
+        ],
+        "title": "LineageOut",
+        "type": "object"
+      },
       "LiveResponse": {
         "properties": {
           "status": {
@@ -188,6 +454,164 @@
           "status"
         ],
         "title": "LiveResponse",
+        "type": "object"
+      },
+      "ManagedMenuItemOut": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "has_active_recipe": {
+            "title": "Has Active Recipe",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "image_is_placeholder": {
+            "title": "Image Is Placeholder",
+            "type": "boolean"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "is_veg": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Veg"
+          },
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "prep_time_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prep Time Minutes"
+          },
+          "price_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Paise"
+          },
+          "publication_status": {
+            "$ref": "#/components/schemas/Publication"
+          },
+          "recipe_id": {
+            "format": "uuid",
+            "title": "Recipe Id",
+            "type": "string"
+          },
+          "region_id": {
+            "format": "uuid",
+            "title": "Region Id",
+            "type": "string"
+          },
+          "spice_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spice Level"
+          },
+          "tax_classification": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Classification"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "price_paise",
+          "is_veg",
+          "spice_level",
+          "prep_time_minutes",
+          "image_url",
+          "image_is_placeholder",
+          "category",
+          "is_test_fixture",
+          "tax_classification",
+          "publication_status",
+          "kitchen_id",
+          "region_id",
+          "recipe_id",
+          "has_active_recipe",
+          "updated_at"
+        ],
+        "title": "ManagedMenuItemOut",
         "type": "object"
       },
       "MeOut": {
@@ -231,6 +655,35 @@
           "portals"
         ],
         "title": "MeOut",
+        "type": "object"
+      },
+      "MenuTransitionIn": {
+        "properties": {
+          "action": {
+            "enum": [
+              "mark_ready",
+              "publish"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "MenuTransitionIn",
         "type": "object"
       },
       "OtpRequestIn": {
@@ -385,6 +838,17 @@
         "title": "Portal",
         "type": "string"
       },
+      "Publication": {
+        "enum": [
+          "DRAFT",
+          "READY_FOR_PUBLICATION",
+          "PUBLISHED",
+          "TEMPORARILY_UNAVAILABLE",
+          "RETIRED"
+        ],
+        "title": "Publication",
+        "type": "string"
+      },
       "ReadyResponse": {
         "properties": {
           "checks": {
@@ -414,6 +878,428 @@
         "title": "ReadyResponse",
         "type": "object"
       },
+      "RecipeStatus": {
+        "enum": [
+          "DRAFT",
+          "PENDING_VALIDATION",
+          "VALIDATED",
+          "ACTIVE",
+          "REJECTED",
+          "SUPERSEDED",
+          "DISABLED",
+          "QUARANTINED_DUPLICATE_CANDIDATE"
+        ],
+        "title": "RecipeStatus",
+        "type": "string"
+      },
+      "RecipeVersionDetailOut": {
+        "properties": {
+          "candidate_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Category"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientLineOut"
+            },
+            "title": "Ingredients",
+            "type": "array"
+          },
+          "inventory_rule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inventory Rule"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "lineage": {
+            "$ref": "#/components/schemas/LineageOut"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Method"
+          },
+          "missing_signoffs": {
+            "items": {
+              "$ref": "#/components/schemas/SignoffType"
+            },
+            "title": "Missing Signoffs",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "open_review_items": {
+            "title": "Open Review Items",
+            "type": "integer"
+          },
+          "portion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Portion"
+          },
+          "prep_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prep Type"
+          },
+          "quality": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality"
+          },
+          "quarantine_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quarantine Reason"
+          },
+          "recipe_id": {
+            "format": "uuid",
+            "title": "Recipe Id",
+            "type": "string"
+          },
+          "review_items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewItemOut"
+            },
+            "title": "Review Items",
+            "type": "array"
+          },
+          "signoffs": {
+            "items": {
+              "$ref": "#/components/schemas/SignoffOut"
+            },
+            "title": "Signoffs",
+            "type": "array"
+          },
+          "source_menu_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Menu Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RecipeStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "validation_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validation Text"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "recipe_id",
+          "name",
+          "source_menu_id",
+          "kitchen_id",
+          "version",
+          "status",
+          "is_test_fixture",
+          "quarantine_reason",
+          "open_review_items",
+          "candidate_category",
+          "updated_at",
+          "prep_type",
+          "portion",
+          "method",
+          "quality",
+          "inventory_rule",
+          "validation_text",
+          "lineage",
+          "ingredients",
+          "signoffs",
+          "missing_signoffs",
+          "review_items"
+        ],
+        "title": "RecipeVersionDetailOut",
+        "type": "object"
+      },
+      "RecipeVersionOut": {
+        "properties": {
+          "candidate_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Category"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "open_review_items": {
+            "title": "Open Review Items",
+            "type": "integer"
+          },
+          "quarantine_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quarantine Reason"
+          },
+          "recipe_id": {
+            "format": "uuid",
+            "title": "Recipe Id",
+            "type": "string"
+          },
+          "source_menu_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Menu Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RecipeStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "recipe_id",
+          "name",
+          "source_menu_id",
+          "kitchen_id",
+          "version",
+          "status",
+          "is_test_fixture",
+          "quarantine_reason",
+          "open_review_items",
+          "candidate_category",
+          "updated_at"
+        ],
+        "title": "RecipeVersionOut",
+        "type": "object"
+      },
+      "ReviewItemOut": {
+        "properties": {
+          "acknowledged_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acknowledged At"
+          },
+          "acknowledged_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acknowledged By"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reason_code": {
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "recipe_name": {
+            "title": "Recipe Name",
+            "type": "string"
+          },
+          "recipe_version_id": {
+            "format": "uuid",
+            "title": "Recipe Version Id",
+            "type": "string"
+          },
+          "source_card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Card Id"
+          },
+          "source_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Line"
+          },
+          "source_ref": {
+            "title": "Source Ref",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "OPEN",
+              "ACKNOWLEDGED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "recipe_version_id",
+          "recipe_name",
+          "source_card_id",
+          "reason_code",
+          "subject",
+          "detail",
+          "source_ref",
+          "source_line",
+          "status",
+          "acknowledged_by",
+          "acknowledged_at",
+          "note"
+        ],
+        "title": "ReviewItemOut",
+        "type": "object"
+      },
       "Role": {
         "enum": [
           "CUSTOMER",
@@ -431,7 +1317,11 @@
           "input_ref": {
             "anyOf": [
               {
-                "const": "sop",
+                "enum": [
+                  "sop",
+                  "fault:records",
+                  "fault:structural"
+                ],
                 "type": "string"
               },
               {
@@ -649,6 +1539,78 @@
         "title": "RunSummaryOut",
         "type": "object"
       },
+      "SignoffIn": {
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "signoff_type": {
+            "$ref": "#/components/schemas/SignoffType"
+          }
+        },
+        "required": [
+          "signoff_type"
+        ],
+        "title": "SignoffIn",
+        "type": "object"
+      },
+      "SignoffOut": {
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "signed_at": {
+            "format": "date-time",
+            "title": "Signed At",
+            "type": "string"
+          },
+          "signed_by": {
+            "format": "uuid",
+            "title": "Signed By",
+            "type": "string"
+          },
+          "signoff_type": {
+            "$ref": "#/components/schemas/SignoffType"
+          }
+        },
+        "required": [
+          "signoff_type",
+          "signed_by",
+          "signed_at",
+          "note"
+        ],
+        "title": "SignoffOut",
+        "type": "object"
+      },
+      "SignoffType": {
+        "description": "The five #13 release-checklist sign-offs: required audit records, not activation.",
+        "enum": [
+          "CHEF",
+          "FOOD_SAFETY_LEAD",
+          "INVENTORY_OWNER",
+          "KITCHEN_MANAGER",
+          "PRODUCT_OWNER"
+        ],
+        "title": "SignoffType",
+        "type": "string"
+      },
       "StageOut": {
         "properties": {
           "detail": {
@@ -738,6 +1700,33 @@
           "finished_at"
         ],
         "title": "StageOut",
+        "type": "object"
+      },
+      "TransitionIn": {
+        "properties": {
+          "action": {
+            "enum": [
+              "submit",
+              "return",
+              "validate",
+              "reject",
+              "activate"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reason"
+        ],
+        "title": "TransitionIn",
         "type": "object"
       },
       "TrustedLoginIn": {
@@ -1016,6 +2005,109 @@
         "summary": "Revoke My Device",
         "tags": [
           "me"
+        ]
+      }
+    },
+    "/api/v1/menu/items": {
+      "get": {
+        "operationId": "customer_menu_api_v1_menu_items_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerMenuItemOut"
+                  },
+                  "title": "Response Customer Menu Api V1 Menu Items Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Customer Menu",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
+    "/api/v1/menu/manage/items": {
+      "get": {
+        "operationId": "list_items_api_v1_menu_manage_items_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ManagedMenuItemOut"
+                  },
+                  "title": "Response List Items Api V1 Menu Manage Items Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Items",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
+    "/api/v1/menu/manage/items/{item_id}/transitions": {
+      "post": {
+        "operationId": "transition_api_v1_menu_manage_items__item_id__transitions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MenuTransitionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedMenuItemOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Transition",
+        "tags": [
+          "menu"
         ]
       }
     },
@@ -1319,6 +2411,323 @@
         "summary": "Retry Run",
         "tags": [
           "pipelines"
+        ]
+      }
+    },
+    "/api/v1/recipes/review-items": {
+      "get": {
+        "operationId": "review_items_api_v1_recipes_review_items_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "OPEN",
+                    "ACKNOWLEDGED"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewItemOut"
+                  },
+                  "title": "Response Review Items Api V1 Recipes Review Items Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review Items",
+        "tags": [
+          "recipes"
+        ]
+      }
+    },
+    "/api/v1/recipes/review-items/{item_id}/acknowledge": {
+      "post": {
+        "operationId": "acknowledge_api_v1_recipes_review_items__item_id__acknowledge_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcknowledgeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewItemOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Acknowledge",
+        "tags": [
+          "recipes"
+        ]
+      }
+    },
+    "/api/v1/recipes/versions": {
+      "get": {
+        "operationId": "list_versions_api_v1_recipes_versions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/RecipeStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecipeVersionOut"
+                  },
+                  "title": "Response List Versions Api V1 Recipes Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Versions",
+        "tags": [
+          "recipes"
+        ]
+      }
+    },
+    "/api/v1/recipes/versions/{version_id}": {
+      "get": {
+        "operationId": "version_detail_api_v1_recipes_versions__version_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeVersionDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Version Detail",
+        "tags": [
+          "recipes"
+        ]
+      }
+    },
+    "/api/v1/recipes/versions/{version_id}/signoffs": {
+      "post": {
+        "operationId": "record_signoff_api_v1_recipes_versions__version_id__signoffs_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignoffIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Signoff",
+        "tags": [
+          "recipes"
+        ]
+      }
+    },
+    "/api/v1/recipes/versions/{version_id}/transitions": {
+      "post": {
+        "operationId": "transition_api_v1_recipes_versions__version_id__transitions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransitionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Transition",
+        "tags": [
+          "recipes"
         ]
       }
     },

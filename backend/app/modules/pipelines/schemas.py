@@ -77,8 +77,8 @@ class RunDetailOut(BaseModel):
 
 class RunCreateIn(BaseModel):
     pipeline: str = Field(pattern=r"^[a-z][a-z0-9_]+$", max_length=40, examples=["p1_sop"])
-    # P1 reads the committed SOP; fault-injection inputs are added in Task 5B (DDR-104).
-    input_ref: Literal["sop"] | None = None
+    # P1 reads the committed SOP; the fault inputs are TEST files, local/test only (DDR-65, DDR-104).
+    input_ref: Literal["sop", "fault:records", "fault:structural"] | None = None
 
 
 class CancelOut(BaseModel):

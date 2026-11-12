@@ -13,14 +13,18 @@ from dataclasses import dataclass
 from sqlalchemy import Connection
 from sqlalchemy.exc import IntegrityError
 
+from app.core.config import get_settings
 from app.core.db import get_engine
 from app.core.permissions import Permission, Principal, can
 from app.core.request_context import current_request_id
 from app.modules.pipelines import repository as repo
 
 # Pipelines that can be queued now, with the inputs each accepts. Later tasks add their pipelines
-# here when their code lands (P2 Task 7, P3 Task 8, K1–K3 Task 12); fault inputs come with 5B.
-TRIGGERABLE: dict[str, frozenset[str]] = {"p1_sop": frozenset({"sop"})}
+# here when their code lands (P2 Task 7, P3 Task 8, K1–K3 Task 12).
+TRIGGERABLE: dict[str, frozenset[str]] = {"p1_sop": frozenset({"sop", "fault:records", "fault:structural"})}
+DEFAULT_INPUT: dict[str, str] = {"p1_sop": "sop"}
+# TEST fault-injection inputs (DDR-65, DDR-104): local/test only, always flagged as test runs.
+FAULT_INPUTS = frozenset({"fault:records", "fault:structural"})
 # Runs carry the region of the kitchen they load into (DDR-105).
 RUN_KITCHEN: dict[str, str] = {"p1_sop": "KIT-CHN-001"}
 ERROR_PAGE = 500
@@ -38,6 +42,10 @@ class NotFound(Exception):
 
 class Conflict(Exception):
     pass
+
+
+class FaultInputRefused(Exception):
+    """Fault-injection inputs are refused outside local/test (DDR-65)."""
 
 
 @dataclass(frozen=True)
@@ -139,9 +147,13 @@ def _queue(
     allowed = TRIGGERABLE.get(pipeline)
     if allowed is None:
         raise Conflict(f"{pipeline} is not available yet")
-    ref = input_ref or min(allowed)
+    ref = input_ref or DEFAULT_INPUT[pipeline]
     if ref not in allowed:
         raise Conflict(f"{pipeline} does not accept input {ref}")
+    if ref in FAULT_INPUTS:
+        if not get_settings().is_local_or_test:
+            raise FaultInputRefused
+        is_test = True
     region_id = repo.kitchen_region(conn, RUN_KITCHEN[pipeline]) if pipeline in RUN_KITCHEN else None
     try:
         with conn.begin_nested():

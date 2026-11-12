@@ -34,6 +34,10 @@ def _call[T](fn: Callable[[], T]) -> T:
         raise HTTPException(status_code=404, detail="Not found") from None
     except service.Conflict as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
+    except service.FaultInputRefused:
+        raise HTTPException(
+            status_code=403, detail="Fault-injection runs are allowed only in local/test"
+        ) from None
 
 
 def _summary(run: repo.RunRow) -> RunSummaryOut:

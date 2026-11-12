@@ -11,7 +11,7 @@
 | Tables | `ops.pipelines`, `ops.pipeline_runs`, `ops.pipeline_stage_runs`, `ops.ingestion_errors`, `ops.dq_results`, `ops.job_queue` (read; insert run + queue row only); `ops.cancel_run()`; `audit.events` |
 | Permissions | `pipelines.view`: CA all runs, RM runs of own region only. `pipelines.operate`: CA only. Every other role 403 |
 | States | 202 queued · 401 no session · 403 role or CSRF · 404 unknown or out-of-scope run (existence not revealed) · 409 already active / not cancellable / not retryable / not implemented yet · 422 bad input |
-| Tests | `core/tests/test_permissions.py` (policy); `tests/test_pipelines_integration.py` (RBAC matrix, real P1 run through the worker, idempotency, cancel, retry, one active run, audit, DB role limits) |
+| Tests | `core/tests/test_permissions.py` (policy); `tests/test_fault_inputs.py` (production refusal, test flag, images); `tests/test_pipelines_integration.py` (RBAC matrix, real P1 run through the worker, idempotency, cancel, retry, one active run, audit, DB role limits, fault runs quarantine or fail with nothing loaded) |
 
 ## Rules implemented
 
@@ -21,7 +21,7 @@
 - **Retry:** only failed or cancelled runs; the new run keeps `pipeline`, `input_ref`, `is_test`, region, and sets `retry_of`.
 - **Audit:** run, cancel and retry each write `audit.events` (actor, role, region, request ID).
 - **Region:** P1 runs carry the region of `KIT-CHN-001` (DDR-105).
-- **Inputs:** P1 accepts `sop` only; TEST fault inputs are added with 5B (DDR-104).
+- **Inputs:** P1 accepts `sop` (default) and the TEST fault inputs `fault:records` and `fault:structural` (DDR-65, DDR-104). Fault inputs are refused with 403 outside local/test, always run as test runs, and the worker refuses them again unless the run is a test run in local/test. `make pipeline NAME=p1_sop INPUT=fault:records`.
 
 ## Assumptions and integration points
 

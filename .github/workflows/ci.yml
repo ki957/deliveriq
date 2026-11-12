@@ -60,6 +60,8 @@ jobs:
         run: make up
       - name: Start the worker (P1 runs end to end in the integration tests)
         run: make worker
+      - name: Load seed users and the TEST menu (local/test fixtures)
+        run: make fixtures
       - name: Integration tests
         run: make test-integration
       - name: Container logs on failure

@@ -1,0 +1,196 @@
+"""TEST menu fixtures (DDR-48, DDR-50, DDR-54, DDR-106, DDR-107). Local/test only; run via `make fixtures`.
+
+Written from scratch, never derived from the Kitchen SOP. Rows that carry `is_test_fixture` are
+inserted here as the loader (no API can set the flag). Activation and publication then go through
+the same services, RBAC and database rules as live users: the seed Kitchen Manager submits,
+validates, records four sign-offs and activates; the seed Central Administrator records the
+product-owner sign-off and publishes. Re-running adds nothing.
+"""
+
+from __future__ import annotations
+
+import uuid
+
+from sqlalchemy import Connection, text
+
+from app.core.db import get_engine
+from app.core.permissions import Principal
+from app.modules.identity import service as identity
+from app.modules.menu import service as menu
+from app.modules.recipes import service as recipes
+from app.modules.recipes.domain import CA_SIGNOFFS
+
+_NS = uuid.UUID("7e2b9c1a-4f60-4d1e-8a3b-2c5d9e0f1a77")  # fixed namespace: re-runs reuse the same IDs
+KITCHEN_CODE = "KIT-CHN-001"
+CATEGORY = "TEST – Category"
+TEXT = "TEST – synthetic, not a real recipe"
+DESCRIPTION = "TEST – synthetic dish for workflow testing"
+LINE_GRAMS = 100
+# (letter, price in paise, ingredient numbers, activated and published?) — DDR-106, DDR-107.
+DISHES: tuple[tuple[str, int, tuple[int, int], bool], ...] = (
+    ("A", 11100, (1, 2), True),
+    ("B", 22200, (3, 4), True),
+    ("C", 33300, (5, 6), True),
+    ("D", 44400, (1, 6), False),
+)
+INGREDIENTS = tuple(f"TEST – Ingredient {n}" for n in range(1, 7))
+KM_MOBILE = "+910000000004"
+CA_MOBILE = "+910000000006"
+REASON = "TEST fixture loader (DDR-106)"
+
+
+def dish_name(letter: str) -> str:
+    return f"TEST – Synthetic Dish {letter}"
+
+
+def fixture_names() -> list[str]:
+    return [dish_name(letter) for letter, *_ in DISHES] + list(INGREDIENTS) + [CATEGORY]
+
+
+def _id(*parts: str) -> uuid.UUID:
+    return uuid.uuid5(_NS, "|".join(parts))
+
+
+def _system(conn: Connection) -> None:
+    conn.execute(
+        text("SELECT set_config('app.actor_role', 'SYSTEM', true), set_config('app.reason', :r, true)"),
+        {"r": REASON},
+    )
+
+
+def _principal(conn: Connection, mobile: str) -> Principal:
+    user_id = conn.execute(
+        text("SELECT id FROM app.users WHERE mobile_e164 = :m"), {"m": mobile}
+    ).scalar_one_or_none()
+    principal = identity.principal_for_user(user_id) if user_id else None
+    if principal is None:
+        raise RuntimeError(f"seed user {mobile[-2:]} missing: run `load-users` first")
+    return principal
+
+
+def _insert_rows(conn: Connection) -> dict[str, int]:
+    added = {"ingredients": 0, "recipes": 0, "menu_items": 0}
+    _system(conn)
+    kitchen = conn.execute(
+        text("SELECT id FROM app.kitchens WHERE code = :c"), {"c": KITCHEN_CODE}
+    ).scalar_one()
+    conn.execute(
+        text("INSERT INTO app.menu_categories (id, name) VALUES (:id, :n) ON CONFLICT (name) DO NOTHING"),
+        {"id": _id("category"), "n": CATEGORY},
+    )
+    category = conn.execute(
+        text("SELECT id FROM app.menu_categories WHERE name = :n"), {"n": CATEGORY}
+    ).scalar_one()
+    for name in INGREDIENTS:
+        added["ingredients"] += conn.execute(
+            text(
+                "INSERT INTO app.ingredients (id, name, unit, origin) SELECT :id, :n, 'g', 'TEST_FIXTURE' "
+                "WHERE NOT EXISTS (SELECT 1 FROM app.ingredients WHERE lower(name) = lower(:n))"
+            ),
+            {"id": _id("ingredient", name), "n": name},
+        ).rowcount
+    for letter, price, numbers, _published in DISHES:
+        recipe, version = _id("recipe", letter), _id("recipe_version", letter, "1")
+        added["recipes"] += conn.execute(
+            text(
+                "INSERT INTO app.recipes (id, kitchen_id, name) SELECT :id, :k, :n "
+                "WHERE NOT EXISTS (SELECT 1 FROM app.recipes WHERE id = :id)"
+            ),
+            {"id": recipe, "k": kitchen, "n": dish_name(letter)},
+        ).rowcount
+        conn.execute(
+            text(
+                "INSERT INTO app.recipe_versions (id, recipe_id, version, status, prep_type, portion, "
+                "method, "
+                "quality, inventory_rule, validation_text, is_test_fixture) "
+                "SELECT :id, :r, 1, 'DRAFT', :t, :t, :t, :t, :t, :t, true "
+                "WHERE NOT EXISTS (SELECT 1 FROM app.recipe_versions WHERE id = :id)"
+            ),
+            {"id": version, "r": recipe, "t": TEXT},
+        )
+        for line_no, number in enumerate(numbers, start=1):
+            ingredient = conn.execute(
+                text("SELECT id FROM app.ingredients WHERE lower(name) = lower(:n)"),
+                {"n": INGREDIENTS[number - 1]},
+            ).scalar_one()
+            conn.execute(
+                text(
+                    "INSERT INTO app.recipe_ingredients (id, recipe_version_id, line_no, ingredient_id, "
+                    "quantity, unit) "
+                    "SELECT :id, :v, :l, :i, :q, 'g' WHERE NOT EXISTS "
+                    "(SELECT 1 FROM app.recipe_ingredients WHERE recipe_version_id = :v AND line_no = :l)"
+                ),
+                {
+                    "id": _id("recipe_ingredient", letter, str(line_no)),
+                    "v": version,
+                    "l": line_no,
+                    "i": ingredient,
+                    "q": LINE_GRAMS,
+                },
+            )
+        added["menu_items"] += conn.execute(
+            text(
+                "INSERT INTO app.menu_items (id, kitchen_id, recipe_id, category_id, name, description, "
+                "is_veg, "
+                "spice_level, price_paise, tax_classification, prep_time_minutes, image_is_placeholder, "
+                "publication_status, is_test_fixture) "
+                "SELECT :id, :k, :r, :c, :n, :d, true, 'TEST', :p, 'TEST', 10, "
+                "true, 'DRAFT', true WHERE NOT EXISTS (SELECT 1 FROM app.menu_items WHERE id = :id)"
+            ),
+            {
+                "id": _id("menu_item", letter),
+                "k": kitchen,
+                "r": recipe,
+                "c": category,
+                "n": dish_name(letter),
+                "d": DESCRIPTION,
+                "p": price,
+            },
+        ).rowcount
+    return added
+
+
+def _activate(version: uuid.UUID, km: Principal, ca: Principal) -> bool:
+    """Walk one TEST recipe to ACTIVE through the recipe service; True if anything changed."""
+    changed = False
+    for _ in range(4):  # DRAFT -> PENDING_VALIDATION -> VALIDATED -> ACTIVE
+        detail = recipes.version_detail(km, version)
+        status = detail.version.status
+        if status == "ACTIVE":
+            return changed
+        if status == "DRAFT":
+            recipes.transition(km, version, "submit", REASON)
+        elif status == "PENDING_VALIDATION":
+            recipes.transition(km, version, "validate", REASON)
+        elif status == "VALIDATED":
+            for kind in detail.missing_signoffs:
+                signer = ca if kind in CA_SIGNOFFS else km
+                recipes.record_signoff(signer, version, kind.value, REASON)
+            recipes.transition(km, version, "activate", REASON)
+        else:
+            raise RuntimeError(f"TEST recipe {version} is {status}; reset local test data to reload it")
+        changed = True
+    return changed
+
+
+def _publish(item: uuid.UUID, ca: Principal) -> bool:
+    changed = False
+    for action, source in (("mark_ready", "DRAFT"), ("publish", "READY_FOR_PUBLICATION")):
+        status = next(i.publication_status for i in menu.list_items(ca) if i.id == item)
+        if status == source:
+            menu.transition(ca, item, action, REASON)
+            changed = True
+    return changed
+
+
+def load_menu() -> dict[str, int]:
+    with get_engine().begin() as conn:
+        added = _insert_rows(conn)
+        km, ca = _principal(conn, KM_MOBILE), _principal(conn, CA_MOBILE)
+    activated = published = 0
+    for letter, _price, _numbers, live in DISHES:
+        if not live:
+            continue
+        activated += _activate(_id("recipe_version", letter, "1"), km, ca)
+        published += _publish(_id("menu_item", letter), ca)
+    return {**added, "activated": activated, "published": published}

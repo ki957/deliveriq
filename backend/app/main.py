@@ -9,13 +9,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
+from app.core.db import get_engine
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.request_context import RequestContextMiddleware
 from app.modules.health.api import router as health_router
 from app.modules.identity.api import auth_router, me_router
 from app.modules.identity.dependencies import CSRF_HEADER
+from app.modules.menu.api import manage_router as menu_manage_router
+from app.modules.menu.api import public_router as menu_public_router
 from app.modules.pipelines.api import router as pipelines_router
+from app.modules.recipes.api import router as recipes_router
+from app.shared.fixture_guard import assert_no_fixtures
 
 API_TITLE = "DeliverIQ API"
 API_VERSION = "0.1.0"
@@ -28,12 +33,19 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(me_router)
     app.include_router(pipelines_router)
+    app.include_router(recipes_router)
+    app.include_router(menu_public_router)
+    app.include_router(menu_manage_router)
     return app
 
 
 def create_app() -> FastAPI:
     settings = get_settings()  # fails fast on missing/invalid configuration
     configure_logging(settings.log_level)
+    if settings.app_env == "production":
+        # Leak control 3 (plan §5.2): never serve production with TEST fixture rows present.
+        with get_engine().connect() as conn:
+            assert_no_fixtures(conn)
     app = FastAPI(title=API_TITLE, version=API_VERSION)
     if settings.cors_origin_list:
         app.add_middleware(

@@ -3,9 +3,10 @@
     docker compose --project-directory . -f infra/compose.yaml --profile core \\
         run --rm migrate python -m app.cli.fixtures load-users
 
-Loads the six #15 §4 seed users and role assignments. Their mobile numbers are the #15 placeholder
-range, accepted only in local/test. Refuses to run unless APP_ENV is local or test. Idempotent.
-Later tasks add TEST dishes, recipes and stock to this loader.
+Loads the six #15 §4 seed users and role assignments (`load-users`) and the TEST menu
+(`load-menu`, see `fixtures_menu.py`); `load-all` does both. Their mobile numbers are the #15
+placeholder range, accepted only in local/test. Refuses to run unless APP_ENV is local or test.
+Idempotent. Opening stock is added with Task 8.
 """
 
 from __future__ import annotations
@@ -58,14 +59,20 @@ def load_users() -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Load local/test fixtures")
-    parser.add_argument("command", choices=["load-users"])
-    parser.parse_args(argv)
+    parser.add_argument("command", choices=["load-users", "load-menu", "load-all"])
+    args = parser.parse_args(argv)
     settings = get_settings()
     if not settings.is_local_or_test:
         print("refused: fixtures load only when APP_ENV is local or test", file=sys.stderr)
         return 2
-    created = load_users()
-    print(f"seed users ready ({len(SEED_USERS)}); role grants created: {created}")
+    if args.command in ("load-users", "load-all"):
+        created = load_users()
+        print(f"seed users ready ({len(SEED_USERS)}); role grants created: {created}")
+    if args.command in ("load-menu", "load-all"):
+        from app.cli.fixtures_menu import load_menu
+
+        summary = load_menu()
+        print("TEST menu ready: " + ", ".join(f"{k}={v}" for k, v in summary.items()))
     return 0
 
 
