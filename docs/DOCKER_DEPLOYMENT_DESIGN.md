@@ -245,7 +245,7 @@ Branch protection on `main` requires these checks.
 
 | # | Design said | Implemented | Reason |
 |---|---|---|---|
-| 1 | PostGIS 16 base image + pgvector | `pgvector/pgvector:0.8.1-pg16-bookworm` + PostGIS 3 (3.7.0) from PGDG apt | `postgis/postgis:16-3.5` is Debian bullseye; its PGDG apt repository returns 404, so pgvector could not be installed |
+| 1 | PostGIS 16 base image + pgvector | `pgvector/pgvector:0.8.1-pg16-bookworm` + PostGIS 3 (3.7.0) from PGDG apt, with the PostgreSQL 16 server packages upgraded in the same step (fix found in Task 4B CI) | `postgis/postgis:16-3.5` is Debian bullseye; its PGDG apt repository returns 404, so pgvector could not be installed. PGDG builds PostGIS against the latest 16.x minor; a newer PostGIS on the base image's older server fails at `CREATE EXTENSION` (undefined symbol), so server and PostGIS are installed together |
 | 2 | Postgres on host port 5432 | Host port 5433 by default (`POSTGRES_HOST_PORT`) | The owner's laptop already runs a PostgreSQL service on 5432; it was left untouched |
 | 3 | Networks `backend`, `agent_net`, `egress` | Plus `edge` for published ports | Docker cannot publish ports from an `internal` network; Redis and `migrate` stay internal-only |
 | 4 | All profiles defined in Task 2 | Each profile is added with the task that builds its service (`e2e`/`demo` Task 4+, `worker` Task 5, `osrm` Task 9, `agent` Task 15B) | No profile starts a container without real code behind it |
