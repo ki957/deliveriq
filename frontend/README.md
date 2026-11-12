@@ -2,15 +2,15 @@
 
 One React + TypeScript + Vite app for the four portals (DDR-03), styled with Tailwind and shadcn/ui-style components (ADR-UI-001). Layout follows `docs/CODE_STRUCTURE_DESIGN.md` §6.
 
-| Path | Contents |
-|---|---|
-| `src/app/` | Router, landing page, portal shell, route config types |
-| `src/shared/api/` | Typed client generated from `backend/openapi.json` (DDR-81); adds the CSRF header |
-| `src/shared/auth/` | `useMe` (`GET /api/v1/me`) and `RequirePortal` route guard |
-| `src/shared/theme/tokens.css` | Design tokens and per-portal palettes (DDR-21, DDR-100), contrast-tested |
-| `src/shared/ui/` | Button, status badge, screen states, placeholder wordmark, "Not built yet" page |
-| `src/portals/<portal>/` | Navigation config per portal (source-listed screens, owning task) |
-| `src/features/auth/` | Shared login page (see its README) |
+| Path                          | Contents                                                                          |
+| ----------------------------- | --------------------------------------------------------------------------------- |
+| `src/app/`                    | Router, landing page, portal shell, route config types                            |
+| `src/shared/api/`             | Typed client generated from `backend/openapi.json` (DDR-81); adds the CSRF header |
+| `src/shared/auth/`            | `useMe` (`GET /api/v1/me`) and `RequirePortal` route guard                        |
+| `src/shared/theme/tokens.css` | Design tokens and per-portal palettes (DDR-21, DDR-100), contrast-tested          |
+| `src/shared/ui/`              | Button, status badge, screen states, placeholder wordmark, "Not built yet" page   |
+| `src/portals/<portal>/`       | Navigation config per portal (source-listed screens, owning task)                 |
+| `src/features/auth/`          | Shared login page (see its README)                                                |
 
 ## Commands
 

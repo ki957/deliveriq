@@ -62,7 +62,15 @@ jobs:
         run: make test-integration
       - name: Container logs on failure
         if: failure()
-        run: docker compose --project-directory . -f infra/compose.yaml --profile core logs --no-color --tail=200
+        run: |
+          C="docker compose --project-directory . -f infra/compose.yaml --profile core"
+          $C ps -a
+          $C logs --no-color --tail=200
+          # Also publish the last lines of each service as annotations, readable without signing in.
+          for s in migrate api postgres; do
+            msg=$($C logs --no-color --no-log-prefix --tail=25 "$s" 2>&1 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=${s} logs::${msg}"
+          done
       - name: Stop stack
         if: always()
         run: docker compose --project-directory . -f infra/compose.yaml --profile core down -v
