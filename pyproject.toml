@@ -93,6 +93,21 @@ source_modules = [
 forbidden_modules = ["app.core", "app.shared", "app.cli", "app.main"]
 
 [[tool.importlinter.contracts]]
+name = "Pipelines, worker and CLI use module services, never repositories or routes"
+type = "forbidden"
+source_modules = ["app.pipelines", "app.worker", "app.cli"]
+forbidden_modules = ["app.modules.*.repository", "app.modules.*.api"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Business modules do not depend on pipelines, worker or CLI"
+type = "forbidden"
+source_modules = ["app.modules"]
+forbidden_modules = ["app.pipelines", "app.worker", "app.cli"]
+# End-to-end tests may read pipeline constants; runtime module code may not.
+ignore_imports = ["app.modules.*.tests.** -> app.pipelines.**"]
+
+[[tool.importlinter.contracts]]
 name = "Core does not depend on business modules or entry points"
 type = "forbidden"
 source_modules = ["app.core"]

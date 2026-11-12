@@ -15,6 +15,7 @@ from app.core.request_context import RequestContextMiddleware
 from app.modules.health.api import router as health_router
 from app.modules.identity.api import auth_router, me_router
 from app.modules.identity.dependencies import CSRF_HEADER
+from app.modules.pipelines.api import router as pipelines_router
 
 API_TITLE = "DeliverIQ API"
 API_VERSION = "0.1.0"
@@ -26,6 +27,7 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(me_router)
+    app.include_router(pipelines_router)
     return app
 
 

@@ -2,8 +2,8 @@
 #   docker compose --project-directory . -f infra/compose.yaml
 # so paths below are relative to the repository root and `.env` is read from there.
 #
-# Profiles in Task 2: core (postgres, redis, migrate, api).
-# worker (Task 5), osrm (Task 9), e2e/demo (Task 4 onward) and agent (Task 15B) are added by the
+# Profiles: core (postgres, redis, migrate, api), e2e (Task 4B), worker (Task 5).
+# osrm (Task 9), demo and agent (Task 15B) are added by the
 # tasks that build those services, so no profile starts a container without real code behind it.
 
 name: deliveriq
@@ -45,6 +45,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?set POSTGRES_SUPERUSER_PASSWORD in .env}
       APP_MIGRATOR_PASSWORD: ${APP_MIGRATOR_PASSWORD:?}
       APP_API_PASSWORD: ${APP_API_PASSWORD:?}
+      WORKER_PASSWORD: ${WORKER_PASSWORD:?set WORKER_PASSWORD in .env}
       P1_SOP_PASSWORD: ${P1_SOP_PASSWORD:?}
       P2_ELT_PASSWORD: ${P2_ELT_PASSWORD:?}
       P3_SYNTH_PASSWORD: ${P3_SYNTH_PASSWORD:?}
@@ -146,6 +147,48 @@ services:
     networks: [backend, edge]
     logging: *default-logging
 
+  # worker profile (Task 5): job queue as the `worker` role; each job connects as its pipeline's own
+  # role (DDR-63). Inputs are read-only bind mounts; no Docker socket, no outbound network.
+  worker:
+    profiles: [worker]
+    build:
+      <<: *backend-build
+      target: worker
+    image: deliveriq-backend:worker
+    environment:
+      <<: *backend-env
+      DB_USER: worker
+      DB_PASSWORD: ${WORKER_PASSWORD:?set WORKER_PASSWORD in .env}
+      P1_SOP_PASSWORD: ${P1_SOP_PASSWORD:?}
+      P2_ELT_PASSWORD: ${P2_ELT_PASSWORD:?}
+      P3_SYNTH_PASSWORD: ${P3_SYNTH_PASSWORD:?}
+      RAG_CUSTOMER_PASSWORD: ${RAG_CUSTOMER_PASSWORD:?}
+      RAG_KITCHEN_PASSWORD: ${RAG_KITCHEN_PASSWORD:?}
+      RAG_MANAGEMENT_PASSWORD: ${RAG_MANAGEMENT_PASSWORD:?}
+      SOURCE_ROOT: /srv/data/source
+      INVENTORY_PATH: /srv/docs/SOURCE_DOCUMENT_INVENTORY.md
+      TEST_INPUTS_ROOT: /srv/test_inputs
+    volumes:
+      - ./backend/app:/srv/backend/app:ro
+      - ./data/source:/srv/data/source:ro
+      - ./docs/SOURCE_DOCUMENT_INVENTORY.md:/srv/docs/SOURCE_DOCUMENT_INVENTORY.md:ro
+      - ./backend/test_inputs:/srv/test_inputs:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.worker", "--health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 1200m
+    restart: unless-stopped
+    networks: [backend]
+    logging: *default-logging
   # e2e profile (Task 4B): pinned Playwright image builds and previews the SPA against the api,
   # then runs Chromium suites (axe, screenshots, phone viewports). On demand only (DDR-62).
   e2e:

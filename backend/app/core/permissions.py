@@ -67,6 +67,9 @@ class Permission(StrEnum):
     MGMT_AUDIT_REGIONAL = "management.audit.regional"
     MGMT_AUDIT_GLOBAL = "management.audit.global"
     MENU_PUBLISH = "menu.publish"
+    # Data & Pipelines (DDR-106): CA everywhere, RM own region (view only)
+    PIPELINES_VIEW = "pipelines.view"
+    PIPELINES_OPERATE = "pipelines.operate"
 
 
 P = Permission
@@ -90,6 +93,7 @@ _MGMT_SHARED = frozenset(
         P.MGMT_REGIONAL_SETTINGS,
         P.MGMT_AUDIT_REGIONAL,
         P.MENU_PUBLISH,
+        P.PIPELINES_VIEW,
     }
 )
 
@@ -108,7 +112,13 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
     },
     Role.REGIONAL_MANAGER: _MGMT_SHARED,
     Role.CENTRAL_ADMIN: _MGMT_SHARED
-    | {P.MGMT_RM_MANAGE, P.MGMT_REFUND_OVERRIDE, P.MGMT_GLOBAL_SETTINGS, P.MGMT_AUDIT_GLOBAL},
+    | {
+        P.MGMT_RM_MANAGE,
+        P.MGMT_REFUND_OVERRIDE,
+        P.MGMT_GLOBAL_SETTINGS,
+        P.MGMT_AUDIT_GLOBAL,
+        P.PIPELINES_OPERATE,
+    },
 }
 
 

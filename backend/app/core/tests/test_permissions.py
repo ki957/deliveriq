@@ -81,3 +81,17 @@ def test_staff_do_not_get_customer_portal() -> None:
     assert principal(Role.KITCHEN_MANAGER, region=REGION_A, kitchen=KITCHEN_A).portals() == [Portal.KITCHEN]
     multi = Principal(uuid.uuid4(), (Grant(Role.CUSTOMER), Grant(Role.REGIONAL_MANAGER, REGION_A)))
     assert multi.portals() == [Portal.CUSTOMER, Portal.MANAGEMENT]
+
+
+def test_pipeline_permissions_match_ddr_105() -> None:
+    """CA views and operates every run; RM views own region only; everyone else is denied."""
+    view = {role for role, perms in ROLE_PERMISSIONS.items() if P.PIPELINES_VIEW in perms}
+    operate = {role for role, perms in ROLE_PERMISSIONS.items() if P.PIPELINES_OPERATE in perms}
+    assert view == {Role.REGIONAL_MANAGER, Role.CENTRAL_ADMIN}
+    assert operate == {Role.CENTRAL_ADMIN}
+    rm = principal(Role.REGIONAL_MANAGER, region=REGION_A)
+    assert can(rm, P.PIPELINES_VIEW, region_id=REGION_A)
+    assert not can(rm, P.PIPELINES_VIEW, region_id=REGION_B)
+    assert not can(rm, P.PIPELINES_VIEW)  # runs without a region are CA-only
+    assert not can(rm, P.PIPELINES_OPERATE, region_id=REGION_A)
+    assert can(principal(Role.CENTRAL_ADMIN), P.PIPELINES_OPERATE, region_id=REGION_B)

@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# Runs once, on first initialisation of an empty data volume (official image behaviour).
-# Creates the DB roles from DOCKER_DEPLOYMENT_DESIGN §6.3 and the required extensions.
-# Schemas and per-schema grants are created by migrations in Task 3.
+# Creates the DB roles from DOCKER_DEPLOYMENT_DESIGN §6.3 (+ worker, DDR-105) and the required extensions.
+# Runs automatically on first initialisation of an empty data volume, and is safe to re-run:
+# `make db-roles` (called by `make up`) applies it to existing volumes so new roles appear before
+# migrations. Existing roles are left unchanged. Schemas and grants come from migrations.
 # Passwords are passed as psql variables (:'name') so they are quoted safely and never echoed.
 set -euo pipefail
 
 roles=(
   "app_migrator:APP_MIGRATOR_PASSWORD"
   "app_api:APP_API_PASSWORD"
+  "worker:WORKER_PASSWORD"
   "p1_sop:P1_SOP_PASSWORD"
   "p2_elt:P2_ELT_PASSWORD"
   "p3_synth:P3_SYNTH_PASSWORD"
@@ -24,11 +26,12 @@ for entry in "${roles[@]}"; do
     echo "init: missing required variable $var" >&2
     exit 1
   fi
-  psql -v ON_ERROR_STOP=1 -v role="$role" -v pw="$password" \
+  psql -v ON_ERROR_STOP=1 -v role="$role" -v pw="$password" -q \
        --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<'SQL'
-SELECT format('CREATE ROLE %I LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE', :'role', :'pw') \gexec
+SELECT format('CREATE ROLE %I LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE', :'role', :'pw')
+ WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'role') \gexec
 SQL
-  echo "init: created role $role"
+  echo "init: role $role ready"
 done
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<'SQL'
@@ -36,7 +39,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Every role may connect; nothing else is granted here.
-SELECT format('GRANT CONNECT ON DATABASE %I TO app_migrator, app_api, p1_sop, p2_elt, p3_synth, rag_customer, rag_kitchen, rag_management', current_database()) \gexec
+SELECT format('GRANT CONNECT ON DATABASE %I TO app_migrator, app_api, worker, p1_sop, p2_elt, p3_synth, rag_customer, rag_kitchen, rag_management', current_database()) \gexec
 
 -- Only the migrator runs DDL: it may create schemas and the alembic_version table.
 SELECT format('GRANT CREATE ON DATABASE %I TO app_migrator', current_database()) \gexec
