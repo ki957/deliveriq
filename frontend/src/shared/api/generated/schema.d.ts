@@ -123,6 +123,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/menu/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Customer Menu */
+        get: operations["customer_menu_api_v1_menu_items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/menu/manage/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Items */
+        get: operations["list_items_api_v1_menu_manage_items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/menu/manage/items/{item_id}/transitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transition */
+        post: operations["transition_api_v1_menu_manage_items__item_id__transitions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pipelines": {
         parameters: {
             query?: never;
@@ -226,6 +277,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/recipes/review-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Review Items */
+        get: operations["review_items_api_v1_recipes_review_items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recipes/review-items/{item_id}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acknowledge */
+        post: operations["acknowledge_api_v1_recipes_review_items__item_id__acknowledge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recipes/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Versions */
+        get: operations["list_versions_api_v1_recipes_versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recipes/versions/{version_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Version Detail */
+        get: operations["version_detail_api_v1_recipes_versions__version_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recipes/versions/{version_id}/signoffs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Signoff */
+        post: operations["record_signoff_api_v1_recipes_versions__version_id__signoffs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recipes/versions/{version_id}/transitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transition */
+        post: operations["transition_api_v1_recipes_versions__version_id__transitions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health/live": {
         parameters: {
             query?: never;
@@ -264,6 +417,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcknowledgeIn */
+        AcknowledgeIn: {
+            /** Note */
+            note: string;
+        };
         /** CancelOut */
         CancelOut: {
             /**
@@ -271,6 +429,34 @@ export interface components {
              * @enum {string}
              */
             outcome: "cancelled" | "cancel_requested";
+        };
+        /** CustomerMenuItemOut */
+        CustomerMenuItemOut: {
+            /** Category */
+            category: string | null;
+            /** Description */
+            description: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Image Is Placeholder */
+            image_is_placeholder: boolean;
+            /** Image Url */
+            image_url: string | null;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Is Veg */
+            is_veg: boolean | null;
+            /** Name */
+            name: string;
+            /** Prep Time Minutes */
+            prep_time_minutes: number | null;
+            /** Price Paise */
+            price_paise: number | null;
+            /** Spice Level */
+            spice_level: string | null;
         };
         /** DeviceOut */
         DeviceOut: {
@@ -331,6 +517,41 @@ export interface components {
             /** Stage */
             stage: string;
         };
+        /** IngredientLineOut */
+        IngredientLineOut: {
+            /**
+             * Ingredient Id
+             * Format: uuid
+             */
+            ingredient_id: string;
+            /** Line No */
+            line_no: number;
+            /** Name */
+            name: string;
+            /** Original Text */
+            original_text: string | null;
+            /** Quantity */
+            quantity: string;
+            /** Source Line */
+            source_line: number | null;
+            /** Unit */
+            unit: string;
+        };
+        /** LineageOut */
+        LineageOut: {
+            /** Source Card Id */
+            source_card_id: string | null;
+            /** Source Line End */
+            source_line_end: number | null;
+            /** Source Line Start */
+            source_line_start: number | null;
+            /** Source Page Ref */
+            source_page_ref: number | null;
+            /** Source Path */
+            source_path: string | null;
+            /** Source Sha256 */
+            source_sha256: string | null;
+        };
         /** LiveResponse */
         LiveResponse: {
             /**
@@ -338,6 +559,59 @@ export interface components {
              * @constant
              */
             status: "alive";
+        };
+        /** ManagedMenuItemOut */
+        ManagedMenuItemOut: {
+            /** Category */
+            category: string | null;
+            /** Description */
+            description: string | null;
+            /** Has Active Recipe */
+            has_active_recipe: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Image Is Placeholder */
+            image_is_placeholder: boolean;
+            /** Image Url */
+            image_url: string | null;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Is Veg */
+            is_veg: boolean | null;
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /** Name */
+            name: string;
+            /** Prep Time Minutes */
+            prep_time_minutes: number | null;
+            /** Price Paise */
+            price_paise: number | null;
+            publication_status: components["schemas"]["Publication"];
+            /**
+             * Recipe Id
+             * Format: uuid
+             */
+            recipe_id: string;
+            /**
+             * Region Id
+             * Format: uuid
+             */
+            region_id: string;
+            /** Spice Level */
+            spice_level: string | null;
+            /** Tax Classification */
+            tax_classification: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** MeOut */
         MeOut: {
@@ -354,6 +628,16 @@ export interface components {
              * Format: uuid
              */
             user_id: string;
+        };
+        /** MenuTransitionIn */
+        MenuTransitionIn: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "mark_ready" | "publish";
+            /** Reason */
+            reason?: string | null;
         };
         /** OtpRequestIn */
         OtpRequestIn: {
@@ -419,6 +703,11 @@ export interface components {
          * @enum {string}
          */
         Portal: "customer" | "kitchen" | "delivery" | "management";
+        /**
+         * Publication
+         * @enum {string}
+         */
+        Publication: "DRAFT" | "READY_FOR_PUBLICATION" | "PUBLISHED" | "TEMPORARILY_UNAVAILABLE" | "RETIRED";
         /** ReadyResponse */
         ReadyResponse: {
             /** Checks */
@@ -432,6 +721,146 @@ export interface components {
             status: "ready" | "not_ready";
         };
         /**
+         * RecipeStatus
+         * @enum {string}
+         */
+        RecipeStatus: "DRAFT" | "PENDING_VALIDATION" | "VALIDATED" | "ACTIVE" | "REJECTED" | "SUPERSEDED" | "DISABLED" | "QUARANTINED_DUPLICATE_CANDIDATE";
+        /** RecipeVersionDetailOut */
+        RecipeVersionDetailOut: {
+            /** Candidate Category */
+            candidate_category: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Ingredients */
+            ingredients: components["schemas"]["IngredientLineOut"][];
+            /** Inventory Rule */
+            inventory_rule: string | null;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            lineage: components["schemas"]["LineageOut"];
+            /** Method */
+            method: string | null;
+            /** Missing Signoffs */
+            missing_signoffs: components["schemas"]["SignoffType"][];
+            /** Name */
+            name: string;
+            /** Open Review Items */
+            open_review_items: number;
+            /** Portion */
+            portion: string | null;
+            /** Prep Type */
+            prep_type: string | null;
+            /** Quality */
+            quality: string | null;
+            /** Quarantine Reason */
+            quarantine_reason: string | null;
+            /**
+             * Recipe Id
+             * Format: uuid
+             */
+            recipe_id: string;
+            /** Review Items */
+            review_items: components["schemas"]["ReviewItemOut"][];
+            /** Signoffs */
+            signoffs: components["schemas"]["SignoffOut"][];
+            /** Source Menu Id */
+            source_menu_id: string | null;
+            status: components["schemas"]["RecipeStatus"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Validation Text */
+            validation_text: string | null;
+            /** Version */
+            version: number;
+        };
+        /** RecipeVersionOut */
+        RecipeVersionOut: {
+            /** Candidate Category */
+            candidate_category: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /** Name */
+            name: string;
+            /** Open Review Items */
+            open_review_items: number;
+            /** Quarantine Reason */
+            quarantine_reason: string | null;
+            /**
+             * Recipe Id
+             * Format: uuid
+             */
+            recipe_id: string;
+            /** Source Menu Id */
+            source_menu_id: string | null;
+            status: components["schemas"]["RecipeStatus"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** ReviewItemOut */
+        ReviewItemOut: {
+            /** Acknowledged At */
+            acknowledged_at: string | null;
+            /** Acknowledged By */
+            acknowledged_by: string | null;
+            /** Detail */
+            detail: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Note */
+            note: string | null;
+            /** Reason Code */
+            reason_code: string;
+            /** Recipe Name */
+            recipe_name: string;
+            /**
+             * Recipe Version Id
+             * Format: uuid
+             */
+            recipe_version_id: string;
+            /** Source Card Id */
+            source_card_id: string | null;
+            /** Source Line */
+            source_line: number | null;
+            /** Source Ref */
+            source_ref: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "OPEN" | "ACKNOWLEDGED";
+            /** Subject */
+            subject: string;
+        };
+        /**
          * Role
          * @enum {string}
          */
@@ -439,7 +868,7 @@ export interface components {
         /** RunCreateIn */
         RunCreateIn: {
             /** Input Ref */
-            input_ref?: "sop" | null;
+            input_ref?: ("sop" | "fault:records" | "fault:structural") | null;
             /**
              * Pipeline
              * @example p1_sop
@@ -504,6 +933,34 @@ export interface components {
             /** Trigger */
             trigger: string;
         };
+        /** SignoffIn */
+        SignoffIn: {
+            /** Note */
+            note?: string | null;
+            signoff_type: components["schemas"]["SignoffType"];
+        };
+        /** SignoffOut */
+        SignoffOut: {
+            /** Note */
+            note: string | null;
+            /**
+             * Signed At
+             * Format: date-time
+             */
+            signed_at: string;
+            /**
+             * Signed By
+             * Format: uuid
+             */
+            signed_by: string;
+            signoff_type: components["schemas"]["SignoffType"];
+        };
+        /**
+         * SignoffType
+         * @description The five #13 release-checklist sign-offs: required audit records, not activation.
+         * @enum {string}
+         */
+        SignoffType: "CHEF" | "FOOD_SAFETY_LEAD" | "INVENTORY_OWNER" | "KITCHEN_MANAGER" | "PRODUCT_OWNER";
         /** StageOut */
         StageOut: {
             /** Detail */
@@ -526,6 +983,16 @@ export interface components {
             started_at: string | null;
             /** Status */
             status: string;
+        };
+        /** TransitionIn */
+        TransitionIn: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "submit" | "return" | "validate" | "reject" | "activate";
+            /** Reason */
+            reason: string;
         };
         /** TrustedLoginIn */
         TrustedLoginIn: {
@@ -739,6 +1206,81 @@ export interface operations {
             };
         };
     };
+    customer_menu_api_v1_menu_items_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerMenuItemOut"][];
+                };
+            };
+        };
+    };
+    list_items_api_v1_menu_manage_items_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedMenuItemOut"][];
+                };
+            };
+        };
+    };
+    transition_api_v1_menu_manage_items__item_id__transitions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MenuTransitionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedMenuItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_pipelines_api_v1_pipelines_get: {
         parameters: {
             query?: never;
@@ -935,6 +1477,203 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunSummaryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_items_api_v1_recipes_review_items_get: {
+        parameters: {
+            query?: {
+                status?: ("OPEN" | "ACKNOWLEDGED") | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acknowledge_api_v1_recipes_review_items__item_id__acknowledge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcknowledgeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_versions_api_v1_recipes_versions_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["RecipeStatus"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeVersionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    version_detail_api_v1_recipes_versions__version_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeVersionDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_signoff_api_v1_recipes_versions__version_id__signoffs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignoffIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transition_api_v1_recipes_versions__version_id__transitions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeVersionOut"];
                 };
             };
             /** @description Validation Error */

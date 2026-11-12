@@ -203,6 +203,15 @@ def principal_for_session(session_token: str) -> Principal | None:
         return Principal(session.user_id, repo.active_grants(conn, session.user_id), session.id)
 
 
+def principal_for_user(user_id: uuid.UUID) -> Principal | None:
+    """Active grants of an active user, without a session (CLI fixture loader, local/test only)."""
+    with get_engine().connect() as conn:
+        user = repo.find_user(conn, user_id)
+        if user is None or user.status != "ACTIVE":
+            return None
+        return Principal(user_id, repo.active_grants(conn, user_id))
+
+
 def logout(principal: Principal) -> None:
     with get_engine().begin() as conn:
         if principal.session_id is not None:

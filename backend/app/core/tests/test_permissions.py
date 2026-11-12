@@ -95,3 +95,17 @@ def test_pipeline_permissions_match_ddr_105() -> None:
     assert not can(rm, P.PIPELINES_VIEW)  # runs without a region are CA-only
     assert not can(rm, P.PIPELINES_OPERATE, region_id=REGION_A)
     assert can(principal(Role.CENTRAL_ADMIN), P.PIPELINES_OPERATE, region_id=REGION_B)
+
+
+def test_recipe_workflow_permissions_match_ddr_105_and_106() -> None:
+    def holders(permission: Permission) -> set[Role]:
+        return {role for role, perms in ROLE_PERMISSIONS.items() if permission in perms}
+
+    assert holders(P.KITCHEN_RECIPES_WORKFLOW) == {Role.KITCHEN_MANAGER}
+    assert holders(P.KITCHEN_RECIPES_SIGNOFF) == {Role.KITCHEN_MANAGER}
+    assert holders(P.KITCHEN_REVIEW_ACKNOWLEDGE) == {Role.KITCHEN_MANAGER}
+    assert holders(P.KITCHEN_REVIEW_VIEW) == {Role.KITCHEN_STAFF, Role.KITCHEN_MANAGER}
+    assert holders(P.RECIPES_PRODUCT_OWNER_SIGNOFF) == {Role.CENTRAL_ADMIN}
+    km = principal(Role.KITCHEN_MANAGER, region=REGION_A, kitchen=KITCHEN_A)
+    assert can(km, P.KITCHEN_RECIPES_WORKFLOW, kitchen_id=KITCHEN_A)
+    assert not can(km, P.KITCHEN_RECIPES_WORKFLOW, kitchen_id=KITCHEN_B)

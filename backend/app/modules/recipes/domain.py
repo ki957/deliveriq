@@ -58,3 +58,28 @@ def missing_signoffs(recorded: set[SignoffType]) -> frozenset[SignoffType]:
 def can_activate(current: RecipeStatus, recorded: set[SignoffType], is_test_fixture: bool) -> bool:
     """VALIDATED → ACTIVE needs all five sign-offs; no SOP recipe is activated in the POC (DDR-50)."""
     return can_transition(current, R.ACTIVE) and not missing_signoffs(recorded) and is_test_fixture
+
+
+# Workflow actions executed by the Kitchen Manager (DDR-10, DDR-107): action -> (from, to).
+ACTIONS: dict[str, tuple[RecipeStatus, RecipeStatus]] = {
+    "submit": (R.DRAFT, R.PENDING_VALIDATION),
+    "return": (R.PENDING_VALIDATION, R.DRAFT),
+    "validate": (R.PENDING_VALIDATION, R.VALIDATED),
+    "reject": (R.VALIDATED, R.REJECTED),
+    "activate": (R.VALIDATED, R.ACTIVE),
+}
+# Who records which sign-off (DDR-54, DDR-106): the KM four, a CA account the product-owner one.
+KM_SIGNOFFS = frozenset(
+    {SignoffType.CHEF, SignoffType.FOOD_SAFETY_LEAD, SignoffType.INVENTORY_OWNER, SignoffType.KITCHEN_MANAGER}
+)
+CA_SIGNOFFS = frozenset({SignoffType.PRODUCT_OWNER})
+# Sign-offs are recorded during validation, before activation; TEST recipes only (DDR-54).
+SIGNOFF_STATUSES = frozenset({R.PENDING_VALIDATION, R.VALIDATED})
+
+
+def action_target(action: str, current: RecipeStatus) -> RecipeStatus | None:
+    """The status an action leads to from `current`, or None if the action does not apply."""
+    step = ACTIONS.get(action)
+    if step is None or step[0] != current:
+        return None
+    return step[1]

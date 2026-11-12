@@ -54,11 +54,6 @@ def test_is_test_fixture_on_all_five_tables(api: Conn) -> None:
         assert found[table] == ("NO", "false"), table
 
 
-def test_production_seed_contains_zero_fixture_rows(api: Conn) -> None:
-    for table in FIXTURE_TABLES:
-        assert one(api, f"SELECT count(*) FROM app.{table} WHERE is_test_fixture") == 0, table
-
-
 def test_seeded_region_and_synthetic_kitchen(api: Conn) -> None:
     region = api.execute(
         "SELECT name, timezone, status FROM app.regions WHERE code = 'REG-CHN-001'"

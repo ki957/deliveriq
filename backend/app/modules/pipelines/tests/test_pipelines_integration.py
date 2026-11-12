@@ -225,7 +225,15 @@ def test_review_queue_holds_missing_components_and_ambiguities(
     )
     assert by_reason["MISSING_BATCH_RECIPE"] == 8
     assert by_reason["COMPOSITE_INGREDIENT"] > 0 and by_reason["AMBIGUOUS_INGREDIENT"] > 0
-    assert scalar(world, "SELECT count(*) FROM app.recipe_review_items WHERE status <> 'OPEN'") == 0
+    # The import only opens items; acknowledging is a KM action (recipe workflow tests use TEST recipes).
+    assert (
+        scalar(
+            world,
+            "SELECT count(*) FROM app.recipe_review_items r JOIN app.recipe_versions v ON v.id = r.recipe_version_id "
+            "WHERE r.status <> 'OPEN' AND NOT v.is_test_fixture",
+        )
+        == 0
+    )
 
 
 def test_open_review_items_block_submission(world: World, first_run: dict[str, Any]) -> None:
@@ -344,3 +352,50 @@ def test_api_role_cannot_change_run_results() -> None:
 def test_p1_role_cannot_activate_or_mark_fixtures() -> None:
     with _connect("p1_sop", "P1_SOP_PASSWORD") as conn, pytest.raises(psycopg.errors.InsufficientPrivilege):
         conn.execute("UPDATE app.recipe_versions SET is_test_fixture = true WHERE false")
+
+
+# ---------------------------------------------------------------- fault injection (DDR-65, DDR-104)
+FAULT_REASONS = {"MISSING_UNIT", "ZERO_QUANTITY", "UNKNOWN_UNIT", "MISSING_FIELD", "DUPLICATE_CARD_ID"}
+
+
+def app_counts(world: World) -> tuple[int, int, int]:
+    return (
+        scalar(world, "SELECT count(*) FROM app.recipe_versions"),
+        scalar(world, "SELECT count(*) FROM app.ingredients"),
+        scalar(world, "SELECT count(*) FROM app.recipe_ingredients"),
+    )
+
+
+def test_fault_records_run_quarantines_with_reasons_and_loads_nothing(world: World, ca: httpx.Client) -> None:
+    before = app_counts(world)
+    response = ca.post("/api/v1/pipelines/runs", json={"pipeline": "p1_sop", "input_ref": "fault:records"})
+    assert response.status_code == 202, response.text
+    assert response.json()["is_test"] is True
+    detail = wait_for(ca, response.json()["id"])
+    run = detail["run"]
+    assert run["status"] == "completed_with_quarantine" and run["is_test"] is True
+    errors = detail["errors"]
+    assert {e["reason_code"] for e in errors} == FAULT_REASONS
+    assert all(e["record_ref"].startswith("TEST – Fault Card") for e in errors)
+    load = next(s for s in detail["stages"] if s["stage"] == "load DRAFT")
+    assert "never load" in load["detail"]["skipped"]
+    staged = pairs(
+        world, "SELECT status, count(*) FROM staging.sop_cards WHERE run_id = %s GROUP BY status", run["id"]
+    )
+    assert staged == {"REJECTED": 6, "VALID": 1}  # cards 01–04, both 05s; card 06 is clean
+    assert app_counts(world) == before
+
+
+def test_structural_fault_fails_the_run_with_nothing_loaded(world: World, ca: httpx.Client) -> None:
+    before = app_counts(world)
+    response = ca.post("/api/v1/pipelines/runs", json={"pipeline": "p1_sop", "input_ref": "fault:structural"})
+    assert response.status_code == 202, response.text
+    detail = wait_for(ca, response.json()["id"])
+    run = detail["run"]
+    assert (run["status"], run["failure_class"], run["is_test"]) == ("failed", "structural", True)
+    assert (
+        detail["stages"][-1]["stage"] == "validate structure" and detail["stages"][-1]["status"] == "failed"
+    )
+    assert {e["reason_code"] for e in detail["errors"]} == {"STRUCTURE"}
+    assert scalar(world, "SELECT count(*) FROM staging.sop_cards WHERE run_id = %s", run["id"]) == 0
+    assert app_counts(world) == before

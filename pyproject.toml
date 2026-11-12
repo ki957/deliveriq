@@ -105,7 +105,7 @@ type = "forbidden"
 source_modules = ["app.modules"]
 forbidden_modules = ["app.pipelines", "app.worker", "app.cli"]
 # End-to-end tests may read pipeline constants; runtime module code may not.
-ignore_imports = ["app.modules.*.tests.** -> app.pipelines.**"]
+ignore_imports = ["app.modules.*.tests.** -> app.pipelines.**", "app.modules.*.tests.** -> app.cli.**"]
 
 [[tool.importlinter.contracts]]
 name = "Core does not depend on business modules or entry points"

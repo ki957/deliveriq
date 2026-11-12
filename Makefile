@@ -28,8 +28,8 @@ help:
 	@echo "  db-roles         Create any missing DB roles on an existing data volume (idempotent)"
 	@echo "  worker           Start the worker profile (needs the core stack)"
 	@echo "  worker-down      Stop the worker only"
-	@echo "  pipeline         Queue a pipeline run and wait: make pipeline NAME=p1_sop"
-	@echo "  fixtures         Load local/test seed users (refused outside local/test)"
+	@echo "  pipeline         Queue a pipeline run and wait: make pipeline NAME=p1_sop [INPUT=fault:records]"
+	@echo "  fixtures         Load local/test seed users and the TEST menu (refused outside local/test)"
 	@echo "  e2e              Playwright suites in the pinned container (axe, screenshots, phones)"
 	@echo "  e2e-update       Regenerate screenshot baselines (review before committing)"
 	@echo "  frontend-check   Frontend typecheck, lint, unit tests, API client check, build"
@@ -86,8 +86,8 @@ worker-down:
 	$(COMPOSE) --profile worker stop worker
 # Runs as app_api (insert-only on run records), the same path as the UI trigger.
 pipeline: env-check
-	@test -n "$(NAME)" || { echo "Usage: make pipeline NAME=p1_sop"; exit 1; }
-	$(COMPOSE) exec -T api python -m app.cli.pipelines run "$(NAME)" --wait
+	@test -n "$(NAME)" || { echo "Usage: make pipeline NAME=p1_sop [INPUT=fault:records]"; exit 1; }
+	$(COMPOSE) exec -T api python -m app.cli.pipelines run "$(NAME)" $(if $(INPUT),--input "$(INPUT)") --wait
 
 down:
 	$(COMPOSE) --profile worker down
@@ -108,7 +108,7 @@ stats:
 
 # Reads .env in a subshell; values are exported to the test process only, never printed.
 fixtures: env-check
-	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-users
+	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-all
 
 # Playwright in the pinned container against the running core stack (needs `make up` + `make fixtures`).
 e2e: env-check

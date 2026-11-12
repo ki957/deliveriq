@@ -41,6 +41,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     except service.Conflict as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
+    except service.FaultInputRefused:
+        print("refused: fault-injection runs are allowed only when APP_ENV is local or test", file=sys.stderr)
+        return 2
     print(f"queued {args.name} run {run_id}")
     if not args.wait:
         return 0
