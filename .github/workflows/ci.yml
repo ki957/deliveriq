@@ -8,18 +8,61 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Actions pinned to commit SHAs (tag in the comment). DOCKER_DEPLOYMENT_DESIGN §11.
+# frontend, e2e and images jobs are added with the frontend scaffold (Task 4) and later tasks.
 jobs:
   # DDR-60: committed source copies must match the hashes recorded in the inventory.
-  # Further jobs (backend, frontend, e2e) are added from Task 2 per DOCKER_DEPLOYMENT_DESIGN.md §11.
   source-integrity:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
       - name: Verify source copies against the inventory
         run: PYTHONPATH=backend python -m app.cli.source_registry --root data/source --inventory docs/SOURCE_DOCUMENT_INVENTORY.md
-      - name: Registry unit tests
-        run: python -m unittest discover -s backend -t backend -p 'test_*.py' -v
+
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          version: "0.11.8"
+      - name: Install locked dependencies
+        run: uv sync --locked
+      - name: Lint and format
+        run: make lint
+      - name: Type check
+        run: make typecheck
+      - name: Import contracts
+        run: make imports
+      - name: Unit tests
+        run: make test
+      - name: OpenAPI drift check
+        run: make openapi-check
+      - name: Create CI .env (random throwaway passwords)
+        run: |
+          python3 -c "
+          import secrets, pathlib
+          src = pathlib.Path('.env.example').read_text()
+          lines = [l.replace('=change-me', '=' + secrets.token_urlsafe(24)) for l in src.splitlines()]
+          pathlib.Path('.env').write_text('\n'.join(lines) + '\n')
+          "
+          sed -i "s/^APP_UID=.*/APP_UID=$(id -u)/; s/^APP_GID=.*/APP_GID=$(id -g)/; s/^APP_ENV=.*/APP_ENV=test/" .env
+      - name: Start core stack (Postgres + PostGIS + pgvector, Redis, migrate, API)
+        run: make up
+      - name: Integration tests
+        run: make test-integration
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose --project-directory . -f infra/compose.yaml --profile core logs --no-color --tail=200
+      - name: Stop stack
+        if: always()
+        run: docker compose --project-directory . -f infra/compose.yaml --profile core down -v

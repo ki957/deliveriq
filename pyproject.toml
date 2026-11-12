@@ -9,9 +9,18 @@ dependencies = []
 # Dependency groups per DDR-83. Runtime groups are filled by the tasks that need them
 # (api from Task 2, worker from Task 5); every version is pinned exactly.
 [dependency-groups]
-api = []
+api = [
+    "alembic==1.20.1",
+    "fastapi==0.162.5",
+    "psycopg[binary]==3.3.9",
+    "pydantic-settings==2.16.2",
+    "redis==8.1.0",
+    "sqlalchemy==2.1.8",
+    "uvicorn[standard]==0.54.0",
+]
 worker = []
 dev = [
+    "httpx==0.28.1",
     "import-linter==2.16",
     "mypy==2.4.1",
     "pytest==9.2.0",
@@ -21,7 +30,7 @@ dev = [
 [tool.uv]
 # The backend is run from source (backend/ on the path); packaging is added when the CLI entry point is.
 package = false
-default-groups = ["dev"]
+default-groups = ["api", "dev"]
 
 [tool.pytest.ini_options]
 pythonpath = ["backend"]
@@ -46,7 +55,8 @@ select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
 # assert is the pytest idiom; subprocess/tempfile use in tests is controlled.
-"backend/**/tests/**" = ["S101"]
+"backend/**/tests/**" = ["S101", "S105", "S106"]
+"backend/conftest.py" = ["S105"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -62,4 +72,10 @@ root_packages = ["app"]
 name = "Shared code does not depend on entry points"
 type = "forbidden"
 source_modules = ["app.shared"]
-forbidden_modules = ["app.cli"]
+forbidden_modules = ["app.cli", "app.main"]
+
+[[tool.importlinter.contracts]]
+name = "Core does not depend on business modules or entry points"
+type = "forbidden"
+source_modules = ["app.core"]
+forbidden_modules = ["app.modules", "app.cli", "app.main"]
