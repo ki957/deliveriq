@@ -128,6 +128,16 @@ def public_menu() -> list[dict[str, Any]]:
 
 
 # ---------------------------------------------------------------- module world
+def go_online(world: World, *agents: uuid.UUID) -> None:
+    """Offers go only to ONLINE agents (DDR-113 (4)); test agents are put online directly."""
+    for agent in agents:
+        world.db.execute(
+            "INSERT INTO app.agent_availability (agent_user_id, status, changed_by) VALUES (%s, 'ONLINE', %s) "
+            "ON CONFLICT (agent_user_id) DO UPDATE SET status = 'ONLINE'",
+            (agent, agent),
+        )
+
+
 class Staff:
     def __init__(self, world: World) -> None:
         a, b = world.region_a, world.region_b
@@ -150,6 +160,9 @@ class Staff:
         )
         assert address.status_code == 201, address.text
         self.address = str(address.json()["id"])
+        # One online agent of the module for the handover tests (each test frees it again).
+        self.agent = user_id(world, world.user("DELIVERY_AGENT", region=a))
+        go_online(world, self.agent)
 
 
 @pytest.fixture(scope="module")
@@ -161,7 +174,12 @@ def staff(world: World) -> Iterator[Staff]:
         "AND key IN ('MAX_CONCURRENT_ORDERS', 'MAX_CONCURRENT_ORDERS_BUSY')",
         world.kitchen_a,
     )
-    yield Staff(world)
+    crew = Staff(world)
+    yield crew
+    # A failed test can leave an accepted order: reject it through the API so reserved stock is released.
+    for order_id in CREATED:
+        if status(world, order_id) in ("ACCEPTED", "PREPARING", "READY_FOR_PICKUP"):
+            crew.km.post(f"{KITCHEN}/{order_id}/reject", json={"reason": "Integration test cleanup"})
     # Restore the shared kitchen settings and their DDR-42 test-default labels.
     world.db.execute("SET lock_timeout = '10s'")
     for key, value, test_default, source in saved:
@@ -187,6 +205,7 @@ def cleanup(world: World) -> Iterator[None]:
         )
     ]
     world.db.execute("DELETE FROM app.delivery_assignments WHERE order_id::text = ANY(%s)", (CREATED,))
+    world.db.execute("DELETE FROM app.agent_availability WHERE agent_user_id = ANY(%s)", (world.users or [],))
     world.db.execute("DELETE FROM app.stock_reservations WHERE order_id = ANY(%s)", (removable,))
     world.db.execute(
         "DELETE FROM app.outbox WHERE aggregate_id = ANY(%s) AND published_at IS NULL", (removable,)
@@ -236,6 +255,8 @@ def restore_stock(world: World, km: httpx.Client, *numbers: int) -> None:
 def test_acceptance_pins_reserves_and_offers_an_agent_in_one_step(world: World, staff: Staff) -> None:
     # Two free agents in the region, so both orders can be offered whatever the seed agent is doing.
     agents = {user_id(world, world.user("DELIVERY_AGENT", region=world.region_a)) for _ in range(2)}
+    go_online(world, *agents)
+    agents.add(staff.agent)
     before = {n: stock(world, n) for n in (1, 2)}
     first = order_of(world, staff.customer, staff.address, "A", 5)
     second = order_of(world, staff.customer, staff.address, "A", 5)

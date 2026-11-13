@@ -172,6 +172,10 @@ def remove_test_orders(world: World) -> Iterator[None]:
     world.db.execute(
         "DELETE FROM app.outbox WHERE aggregate_id = ANY(%s) AND published_at IS NULL", (orders,)
     )
+    # Pickup creates a delivery code; acceptance may reserve stock (Tasks 8, 9).
+    world.db.execute("DELETE FROM app.delivery_otps WHERE order_id = ANY(%s)", (orders,))
+    world.db.execute("DELETE FROM app.delivery_locations WHERE order_id = ANY(%s)", (orders,))
+    world.db.execute("DELETE FROM app.stock_reservations WHERE order_id = ANY(%s)", (orders,))
     world.db.execute("DELETE FROM app.payments WHERE order_id = ANY(%s)", (orders,))
     world.db.execute("DELETE FROM app.order_items WHERE order_id = ANY(%s)", (orders,))
     world.db.execute("DELETE FROM app.orders WHERE id = ANY(%s)", (orders,))

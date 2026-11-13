@@ -52,8 +52,13 @@ class World:
     mobiles: list[str] | None = None
 
     def mobile(self) -> str:
-        self.counter += 1
-        number = f"+9100000{self.prefix}{self.counter:02d}"
+        # Skip numbers already in use (e.g. left by an interrupted earlier run), so prefixes never collide.
+        while True:
+            self.counter += 1
+            number = f"+9100000{self.prefix}{self.counter:02d}"
+            taken = self.db.execute("SELECT 1 FROM app.users WHERE mobile_e164 = %s", (number,)).fetchone()
+            if taken is None:
+                break
         assert self.mobiles is not None
         self.mobiles.append(number)
         return number
