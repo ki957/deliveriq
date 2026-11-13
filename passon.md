@@ -1,7 +1,19 @@
 # passon.md: DeliverIQ handover guide for Claude Code
 
 **Written:** 2026-11-12, at the end of Task 8A, by Kiro. **For:** Claude Code, continuing the build.
-**Read this file first.** It tells you where the project stands, what to read, how to work, and what to build next.
+**Read this file first.** It tells you where the project stands, what to read, how to work, and what to build next. `CLAUDE.md` loads it and `.kiro/steering/rules.md` (the binding rules) every session.
+
+> ## ⛔ Do not (each of these has broken something, or would)
+> 1. **Never edit** `/home/k/Downloads/task1/` or `data/source/**`. `make verify-sources` must stay 21/21.
+> 2. **Never print or commit `.env` values**; name secrets by key only. The guard hook blocks staged secret-looking files.
+> 3. **Never activate an SOP recipe** or publish a non-`TEST –` dish (DDR-50). Never let the API write `is_test_fixture`; new tables with TEST-derived rows need a derived flag plus a `fixture_guard.py` entry.
+> 4. **Never invent values** (prices, thresholds, rules, formulas, copy for business rules). Put them on the decision sheet.
+> 5. **Never `git add .` / `-A`, push `main`, force-push, `reset --hard`, `clean -f`, `--no-verify`, or change git config.** The hook blocks these. The owner merges.
+> 6. **Never hand-edit or prettier-format** `frontend/src/shared/api/generated/`; regenerate with `make openapi` and `npm run api:generate`.
+> 7. **After editing a migration, rebuild the image** (`make up` builds; or `docker compose … build migrate`). The migrate container does not bind-mount migrations.
+> 8. **Never leave shared TEST state dirty.** Tests and E2E restore what they change; run `make reset-fixtures` before and after test runs.
+> 9. **No broad `sed`/regex edits across files.** Edit precisely; re-read after formatters run.
+> 10. **No heavy jobs together** (e2e, dbt, embeddings, agent, osrm-prep); `free -h` ≥ 2 GB first; stop the stack after work.
 
 ---
 
@@ -19,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #12. Task 8A is on branch `task-08a-kitchen-ops-api` (commit `f016fd7`, plus the commit that adds this file), pushed; the owner opens and merges the PR (expected PR #13).
+`main` CI is green at PR #13 (8A merged, commit `bbac132`). The handover tooling (this file's §9–§10, `CLAUDE.md`, `.claude/`, `make reset-fixtures`) is on branch `task-handover-tooling` (PR #14).
 
 | Task | Scope | State |
 |---|---|---|
@@ -31,7 +43,8 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | 5A / 5B / 5C | Pipeline framework + worker + P1 SOP import / recipe approval, menu publication, fixtures / pipelines and approvals UI | ✅ merged (PR #7, #8, #9) |
 | 7 | Payments (simulated), order state machines, outbox (built before 6, owner choice) | ✅ merged (PR #10) |
 | 6A / 6B | Customer serviceability, cart, pricing, checkout API / customer UI | ✅ merged (PR #11, #12) |
-| **8A** | Kitchen operations and inventory **backend** (migration 0010, DDR-111) | 🟡 **pushed; owner opens and merges the PR** |
+| **8A** | Kitchen operations and inventory **backend** (migration 0010, DDR-111) | ✅ merged (PR #13) |
+| tooling | `CLAUDE.md`, `.claude/` commands + hook, `make reset-fixtures`, this guide | 🟡 PR #14, waiting for the owner |
 | **8B** | Kitchen + Management **UI** for Task 8, tablet + KDS E2E | ⏭️ **next task** |
 | 9 – 22 | See §6 | ⬜ not started |
 
@@ -40,15 +53,22 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 - **M2 Core order flow (5–9): 8B and 9 remain.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** ask the owner whether the 8A PR (expected #13) is merged. Then run `git checkout main && git pull --ff-only`, check CI, and start 8B (§5).
+**First thing to do:** ask the owner whether PR #14 (tooling) is merged; then `/start-task 8B` (it syncs `main` and checks CI first).
 
 ---
 
 ## 3. Documents to read, in this order
 
 ### 3.1 Binding rules (read every session)
-1. **`.kiro/steering/rules.md`**: the build rules. Kiro loaded it automatically; **Claude Code does not**. Read it at the start of every session and treat it as binding. "Kiro" in it now means you. **Recommended:** ask the owner whether to add a two-line `CLAUDE.md` at the repo root that says "Read `.kiro/steering/rules.md` and `passon.md` before any work", so Claude Code loads it automatically.
+1. **`.kiro/steering/rules.md`**: the build rules (v1.1, tool-neutral). `CLAUDE.md` imports it every session. "Kiro" in it means you.
 2. **This file.**
+
+### 3.1a Read cheaply (saves tokens)
+- **Grep, don't read whole files.** The plan (50 KB) and the register (52 KB) are large. Use `grep -n "### Task 9" docs/DELIVERIQ_EXECUTION_PLAN.md`, `grep -n "DDR-111" docs/DESIGN_DECISION_REGISTER.md` and `grep -n "KI-2[0-4]" docs/PORTAL_REQUIREMENTS_MATRIX.md`, then read only those line ranges.
+- **Read in full only:** `rules.md`, this file, the task's plan section, plan §5.2 and §6, and the README cards of modules you touch.
+- **Read only when the task needs them:** `RAG_AI_DESIGN.md` (Tasks 15–17), `DATA_PIPELINE_DESIGN.md` (12–14, or any new event), `DOCKER_DEPLOYMENT_DESIGN.md` (infra), `KITCHEN_SOURCE_VALIDATION.md` (recipes), `adr/*` (platform choices), source files in `data/source/` (to settle an undefined value).
+- **Use sub-agents** for broad codebase investigation, so the main context stays small.
+- **Don't re-investigate:** §5 holds the brief for the next task; write the following task's brief into §5 when you close a task.
 
 ### 3.2 Precedence when documents disagree (rules §1)
 Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Decided) → the four design docs → `docs/DELIVERIQ_EXECUTION_PLAN.md` → `docs/PORTAL_REQUIREMENTS_MATRIX.md` → source files. **If two documents conflict, stop, show both and ask.** Never pick silently.
@@ -90,9 +110,19 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 
 ## 4. How to work (owner's expectations)
 
+### Tooling (Claude Code)
+- `CLAUDE.md` imports the rules and this file.
+- Slash commands in `.claude/commands/`:
+  - `/start-task <n>`: inspect, then present the plan and decision sheet; stops for approval.
+  - `/verify`: every gate in order, with evidence.
+  - `/report`: the owner's report format, plus the update to this file.
+  - `/ship`: after "approve", push and print the PR link and text; after "merged", sync and check CI.
+- `.claude/settings.json`: the guard hook (`.claude/hooks/guard-git.sh`) blocks unsafe git commands and commits of secret-looking files; `deny` rules stop reads of `.env` and edits of `task1/`, `data/source/` and the generated client.
+- `make reset-fixtures`: kitchen NORMAL, the three DDR-42 test defaults with their labels, TEST Dishes A–C PUBLISHED, TEST stock 10,000 g with no threshold (reserved stock is left alone and reported). Idempotent; ledger entries carry the reason "TEST fixture reset".
+
 ### Working loop (rules §2)
 1. Inspect the task (plan §7), the DDRs and the code it touches.
-2. Present a **plan + a decision sheet**: one numbered list (D1, D2…) of every value or behaviour the sources leave undefined, each with options and a ✔ recommendation. **Never invent** prices, thresholds, rules or formulas. Undefined values go on the sheet.
+2. Present a **plan + a decision sheet** in the §9 template: every value or behaviour the sources leave undefined, each with options and a ✔ recommendation. **Never invent** prices, thresholds, rules or formulas. Undefined values go on the sheet.
 3. Wait for the owner. Typical replies are "go + approve all" or "will do as u recommend".
 4. Record the approved sheet as a new **DDR row** (next is **DDR-112**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
 5. Build one task at a time on branch `task-NN-short-name`. Large tasks split into **A (backend)** and **B (UI)**.
@@ -197,6 +227,7 @@ What changed (files) · evidence per acceptance criterion (test names or command
 | `make up` / `make down` | start / stop `core` (Postgres, Redis, API; runs migrations and `db-roles`) |
 | `make worker` / `make worker-down` | pipeline worker (needed by the pipelines integration tests) |
 | `make fixtures` | seed users, TEST menu, TEST50 coupon, seed address, **TEST opening stock** (idempotent) |
+| `make reset-fixtures` | back to the shared TEST baseline (run before and after test runs) |
 | `make check` | ruff, format, mypy strict, import-linter (5 contracts), unit tests, verify-sources (21/21), openapi-check |
 | `make frontend-check` | typecheck, lint, Vitest, api:check, build |
 | `timeout 900 make test-integration` | integration tests against the running stack (worker must be up) |
@@ -245,6 +276,41 @@ What changed (files) · evidence per acceptance criterion (test names or command
 - [ ] Undefined-DDR check (every `DDR-nn` used in docs/code exists in the register) and `make verify-sources` 21/21 after doc edits
 - [ ] README cards and plan status line updated
 - [ ] Self-review graded; no open Blocker or High
+- [ ] `make reset-fixtures` run after tests; shared TEST state at the baseline
 - [ ] Committed by file name; stack stopped; report sent; push only after "approve"
 
-**Update this file** when a task closes (status table §2, next task §5), so the next session starts here.
+---
+
+## 9. Decision sheet template (keep this exact shape)
+
+The owner answers "go + approve all", "do as u recommend", or changes by D-number. Keep each item to 2–4 lines.
+
+```
+**D1. <short question> (source: #4 §3 / KI-13; gap: <what the sources leave undefined>).**
+- A ✔: <recommended option, concrete values, labelled test default if a value is needed>.
+- B: <alternative>, <its trade-off>.
+- C: <alternative, if any>.
+
+**D2. …**
+```
+
+Rules:
+- One sheet per task, at the plan step.
+- Mark exactly one ✔ per item.
+- Name the class when it applies (B = don't build, A = build behind a disabled flag or labelled test default, P = label, G = gate; plan §5).
+- After approval, add one register row `DDR-<next>` (next is **DDR-112**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-112 (3)`.
+
+---
+
+## 10. Changelog (one line per closed task; newest last)
+
+| Date | Task / PR | Decisions | Note for the next builder |
+|---|---|---|---|
+| 2026-11-12 | 0–4B / #1–#6 | DDR-01–100 | Source hashes, Compose, migrations 0001–0006, identity, shells, generated client |
+| 2026-11-12 | 5A–5C / #7–#9 | DDR-101–108 | Worker + P1 SOP import; TEST fixtures; E2E needs `e2e-setup` (P1 import + fresh E2E recipe) |
+| 2026-11-12 | 7 / #10 | DDR-109 | Order DB function derives the fixture flag; idempotent checkout; refunds |
+| 2026-11-12 | 6A–6B / #11–#12 | DDR-110 | Cart, pricing, checkout; per-test E2E customers; tablet project; bottom-bar clearance fix |
+| 2026-11-12 | 8A / #13 | DDR-111 | Migration 0010; kitchen accept/reject/prep, stock, availability; migrate image must be rebuilt after migration edits |
+| 2026-11-12 | tooling / #14 | rules v1.1 | `CLAUDE.md`, `.claude/` commands + guard hook, `make reset-fixtures`, this guide |
+
+**Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

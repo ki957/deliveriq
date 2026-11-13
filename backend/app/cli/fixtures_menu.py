@@ -227,6 +227,101 @@ def load_stock() -> int:
     return added
 
 
+TEST_DEFAULTS = (  # migration 0005 / 0010 values and labels (DDR-42 open; DDR-111 (1))
+    ("MAX_CONCURRENT_ORDERS", 10, "#15 §7 test value; DDR-42 open"),
+    (
+        "MAX_CONCURRENT_ORDERS_BUSY",
+        5,
+        '#4 §3 "lower configured capacity"; DDR-42 open; DDR-111 (1) test default',
+    ),
+    ("KITCHEN_ACCEPTANCE_TIMEOUT", 5, "#14 §3.2 test default; #4 §4 KI-02; DDR-42 open; DDR-111 (1)"),
+)
+
+
+def reset_shared() -> dict[str, int]:
+    """Put shared TEST state back to the fixture baseline so tests never depend on earlier runs.
+
+    Touches only fixture rows and the kitchen's labelled test defaults: kitchen mode NORMAL, the three
+    test defaults, TEST Dishes A–C PUBLISHED, TEST stock 10,000 g with no threshold. Stock that is
+    still reserved by a held order is left alone (reported), never forced. Every stock change is a
+    reasoned ledger entry.
+    """
+    result = {"dishes_restored": 0, "stock_reset": 0, "stock_skipped_reserved": 0, "live_assignments": 0}
+    with get_engine().begin() as conn:
+        _system(conn)
+        kitchen = conn.execute(
+            text("SELECT id FROM app.kitchens WHERE code = :c"), {"c": KITCHEN_CODE}
+        ).scalar_one()
+        conn.execute(text("UPDATE app.kitchens SET mode = 'NORMAL' WHERE id = :k"), {"k": kitchen})
+        for key, value, source in TEST_DEFAULTS:
+            conn.execute(
+                text(
+                    "UPDATE app.config_settings SET value = :v, is_test_default = true, source_ref = :s "
+                    "WHERE key = :key AND scope_type = 'KITCHEN' AND kitchen_id = :k"
+                ),
+                {"v": value, "s": source, "key": key, "k": kitchen},
+            )
+        ca = _principal(conn, CA_MOBILE)
+        conn.execute(
+            text(
+                "SELECT set_config('app.actor_role', 'CENTRAL_ADMIN', true), "
+                "set_config('app.actor_user_id', :u, true)"
+            ),
+            {"u": str(ca.user_id)},
+        )
+        for letter, _price, _numbers, live in DISHES:
+            if not live:
+                continue
+            result["dishes_restored"] += conn.execute(
+                text(
+                    "UPDATE app.menu_items SET publication_status = 'PUBLISHED' "
+                    "WHERE id = :id AND publication_status = 'TEMPORARILY_UNAVAILABLE'"
+                ),
+                {"id": _id("menu_item", letter)},
+            ).rowcount
+        _system(conn)
+        rows = conn.execute(
+            text(
+                "SELECT s.ingredient_id, s.on_hand, s.reserved FROM app.ingredient_stock s "
+                "WHERE s.kitchen_id = :k AND s.is_test_fixture ORDER BY s.ingredient_id FOR UPDATE"
+            ),
+            {"k": kitchen},
+        ).all()
+        for ingredient, on_hand, reserved in rows:
+            if reserved:
+                result["stock_skipped_reserved"] += 1
+                continue
+            delta = OPENING_STOCK_GRAMS - on_hand
+            if delta:
+                conn.execute(
+                    text(
+                        "UPDATE app.ingredient_stock SET on_hand = :q, low_stock_threshold = NULL "
+                        "WHERE kitchen_id = :k AND ingredient_id = :i"
+                    ),
+                    {"q": OPENING_STOCK_GRAMS, "k": kitchen, "i": ingredient},
+                )
+                conn.execute(
+                    text(
+                        "INSERT INTO app.stock_movements (kitchen_id, ingredient_id, delta, kind, reason, "
+                        "actor_role) VALUES (:k, :i, :d, 'ADJUSTMENT', 'TEST fixture reset', 'SYSTEM')"
+                    ),
+                    {"k": kitchen, "i": ingredient, "d": delta},
+                )
+                result["stock_reset"] += 1
+            else:
+                conn.execute(
+                    text(
+                        "UPDATE app.ingredient_stock SET low_stock_threshold = NULL "
+                        "WHERE kitchen_id = :k AND ingredient_id = :i"
+                    ),
+                    {"k": kitchen, "i": ingredient},
+                )
+        result["live_assignments"] = conn.execute(
+            text("SELECT count(*) FROM app.delivery_assignments WHERE status IN ('OFFERED', 'ACCEPTED')")
+        ).scalar_one()
+    return result
+
+
 def load_e2e_recipe() -> str:
     """A fresh DRAFT TEST recipe and menu item for one E2E workflow run (DDR-108).
 
