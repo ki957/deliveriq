@@ -16,6 +16,24 @@
         "title": "AcknowledgeIn",
         "type": "object"
       },
+      "CancelIn": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "CancelIn",
+        "type": "object"
+      },
       "CancelOut": {
         "properties": {
           "outcome": {
@@ -217,6 +235,23 @@
         ],
         "title": "DqResultOut",
         "type": "object"
+      },
+      "Fulfilment": {
+        "enum": [
+          "PLACED",
+          "PENDING_KITCHEN",
+          "ACCEPTED",
+          "PREPARING",
+          "READY_FOR_PICKUP",
+          "PICKED_UP",
+          "OUT_FOR_DELIVERY",
+          "DELIVERED",
+          "CANCELLED",
+          "REJECTED",
+          "DELIVERY_FAILED"
+        ],
+        "title": "Fulfilment",
+        "type": "string"
       },
       "GrantOut": {
         "properties": {
@@ -686,6 +721,215 @@
         "title": "MenuTransitionIn",
         "type": "object"
       },
+      "OrderCreateIn": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/OrderLineIn"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Lines",
+            "type": "array"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "special_instructions": {
+            "anyOf": [
+              {
+                "maxLength": 250,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Special Instructions"
+          }
+        },
+        "required": [
+          "lines",
+          "payment_method"
+        ],
+        "title": "OrderCreateIn",
+        "type": "object"
+      },
+      "OrderItemOut": {
+        "properties": {
+          "item_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Name"
+          },
+          "menu_item_id": {
+            "format": "uuid",
+            "title": "Menu Item Id",
+            "type": "string"
+          },
+          "prep_status": {
+            "title": "Prep Status",
+            "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "unit_price_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price Paise"
+          }
+        },
+        "required": [
+          "menu_item_id",
+          "item_name",
+          "unit_price_paise",
+          "quantity",
+          "prep_status"
+        ],
+        "title": "OrderItemOut",
+        "type": "object"
+      },
+      "OrderLineIn": {
+        "properties": {
+          "menu_item_id": {
+            "format": "uuid",
+            "title": "Menu Item Id",
+            "type": "string"
+          },
+          "quantity": {
+            "maximum": 99.0,
+            "minimum": 1.0,
+            "title": "Quantity",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "menu_item_id",
+          "quantity"
+        ],
+        "title": "OrderLineIn",
+        "type": "object"
+      },
+      "OrderOut": {
+        "properties": {
+          "agent_assigned": {
+            "title": "Agent Assigned",
+            "type": "boolean"
+          },
+          "delivery_fee_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Fee Paise"
+          },
+          "food_subtotal_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Food Subtotal Paise"
+          },
+          "fulfilment_status": {
+            "$ref": "#/components/schemas/Fulfilment"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "payable_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payable Paise"
+          },
+          "payment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "placed_at": {
+            "format": "date-time",
+            "title": "Placed At",
+            "type": "string"
+          },
+          "special_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Special Instructions"
+          },
+          "status_label": {
+            "title": "Status Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "fulfilment_status",
+          "status_label",
+          "agent_assigned",
+          "is_test_fixture",
+          "special_instructions",
+          "food_subtotal_paise",
+          "delivery_fee_paise",
+          "payable_paise",
+          "placed_at",
+          "items",
+          "payment"
+        ],
+        "title": "OrderOut",
+        "type": "object"
+      },
       "OtpRequestIn": {
         "properties": {
           "mobile": {
@@ -783,6 +1027,76 @@
         ],
         "title": "OtpVerifyIn",
         "type": "object"
+      },
+      "PaymentMethod": {
+        "enum": [
+          "SIM_UPI",
+          "SIM_CARD",
+          "COD"
+        ],
+        "title": "PaymentMethod",
+        "type": "string"
+      },
+      "PaymentOut": {
+        "properties": {
+          "amount_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Paise"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "sim_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sim Reference"
+          },
+          "simulated": {
+            "const": true,
+            "default": true,
+            "title": "Simulated",
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          }
+        },
+        "required": [
+          "method",
+          "status",
+          "amount_paise",
+          "sim_reference"
+        ],
+        "title": "PaymentOut",
+        "type": "object"
+      },
+      "PaymentStatus": {
+        "enum": [
+          "PENDING",
+          "SUCCEEDED",
+          "FAILED",
+          "TIMED_OUT",
+          "REFUND_PENDING",
+          "REFUNDED",
+          "COLLECTION_PENDING",
+          "COLLECTED",
+          "MISMATCH"
+        ],
+        "title": "PaymentStatus",
+        "type": "string"
       },
       "PipelineOut": {
         "properties": {
@@ -1619,6 +1933,28 @@
         "title": "SignoffType",
         "type": "string"
       },
+      "SimOutcome": {
+        "description": "Simulator scenarios for prepaid methods (#15 \u00a79); chosen by the caller (DDR-109).",
+        "enum": [
+          "SUCCESS",
+          "FAILED",
+          "TIMEOUT"
+        ],
+        "title": "SimOutcome",
+        "type": "string"
+      },
+      "SimulateIn": {
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/SimOutcome"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "title": "SimulateIn",
+        "type": "object"
+      },
       "StageOut": {
         "properties": {
           "detail": {
@@ -2116,6 +2452,244 @@
         "summary": "Transition",
         "tags": [
           "menu"
+        ]
+      }
+    },
+    "/api/v1/orders": {
+      "get": {
+        "operationId": "my_orders_api_v1_orders_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderOut"
+                  },
+                  "title": "Response My Orders Api V1 Orders Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "My Orders",
+        "tags": [
+          "orders"
+        ]
+      },
+      "post": {
+        "operationId": "place_order_api_v1_orders_post",
+        "parameters": [
+          {
+            "description": "Client-generated UUID; a repeat returns the original order",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Client-generated UUID; a repeat returns the original order",
+              "format": "uuid",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Repeat of a request"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Place Order",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{order_id}": {
+      "get": {
+        "operationId": "order_detail_api_v1_orders__order_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Order Detail",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{order_id}/cancel": {
+      "post": {
+        "operationId": "cancel_order_api_v1_orders__order_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/CancelIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Order",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{order_id}/payment/simulate": {
+      "post": {
+        "description": "Payment simulator: no real money moves. SUCCESS sends the order to the kitchen; FAILED or\nTIMEOUT cancels it (DDR-109).",
+        "operationId": "simulate_payment_api_v1_orders__order_id__payment_simulate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Simulate Payment",
+        "tags": [
+          "orders"
         ]
       }
     },

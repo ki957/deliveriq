@@ -22,7 +22,9 @@ def _upgrade_sources() -> dict[str, str]:
     for path in sorted(VERSIONS.glob("[0-9]*.py")):
         text = path.read_text(encoding="utf-8")
         # Downgrade SQL may name fixture tables in DROP statements; only upgrade content matters.
-        sources[path.name] = text.split("DOWNGRADE_SQL")[0].split("REVOKE_SQL")[0]
+        upgrade = text.split("DOWNGRADE_SQL")[0].split("REVOKE_SQL")[0]
+        # Function bodies ($$ … $$) define behaviour; only top-level statements can seed rows.
+        sources[path.name] = re.sub(r"\$(\w*)\$.*?\$\1\$", "", upgrade, flags=re.DOTALL)
     return sources
 
 
