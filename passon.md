@@ -1,0 +1,250 @@
+# passon.md: DeliverIQ handover guide for Claude Code
+
+**Written:** 2026-11-12, at the end of Task 8A, by Kiro. **For:** Claude Code, continuing the build.
+**Read this file first.** It tells you where the project stands, what to read, how to work, and what to build next.
+
+---
+
+## 1. What DeliverIQ is (one paragraph)
+
+A portfolio/interview POC of a cloud-kitchen platform for **one kitchen in Chennai**. It has four role-based portals:
+- **Customer**
+- **Kitchen** (Kitchen Staff, Kitchen Manager)
+- **Delivery Agent**
+- **Unified Management** (Regional Manager, Central Administrator)
+
+It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnesses. It runs on the owner's **16 GB Ubuntu laptop** with Docker Compose. Every dish is a synthetic `TEST –` dish, and no real Kitchen SOP recipe is ever activated (DDR-50).
+
+---
+
+## 2. Status at handover
+
+`main` CI is green at PR #12. Task 8A is on branch `task-08a-kitchen-ops-api` (commit `f016fd7`, plus the commit that adds this file), pushed; the owner opens and merges the PR (expected PR #13).
+
+| Task | Scope | State |
+|---|---|---|
+| 0 | Source registry, hashing, ADRs | ✅ merged (PR #1) |
+| 1 | Repo bootstrap | ✅ merged (PR #2) |
+| 2 | Engineering foundation (Compose, Make, CI) | ✅ merged (PR #3) |
+| 3 | Data model, migrations 0001–0005, state machines | ✅ merged (PR #4) |
+| 4A / 4B | Identity, OTP, sessions, RBAC / four portal shells, generated API client | ✅ merged (PR #5, #6) |
+| 5A / 5B / 5C | Pipeline framework + worker + P1 SOP import / recipe approval, menu publication, fixtures / pipelines and approvals UI | ✅ merged (PR #7, #8, #9) |
+| 7 | Payments (simulated), order state machines, outbox (built before 6, owner choice) | ✅ merged (PR #10) |
+| 6A / 6B | Customer serviceability, cart, pricing, checkout API / customer UI | ✅ merged (PR #11, #12) |
+| **8A** | Kitchen operations and inventory **backend** (migration 0010, DDR-111) | 🟡 **pushed; owner opens and merges the PR** |
+| **8B** | Kitchen + Management **UI** for Task 8, tablet + KDS E2E | ⏭️ **next task** |
+| 9 – 22 | See §6 | ⬜ not started |
+
+**Milestones** (plan §4.1):
+- M1 Foundation (0–4): done.
+- **M2 Core order flow (5–9): 8B and 9 remain.**
+- M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
+
+**First thing to do:** ask the owner whether the 8A PR (expected #13) is merged. Then run `git checkout main && git pull --ff-only`, check CI, and start 8B (§5).
+
+---
+
+## 3. Documents to read, in this order
+
+### 3.1 Binding rules (read every session)
+1. **`.kiro/steering/rules.md`**: the build rules. Kiro loaded it automatically; **Claude Code does not**. Read it at the start of every session and treat it as binding. "Kiro" in it now means you. **Recommended:** ask the owner whether to add a two-line `CLAUDE.md` at the repo root that says "Read `.kiro/steering/rules.md` and `passon.md` before any work", so Claude Code loads it automatically.
+2. **This file.**
+
+### 3.2 Precedence when documents disagree (rules §1)
+Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Decided) → the four design docs → `docs/DELIVERIQ_EXECUTION_PLAN.md` → `docs/PORTAL_REQUIREMENTS_MATRIX.md` → source files. **If two documents conflict, stop, show both and ask.** Never pick silently.
+
+### 3.3 The docs in `docs/` and when to use each
+
+| File | What it is | Read when |
+|---|---|---|
+| `DELIVERIQ_EXECUTION_PLAN.md` | **The task list.** §5 decision classes (B/A/P/G) and §5.1 matrix; §5.2 TEST fixtures + the **8 leak controls**; §6 cross-cutting acceptance criteria for every UI task; §7 every task with Depends on / Gated features / Acceptance criteria / Status line; §8 dependency map | Start of every task |
+| `DESIGN_DECISION_REGISTER.md` | Every decision, DDR-01 → **DDR-111**. Part A Decided (owner tables 2026-11-11 and 2026-11-12; per-task rows DDR-101–111), Part B former proposals (all decided), **Part C open items** (DDR-06, 15, 41, 42, 43, 44, 45, 46), out-of-scope list | Before any design choice; add a new DDR row per task's decisions |
+| `PORTAL_REQUIREMENTS_MATRIX.md` | Requirement IDs per portal: CU-*, KI-*, DL-*, MG-*, SH-*, PL-*; role-permission tables (§3.1 Kitchen, §5 Management); **§7 canonical status machines + display labels per portal**; §10 AI guardrails | Writing any feature or label |
+| `CODE_STRUCTURE_DESIGN.md` | Repo layout, module template (api/schemas/service/domain/repository), dependency rules, frontend feature layout, testing layers, **§13 review checklist** | Writing code; end-of-task review |
+| `DOCKER_DEPLOYMENT_DESIGN.md` | Compose profiles (`core`, `worker`, `e2e`, `osrm`, `agent`), RAM budget, which profiles may run together, §17 approved deviations | Touching infra or starting profiles |
+| `DATA_PIPELINE_DESIGN.md` | Pipelines P1/P2/P3 and K1–K3, run framework, **§6.3 the only approved event types**, dbt layers | Tasks 12–14, any event emission |
+| `RAG_AI_DESIGN.md` | Model gateway, harnesses, RAG schemas, embedding benchmark, **§13 system prompts**, Builder Agent sandbox | Tasks 15–17 |
+| `KITCHEN_SOURCE_VALIDATION.md` | Validation of the Kitchen SOP source (why SOP dishes are not publishable) | Recipe or SOP work |
+| `SOURCE_DOCUMENT_INVENTORY.md` | The 21 source files, their numbers (#1–#21) and SHA-256 hashes | Citing a source; the hash check |
+| `adr/` (25 ADRs) | Architecture decisions: monolith, Postgres-only, outbox, status machines, RBAC, model gateway, import-linter, OpenAPI client, sync DB access, Tailwind/shadcn, themes | When a platform choice comes up |
+| `runbooks/` | Empty so far (Task 22 fills it) | — |
+
+### 3.4 Source documents (the business requirements)
+- `data/source/**`: read-only, hash-checked copies of the 21 source documents. Provenance is in `data/SOURCE_PROVENANCE.md`.
+- Key ones:
+  - `kitchen/Kitchen_Portal_Requirements.md` (#4)
+  - `deliver/Delivery_Agent_Portal_Requirements.md` (#7)
+  - `shareddsah/Management_Dashboard_Requirements.md` (#10)
+  - `customer/Customer_Dashboard_Requirements.md` (#1)
+  - `data/*Seed*` (#14, #15 test values)
+  - `phases/*` (#16–#21)
+- **Never edit them.** `make verify-sources` must report 21/21.
+- **Never touch `/home/k/Downloads/task1/`** (the originals).
+
+### 3.5 Per-module "README cards" (current behaviour, kept up to date)
+- `backend/app/modules/*/README.md`: identity, menu, recipes, pipelines, customers, pricing, orders, payments, kitchen_ops, inventory, delivery, health.
+- `frontend/src/features/*/README.md`: auth, data-pipelines, recipes, approvals, ordering.
+- These are the fastest way to learn what a module already does.
+
+---
+
+## 4. How to work (owner's expectations)
+
+### Working loop (rules §2)
+1. Inspect the task (plan §7), the DDRs and the code it touches.
+2. Present a **plan + a decision sheet**: one numbered list (D1, D2…) of every value or behaviour the sources leave undefined, each with options and a ✔ recommendation. **Never invent** prices, thresholds, rules or formulas. Undefined values go on the sheet.
+3. Wait for the owner. Typical replies are "go + approve all" or "will do as u recommend".
+4. Record the approved sheet as a new **DDR row** (next is **DDR-112**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
+5. Build one task at a time on branch `task-NN-short-name`. Large tasks split into **A (backend)** and **B (UI)**.
+6. Verify (below), self-review against `CODE_STRUCTURE_DESIGN.md` §13 plus security, scope and leak controls, and grade findings Blocker/High/Medium/Low. Blocker and High must be fixed; Medium and Low are fixed or logged.
+7. Commit (stage **files by name**, never `git add .`; check no `.env` is staged) and report.
+8. After the owner says "approve": push, then give the PR compare link plus a title and description. **`gh` is NOT installed**, so use the link `https://github.com/ki957/deliveriq/compare/main...<branch>?expand=1`. The owner squash-merges. **Never merge, never push to main, never force-push.**
+9. After "merged": `git checkout main && git pull --ff-only`, check CI, delete the local branch.
+
+### Report format (rules §10), kept short
+What changed (files) · evidence per acceptance criterion (test names or command output) · review findings with grades · not verified and why · memory (`docker stats`, `free -h`) · open items · next task.
+
+### Owner style
+- Short replies.
+- Approves recommendations quickly.
+- Prefers squash merges.
+- Is cost-sensitive: be efficient and don't repeat work.
+
+---
+
+## 5. Next task: 8B (Kitchen and Management UI for Task 8)
+
+**Backend is ready (8A).** All decisions are in **DDR-111** (read it in full). The endpoints, from `backend/openapi.json`, are typed in `frontend/src/shared/api/generated/schema.d.ts`:
+
+| Area | Endpoints |
+|---|---|
+| Queue and prep | `GET /api/v1/kitchen/orders?kitchen_id=` → `{intake, acceptance_timeout_minutes, incoming[], held[] (FIFO), can_process, can_reject_accepted}` · `POST …/{id}/accept` (409 `code`: `kitchen_paused`, `kitchen_at_capacity`, `recipe_not_active`, `stock_short` + `shortages[]`) · `POST …/{id}/reject {reason}` · `POST …/{id}/start` · `POST …/{id}/items/{item_id}/status {status: PREPARING\|PREPARED}` |
+| Settings | `GET/PUT /api/v1/kitchen/settings` (mode, normal and Busy capacity with `is_test_default` labels, reason required; KM only for PUT) |
+| Inventory | `GET /api/v1/kitchen/inventory` (KM) · `GET …/low-stock` (KS + KM) · `POST …/{ingredient_id}/adjust {delta, reason}` · `PUT …/{ingredient_id}/threshold {low_stock_threshold\|null, reason}`. Every row has `is_test_fixture` → show a **"Test stock"** badge |
+| Dish availability | `GET /api/v1/menu/availability/dishes?kitchen_id=` · `GET/POST /api/v1/menu/availability/requests` · `POST …/requests/{id}/decision {approve, reason}` (RM own region / CA) |
+
+**8B scope (plan Task 8 criteria plus DDR-111):**
+- **Kitchen portal** (`frontend/src/portals/kitchen/config.tsx`; placeholders already exist with `task: 8`). Build these as new features under `frontend/src/features/` (e.g. `kitchen-queue`, `inventory`, `kitchen-settings`, `dish-availability`):
+  - **Overview:** intake, mode, active/capacity, low stock count.
+  - **Live Orders:** Incoming with Accept/Reject and the "Overdue" warning; Held in FIFO order; agent offer shown on the card, or "Awaiting agent".
+  - **Preparation Board:** per-item Preparing/Prepared; "Start order".
+  - **Inventory:** KM sees full stock with adjust and threshold, a "Test stock" badge, and "used in" dishes; KS sees low-stock alerts only.
+  - **Exceptions:** overdue Incoming plus low stock only.
+  - **Settings:** KM; mode and capacities with the "test default" label; reason form.
+  - Plus a dish availability request form.
+- **Management portal:** a Dish Availability approval screen (RM/CA) in `frontend/src/portals/management/config.tsx`.
+- **Shared rules:**
+  - Poll every 10 s, labelled "Updates every 10 s" (DDR-111 (13)).
+  - Reasons use the inline `shared/ui/reason-form`.
+  - TEST badges use `shared/ui/test-badge`.
+  - States use `shared/ui/query-state`.
+  - Statuses use the Matrix §7.3 kitchen labels (the API returns `status_label`).
+  - Touch targets ≥ 44 px.
+  - Kitchen palette from DDR-04.
+- **E2E:**
+  - Add a **`kds` Playwright project at 1920×1080** in `tests/e2e/playwright.config.ts`. A `tablet` project (768×1024) already exists and matches `@tablet|@devices`.
+  - Write `tests/e2e/specs/kitchen-ops.spec.ts`, running on tablet and KDS, covering: customer places a TEST order (COD) → KS accepts → start → prepared → Ready; reject with reason; Paused refusal; KM adjust stock and see the badge; KS request unavailability → RM approves → dish leaves the menu → restore.
+  - axe on each screen; screenshots of stable elements only (lists grow between runs, so mask or crop).
+  - **E2E must leave shared state as it found it**, as the integration test does: kitchen mode NORMAL, stock 10,000 g, dishes PUBLISHED.
+- Unit tests with `mockApi`/`renderAt`/`me` from `frontend/src/test/render.tsx` (pattern: `features/ordering/ordering.test.tsx`).
+- Update the plan Task 8 status line and add README cards for the new features.
+
+**Logged Lows from 8A to keep in mind:**
+- RM/CA get 404 on inventory (intended).
+- N+1 queries in the kitchen queue (fine at POC scale).
+- A real recipe with a TEST ingredient would 500 (not reachable).
+
+---
+
+## 6. Remaining tasks after 8B (full criteria in plan §7)
+
+| Task | Summary | Key gates / notes |
+|---|---|---|
+| 9 Delivery & tracking | Agent offers: accept/reject (60 s timeout, `AGENT_ASSIGNMENT_RESPONSE_TIMEOUT`); pool; online/offline; pickup endpoint (call existing `orders.service.record_pickup`, which already deducts stock); OTP delivery (3 failures escalate); COD (`record_cod_collection` exists); GPS simulated/real labelled; buffering (DDR-52); 30-day retention job; PWA; OSRM `osrm` profile (DDR-55); phone-first E2E | DDR-15 background GPS **not built**; DDR-43 interval A-class (3–5 s config). Replace "every active agent is available" (DDR-111 (6)) with real online status |
+| 10 Unified management | RM/CA portal: scope everywhere, staff, menu publication, full Data Pipelines UI, mode/capacity UI for RM/CA (API exists), refunds | DDR-44: YAML editor B (not built), exceptional refunds A (disabled) |
+| 11 Realtime | Authenticated WebSockets, server-side subscriptions; replaces 10 s polling | — |
+| 12 ELT P2 | Outbox relay to `raw`, dbt staging→core→marts on demand | Events only from DATA_PIPELINE §6.3; leak control 6 |
+| 13 Marts & analytics | Management analytics | DDR-44 KPIs labelled, not business truth |
+| 14 Synthetic P3 | `synthetic` schema, 7d×10 demo, 90d×30 ML (DDR-56) | DDR-74 separation |
+| 15 / 15A / 15B / 15C | AI gateway + Management Copilot; Operational Actions (CA, confirmed, audited); Builder Agent sandbox + harness (PRs only, never merges) | Groq key in `.env` (§5.3 of plan); DDR-46 content approval; DDR-68–71, 85–87 |
+| 16 Kitchen RAG | Kitchen Copilot (read-only) | DDR-45 embedding benchmark (B for vector dims) |
+| 17 Customer Assistant | Only after all portals complete | DDR-46 |
+| 18 / 19 | Demand forecast; ETA + assignment optimisation (advisory) | — |
+| 20 / 21 / 22 | Monitoring & reconciliation; E2E hardening; demo handover + runbooks + known limitations | — |
+
+**Still-open decisions** (register Part C): DDR-06 food-card Add (B, Task 6), DDR-15 background GPS (B), DDR-41 lost-mobile recovery (B), DDR-42 final kitchen defaults (A, test defaults in use), DDR-43 GPS interval (A), DDR-44 refund thresholds/KPIs/audit/YAML (B/A), DDR-45 embedding winner (B), DDR-46 knowledge approval (A). Follow plan §5: don't build B items, keep A items behind a disabled flag or labelled test default, and label P items.
+
+---
+
+## 7. Technical cheat-sheet
+
+### Stack
+- **Backend:** FastAPI modular monolith; **sync** SQLAlchemy 2 + psycopg 3 (async only for WS/Redis/HTTP); PostgreSQL + PostGIS (+ pgvector later); Redis; Python with `uv`.
+- **Frontend:** React + TypeScript strict + Vite + Tailwind + TanStack Query + react-router; **API client generated from OpenAPI, never hand-written**.
+- **Tests:** Vitest; Playwright (Chromium, pinned container).
+
+### Repo map
+- `backend/app/{core,shared,modules,pipelines,worker,cli}`
+- `backend/migrations/versions/0001–0010` (**head = 0010**; `migrations/tests/test_schema_and_seeds.py` asserts the head; bump it with each migration)
+- `frontend/src/{app,portals,features,shared}`
+- `tests/e2e/{specs,__screenshots__}`
+- `infra/compose.yaml`, `Makefile`, `.github/workflows/ci.yml` (jobs: source-integrity, backend, frontend, e2e)
+
+### Make targets (from repo root)
+
+| Command | Use |
+|---|---|
+| `make up` / `make down` | start / stop `core` (Postgres, Redis, API; runs migrations and `db-roles`) |
+| `make worker` / `make worker-down` | pipeline worker (needed by the pipelines integration tests) |
+| `make fixtures` | seed users, TEST menu, TEST50 coupon, seed address, **TEST opening stock** (idempotent) |
+| `make check` | ruff, format, mypy strict, import-linter (5 contracts), unit tests, verify-sources (21/21), openapi-check |
+| `make frontend-check` | typecheck, lint, Vitest, api:check, build |
+| `timeout 900 make test-integration` | integration tests against the running stack (worker must be up) |
+| `make e2e` / `make e2e-update` | Playwright in the container (runs `e2e-setup` first); `-update` rewrites baselines (review every image) |
+| `make openapi` then `cd frontend && npm run api:generate` | after any API change. **Never run prettier on the generated client** |
+
+### Gotchas learned the hard way
+- **The `migrate` container runs a baked image.** After editing a migration, run `docker compose --project-directory . -f infra/compose.yaml --profile core build migrate` (or `make up`, which builds) before upgrading. The API bind-mounts `backend/app` with `--reload`; migrations are not mounted.
+- Running one Playwright spec: `PLAYWRIGHT_ARGS="<spec> --update-snapshots"`, and the spec name goes **first**.
+- E2E screenshots must avoid data that grows between runs; the recipe workflow publishes a new `TEST – E2E <n>` dish each run. Hide the fixed bottom nav for element screenshots (see `customer-checkout.spec.ts` `screenshot()` helper).
+- E2E customers: register a fresh `+91-00000-NNNNN` number per test (`helpers.ts` `registerCustomer` / `newTestMobile`); seed users are `+91-00000-00001`…`06` (customer, agent, KS, KM, RM, CA), OTP `123456` (local/test only).
+- Outbox `emit()` has a default idempotency key `"{type}:{aggregate_id}"`, so a second event of the same type for one order needs an explicit key.
+- `is_test_fixture` is never writable by `app_api`; new tables holding TEST-derived rows need a derived flag (trigger) plus an entry in `backend/app/shared/fixture_guard.py`.
+- New tables need explicit `app_api` grants in the migration.
+- New pure `domain.py` modules must be added to the import-linter contract in `pyproject.toml`.
+- CI failures: `curl https://api.github.com/repos/ki957/deliveriq/commits/<sha>/check-runs` and `/check-runs/<id>/annotations` (the e2e job posts Playwright failures as annotations).
+- Avoid broad `sed` across files; edit precisely.
+
+### Git
+- Remote: `git@github-kiro:ki957/deliveriq.git` (SSH host alias).
+- Branch per task; never push to main.
+- No force push, `reset --hard`, `clean -f` or `--no-verify`.
+- Never change git config.
+
+### Resources (16 GB laptop, rules §6)
+- Run `free -h` before heavy jobs (e2e, dbt, embeddings). Stop if under 2 GB available.
+- Never run heavy jobs together.
+- Stop the stack after work (`make worker-down; make down`).
+- Typical memory: API ~100 MiB, Postgres ~65–85 MiB, worker ~48 MiB, Redis ~6 MiB.
+- Record `docker stats --no-stream` and `free -h` in each report.
+
+### Security non-negotiables (rules §5)
+- Secrets only in `.env` (git-ignored); refer to them by key name, never print values.
+- Deny by default; the backend is the security boundary; another kitchen's or region's resource reads as **404**, the wrong role in your own scope as **403**.
+- Never weaken auth, RBAC, region scope, audit, DB roles or AI guardrails without an approved DDR.
+- All 8 leak controls (plan §5.2) must hold. No SOP recipe is ever activated. Real and synthetic data never share a table (DDR-74).
+- Parameterised SQL only.
+
+---
+
+## 8. Definition of done for any task (checklist)
+- [ ] Plan + decision sheet approved; DDR row added; affected docs updated with the change list shown first
+- [ ] `make check` ✔ · `make frontend-check` ✔ · `timeout 900 make test-integration` ✔ (stack + worker up) · `make e2e` ✔ (twice for new specs)
+- [ ] Every acceptance criterion proven by a named test or by command output
+- [ ] New baselines reviewed image by image
+- [ ] Undefined-DDR check (every `DDR-nn` used in docs/code exists in the register) and `make verify-sources` 21/21 after doc edits
+- [ ] README cards and plan status line updated
+- [ ] Self-review graded; no open Blocker or High
+- [ ] Committed by file name; stack stopped; report sent; push only after "approve"
+
+**Update this file** when a task closes (status table §2, next task §5), so the next session starts here.

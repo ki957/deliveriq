@@ -4,7 +4,20 @@ from __future__ import annotations
 
 from sqlalchemy import Connection, text
 
-FIXTURE_TABLES = ("menu_items", "recipe_versions", "orders", "order_items", "payments", "coupons")
+FIXTURE_TABLES = (
+    "menu_items",
+    "recipe_versions",
+    "orders",
+    "order_items",
+    "payments",
+    "coupons",
+    # TEST opening stock and everything derived from it (DDR-37, DDR-111 (8)).
+    "ingredient_stock",
+    "stock_reservations",
+    "stock_movements",
+    # Requests about TEST dishes (DDR-111 (7)).
+    "dish_availability_requests",
+)
 
 
 class FixtureRowsPresent(RuntimeError):

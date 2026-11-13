@@ -3,10 +3,10 @@
     docker compose --project-directory . -f infra/compose.yaml --profile core \\
         run --rm migrate python -m app.cli.fixtures load-users
 
-Loads the six #15 §4 seed users and role assignments (`load-users`) and the TEST menu
-(`load-menu`, see `fixtures_menu.py`); `load-all` does both. Their mobile numbers are the #15
-placeholder range, accepted only in local/test. Refuses to run unless APP_ENV is local or test.
-Idempotent. Opening stock is added with Task 8.
+Loads the six #15 §4 seed users and role assignments (`load-users`), the TEST menu
+(`load-menu`, see `fixtures_menu.py`) and the TEST opening stock (`load-stock`, DDR-37); `load-all`
+does all three. Their mobile numbers are the #15 placeholder range, accepted only in local/test.
+Refuses to run unless APP_ENV is local or test. Idempotent.
 """
 
 from __future__ import annotations
@@ -75,7 +75,9 @@ def load_users() -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Load local/test fixtures")
-    parser.add_argument("command", choices=["load-users", "load-menu", "load-all", "load-e2e-recipe"])
+    parser.add_argument(
+        "command", choices=["load-users", "load-menu", "load-stock", "load-all", "load-e2e-recipe"]
+    )
     args = parser.parse_args(argv)
     settings = get_settings()
     if not settings.is_local_or_test:
@@ -94,6 +96,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         summary = load_menu()
         print("TEST menu ready: " + ", ".join(f"{k}={v}" for k, v in summary.items()))
+    if args.command in ("load-stock", "load-all"):
+        from app.cli.fixtures_menu import load_stock
+
+        print(f"TEST opening stock ready (test-only, DDR-37): rows added={load_stock()}")
     return 0
 
 

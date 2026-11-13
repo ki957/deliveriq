@@ -11,8 +11,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.modules.identity.dependencies import CurrentPrincipal, csrf_protect
 from app.modules.menu import service
 from app.modules.menu.schemas import (
+    AvailabilityDecisionIn,
+    AvailabilityRequestIn,
+    AvailabilityRequestOut,
     CustomerMenuItemOut,
     DishDetailOut,
+    KitchenDishOut,
     ManagedMenuItemOut,
     MenuFiltersOut,
     MenuTransitionIn,
@@ -21,6 +25,9 @@ from app.modules.menu.schemas import (
 # Public, read-only: PUBLISHED items only (Task 6 extends it with filters).
 public_router = APIRouter(prefix="/api/v1/menu", tags=["menu"])
 manage_router = APIRouter(prefix="/api/v1/menu/manage", tags=["menu"], dependencies=[Depends(csrf_protect)])
+availability_router = APIRouter(
+    prefix="/api/v1/menu/availability", tags=["menu"], dependencies=[Depends(csrf_protect)]
+)
 
 
 def _call[T](fn: Callable[[], T]) -> T:
@@ -32,6 +39,8 @@ def _call[T](fn: Callable[[], T]) -> T:
         raise HTTPException(status_code=404, detail="Not found") from None
     except service.Conflict as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
+    except service.Invalid as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
 
 
 @public_router.get("/items", response_model=list[CustomerMenuItemOut])
@@ -79,3 +88,38 @@ def list_items(principal: CurrentPrincipal) -> list[ManagedMenuItemOut]:
 def transition(item_id: uuid.UUID, body: MenuTransitionIn, principal: CurrentPrincipal) -> ManagedMenuItemOut:
     item = _call(lambda: service.transition(principal, item_id, body.action, body.reason))
     return ManagedMenuItemOut.model_validate(item, from_attributes=True)
+
+
+# ---------------------------------------------------------------- dish availability (KI-24; DDR-111 (7))
+@availability_router.get("/dishes", response_model=list[KitchenDishOut])
+def kitchen_dishes(kitchen_id: uuid.UUID, principal: CurrentPrincipal) -> list[KitchenDishOut]:
+    """The kitchen's dishes that are on the menu or temporarily unavailable."""
+    items = _call(lambda: service.kitchen_dishes(principal, kitchen_id))
+    return [KitchenDishOut.model_validate(i, from_attributes=True) for i in items]
+
+
+@availability_router.get("/requests", response_model=list[AvailabilityRequestOut])
+def availability_requests(
+    principal: CurrentPrincipal, pending_only: bool = False
+) -> list[AvailabilityRequestOut]:
+    """Kitchen roles: their kitchen's requests. RM: assigned regions. CA: all regions."""
+    rows = _call(lambda: service.availability_requests(principal, pending_only=pending_only))
+    return [AvailabilityRequestOut.model_validate(r, from_attributes=True) for r in rows]
+
+
+@availability_router.post("/requests", status_code=201, response_model=AvailabilityRequestOut)
+def request_availability(body: AvailabilityRequestIn, principal: CurrentPrincipal) -> AvailabilityRequestOut:
+    """Kitchen Staff or Manager ask to take a dish off the menu, or to bring it back, with a reason."""
+    row = _call(lambda: service.request_availability(principal, body.menu_item_id, body.kind, body.reason))
+    return AvailabilityRequestOut.model_validate(row, from_attributes=True)
+
+
+@availability_router.post("/requests/{request_id}/decision", response_model=AvailabilityRequestOut)
+def decide_availability(
+    request_id: uuid.UUID, body: AvailabilityDecisionIn, principal: CurrentPrincipal
+) -> AvailabilityRequestOut:
+    """RM (own region) or CA approves (the menu changes) or rejects with a reason. Audited."""
+    row = _call(
+        lambda: service.decide_availability(principal, request_id, approve=body.approve, reason=body.reason)
+    )
+    return AvailabilityRequestOut.model_validate(row, from_attributes=True)

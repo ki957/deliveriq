@@ -36,7 +36,8 @@ def test_kitchen_roles_are_bound_to_their_kitchen() -> None:
 @pytest.mark.parametrize(
     "permission",
     [P.KITCHEN_RECIPES_EDIT, P.KITCHEN_RECIPES_ACTIVATE, P.KITCHEN_STOCK_ADJUST, P.KITCHEN_MODE_CHANGE,
-     P.KITCHEN_INGREDIENTS_MANAGE, P.KITCHEN_ETA_UPDATE],
+     P.KITCHEN_INGREDIENTS_MANAGE, P.KITCHEN_ETA_UPDATE, P.KITCHEN_INVENTORY_VIEW,
+     P.KITCHEN_ORDERS_REJECT_ACCEPTED],
 )  # fmt: skip
 def test_kitchen_staff_cannot_use_manager_only_actions(permission: Permission) -> None:
     staff = principal(Role.KITCHEN_STAFF, region=REGION_A, kitchen=KITCHEN_A)
@@ -125,3 +126,17 @@ def test_only_customers_manage_their_own_addresses() -> None:
     me = principal(Role.CUSTOMER)
     assert can(me, P.CUSTOMER_ADDRESSES_MANAGE, customer_id=me.user_id)
     assert not can(me, P.CUSTOMER_ADDRESSES_MANAGE, customer_id=uuid.uuid4())
+
+
+def test_kitchen_operations_authority_matches_ddr_111() -> None:
+    """Low-stock alerts for both kitchen roles, full stock for KM; post-acceptance reject for KM/RM/CA."""
+    staff = principal(Role.KITCHEN_STAFF, region=REGION_A, kitchen=KITCHEN_A)
+    rm = principal(Role.REGIONAL_MANAGER, region=REGION_A)
+    assert can(staff, P.KITCHEN_LOW_STOCK_VIEW, kitchen_id=KITCHEN_A)
+    assert can(staff, P.KITCHEN_UNAVAILABILITY_REQUEST, kitchen_id=KITCHEN_A)
+    assert not can(staff, P.MGMT_UNAVAILABILITY_APPROVE, region_id=REGION_A)
+    assert can(rm, P.KITCHEN_ORDERS_REJECT_ACCEPTED, region_id=REGION_A)
+    assert not can(rm, P.KITCHEN_ORDERS_REJECT_ACCEPTED, region_id=REGION_B)
+    assert can(principal(Role.CENTRAL_ADMIN), P.KITCHEN_ORDERS_REJECT_ACCEPTED, region_id=REGION_B)
+    assert not can(rm, P.KITCHEN_ORDERS_PROCESS, region_id=REGION_A)  # RM does not run the line
+    assert not can(principal(Role.DELIVERY_AGENT, region=REGION_A), P.KITCHEN_ORDERS_VIEW, region_id=REGION_A)

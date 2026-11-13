@@ -179,6 +179,54 @@ def _insert_rows(conn: Connection) -> dict[str, int]:
     return added
 
 
+OPENING_STOCK_GRAMS = 10_000  # DDR-111 (8): 100 portions per TEST ingredient at 100 g per line
+
+
+def load_stock() -> int:
+    """TEST opening stock (DDR-37, DDR-111 (8)): test-only, flagged from the ingredient's origin.
+
+    Inserted once per TEST ingredient with an OPENING ledger entry; re-running adds nothing and
+    never resets stock that orders or adjustments have changed.
+    """
+    added = 0
+    with get_engine().begin() as conn:
+        _system(conn)
+        kitchen = conn.execute(
+            text("SELECT id FROM app.kitchens WHERE code = :c"), {"c": KITCHEN_CODE}
+        ).scalar_one()
+        for name in INGREDIENTS:
+            ingredient = conn.execute(
+                text(
+                    "SELECT id FROM app.ingredients WHERE lower(name) = lower(:n) AND origin = 'TEST_FIXTURE'"
+                ),
+                {"n": name},
+            ).scalar_one_or_none()
+            if ingredient is None:
+                raise RuntimeError("TEST menu missing: run `load-menu` first")
+            inserted = conn.execute(
+                text(
+                    "INSERT INTO app.ingredient_stock (kitchen_id, ingredient_id, on_hand) "
+                    "VALUES (:k, :i, :q) ON CONFLICT (kitchen_id, ingredient_id) DO NOTHING"
+                ),
+                {"k": kitchen, "i": ingredient, "q": OPENING_STOCK_GRAMS},
+            ).rowcount
+            if inserted:
+                conn.execute(
+                    text(
+                        "INSERT INTO app.stock_movements (kitchen_id, ingredient_id, delta, kind, reason, "
+                        "actor_role) VALUES (:k, :i, :q, 'OPENING', :r, 'SYSTEM')"
+                    ),
+                    {
+                        "k": kitchen,
+                        "i": ingredient,
+                        "q": OPENING_STOCK_GRAMS,
+                        "r": "TEST opening stock (DDR-37)",
+                    },
+                )
+                added += 1
+    return added
+
+
 def load_e2e_recipe() -> str:
     """A fresh DRAFT TEST recipe and menu item for one E2E workflow run (DDR-108).
 

@@ -18,9 +18,13 @@ from app.modules.customers.api import public_router as serviceability_router
 from app.modules.health.api import router as health_router
 from app.modules.identity.api import auth_router, me_router
 from app.modules.identity.dependencies import CSRF_HEADER
+from app.modules.inventory.api import router as inventory_router
+from app.modules.kitchen_ops.api import router as kitchen_settings_router
+from app.modules.menu.api import availability_router as menu_availability_router
 from app.modules.menu.api import manage_router as menu_manage_router
 from app.modules.menu.api import public_router as menu_public_router
 from app.modules.orders.api import cart_router
+from app.modules.orders.api import kitchen_router as kitchen_orders_router
 from app.modules.orders.api import router as orders_router
 from app.modules.pipelines.api import router as pipelines_router
 from app.modules.recipes.api import router as recipes_router
@@ -44,6 +48,10 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(cart_router)
     app.include_router(serviceability_router)
     app.include_router(addresses_router)
+    app.include_router(kitchen_orders_router)
+    app.include_router(kitchen_settings_router)
+    app.include_router(inventory_router)
+    app.include_router(menu_availability_router)
     return app
 
 

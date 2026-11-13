@@ -166,3 +166,119 @@ def active_ingredient_names(conn: Connection, recipe_id: uuid.UUID) -> list[str]
         {"r": recipe_id},
     ).all()
     return [r[0] for r in rows]
+
+
+# ---------------------------------------------------- dish availability requests (KI-24; DDR-111 (7))
+@dataclass(frozen=True)
+class AvailabilityRequestRow:
+    id: uuid.UUID
+    menu_item_id: uuid.UUID
+    dish_name: str
+    publication_status: str
+    is_test_fixture: bool
+    kitchen_id: uuid.UUID
+    region_id: uuid.UUID
+    kind: str
+    reason: str
+    status: str
+    requested_by_name: str
+    requested_role: str
+    requested_at: datetime
+    decided_by_name: str | None
+    decided_role: str | None
+    decided_at: datetime | None
+    decision_reason: str | None
+
+
+_REQUESTS = """
+    SELECT r.id, r.menu_item_id, m.name AS dish_name, m.publication_status, m.is_test_fixture, r.kitchen_id,
+           r.region_id, r.kind, r.reason, r.status, rq.display_name AS requested_by_name, r.requested_role,
+           r.requested_at, dc.display_name AS decided_by_name, r.decided_role, r.decided_at, r.decision_reason
+      FROM app.dish_availability_requests r
+      JOIN app.menu_items m ON m.id = r.menu_item_id
+      JOIN app.users rq ON rq.id = r.requested_by
+      LEFT JOIN app.users dc ON dc.id = r.decided_by
+"""
+
+
+def insert_request(
+    conn: Connection,
+    *,
+    item: MenuItemRow,
+    kind: str,
+    reason: str,
+    requested_by: uuid.UUID,
+    requested_role: str,
+) -> uuid.UUID:
+    request_id: uuid.UUID = conn.execute(
+        text(
+            "INSERT INTO app.dish_availability_requests (menu_item_id, kitchen_id, region_id, kind, reason, "
+            "requested_by, requested_role) VALUES (:m, :k, :r, :kind, :reason, :by, :role) RETURNING id"
+        ),
+        {
+            "m": item.id,
+            "k": item.kitchen_id,
+            "r": item.region_id,
+            "kind": kind,
+            "reason": reason,
+            "by": requested_by,
+            "role": requested_role,
+        },
+    ).scalar_one()
+    return request_id
+
+
+def find_request(
+    conn: Connection, request_id: uuid.UUID, *, lock: bool = False
+) -> AvailabilityRequestRow | None:
+    sql = _REQUESTS + " WHERE r.id = :id" + (" FOR UPDATE OF r" if lock else "")
+    row = conn.execute(text(sql), {"id": request_id}).first()
+    return AvailabilityRequestRow(**row._mapping) if row else None
+
+
+def list_requests(
+    conn: Connection,
+    *,
+    kitchens: frozenset[uuid.UUID] | None,
+    regions: frozenset[uuid.UUID] | None,
+    pending_only: bool,
+) -> list[AvailabilityRequestRow]:
+    """None for both = every kitchen (CA). Pending first, then newest."""
+    rows = conn.execute(
+        text(
+            _REQUESTS + " WHERE (CAST(:everywhere AS boolean) OR r.kitchen_id = ANY(:kitchens) "
+            "OR r.region_id = ANY(:regions)) AND (NOT CAST(:pending AS boolean) OR r.status = 'PENDING') "
+            "ORDER BY (r.status = 'PENDING') DESC, r.requested_at DESC LIMIT 100"
+        ),
+        {
+            "everywhere": kitchens is None and regions is None,
+            "kitchens": list(kitchens or ()),
+            "regions": list(regions or ()),
+            "pending": pending_only,
+        },
+    ).all()
+    return [AvailabilityRequestRow(**r._mapping) for r in rows]
+
+
+def decide_request(
+    conn: Connection, request_id: uuid.UUID, *, status: str, by: uuid.UUID, role: str, reason: str | None
+) -> None:
+    conn.execute(
+        text(
+            "UPDATE app.dish_availability_requests SET status = :s, decided_by = :by, decided_role = :role, "
+            "decided_at = now(), decision_reason = :reason WHERE id = :id"
+        ),
+        {"s": status, "by": by, "role": role, "reason": reason, "id": request_id},
+    )
+
+
+def kitchen_dishes(conn: Connection, kitchen_id: uuid.UUID) -> list[MenuItemRow]:
+    """Dishes the kitchen can ask to change: on the menu now, or temporarily unavailable."""
+    rows = conn.execute(
+        text(
+            f"SELECT {_COLUMNS} {_FROM} WHERE m.kitchen_id = :k "
+            "AND m.publication_status IN ('PUBLISHED', 'TEMPORARILY_UNAVAILABLE') ORDER BY m.name"
+        ),
+        {"k": kitchen_id},
+    ).all()
+    return [_item(r) for r in rows]

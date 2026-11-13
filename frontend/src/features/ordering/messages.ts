@@ -10,6 +10,9 @@ const TEXT: Record<string, string> = {
   not_serviceable: "This address is outside our delivery area.",
   below_minimum: "Add more dishes: the minimum order is a food subtotal of ₹500.",
   cart_mixed: "TEST dishes and regular dishes cannot be ordered together.",
+  // Kitchen intake (KI-13; DDR-111 (3)).
+  kitchen_paused: "The kitchen is not taking new orders right now. Try again later.",
+  kitchen_at_capacity: "The kitchen is at capacity right now. Try again in a few minutes.",
   coupon_unknown: "This coupon code is not valid.",
   coupon_inactive: "This coupon is not active.",
   coupon_not_started: "This coupon is not valid yet.",

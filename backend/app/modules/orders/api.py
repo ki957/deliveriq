@@ -19,6 +19,13 @@ from app.modules.orders.schemas import (
     CartLineOut,
     CartOut,
     CartQuantityIn,
+    KitchenAssignmentOut,
+    KitchenIntakeOut,
+    KitchenItemOut,
+    KitchenItemStatusIn,
+    KitchenOrderOut,
+    KitchenQueueOut,
+    KitchenRejectIn,
     OrderCreateIn,
     OrderItemOut,
     OrderOut,
@@ -28,6 +35,9 @@ from app.modules.orders.schemas import (
 
 router = APIRouter(prefix="/api/v1/orders", tags=["orders"], dependencies=[Depends(csrf_protect)])
 cart_router = APIRouter(prefix="/api/v1/cart", tags=["cart"], dependencies=[Depends(csrf_protect)])
+kitchen_router = APIRouter(
+    prefix="/api/v1/kitchen/orders", tags=["kitchen"], dependencies=[Depends(csrf_protect)]
+)
 
 IdempotencyKey = Annotated[
     uuid.UUID,
@@ -53,6 +63,14 @@ def _call[T](fn: Callable[[], T]) -> T:
         raise HTTPException(status_code=404, detail="Not found") from None
     except service.Conflict as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
+    except service.InvalidInput as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
+    except service.KitchenRefused as exc:
+        raise _Refusal(
+            JSONResponse({**error_body(exc.code, str(exc)), **exc.detail}, status_code=409)
+        ) from None
+    except service.MissingKitchenSetting as exc:
+        raise HTTPException(status_code=409, detail=f"Kitchen setting {exc} is not configured") from None
     except service.CheckoutRefused as exc:
         raise _Refusal(
             JSONResponse({**error_body(exc.code, str(exc)), **exc.detail}, status_code=422)
@@ -218,3 +236,87 @@ def remove_unavailable(principal: CurrentPrincipal) -> CartOut:
 def clear(principal: CurrentPrincipal) -> Response:
     _call(lambda: service.clear_cart(principal))
     return Response(status_code=204)
+
+
+# ---------------------------------------------------------------- kitchen (Task 8; KI-01–KI-07, DDR-111)
+KITCHEN_REFUSALS: dict[int | str, dict[str, Any]] = {
+    409: {"description": "Wrong step, or the kitchen cannot accept now (`code`: kitchen_paused, "
+          "kitchen_at_capacity, recipe_not_active, stock_short with `shortages`)"},
+}  # fmt: skip
+
+
+def _kitchen_out(v: service.KitchenOrderView) -> KitchenOrderOut:
+    o = v.order
+    return KitchenOrderOut(
+        id=o.id,
+        fulfilment_status=o.fulfilment_status,  # type: ignore[arg-type]
+        status_label=v.kitchen_label,
+        is_test_fixture=o.is_test_fixture,
+        special_instructions=o.special_instructions,
+        payment_method=v.payment_method,  # type: ignore[arg-type]
+        placed_at=o.placed_at,
+        queued_at=v.queued_at,
+        accepted_at=o.accepted_at,
+        overdue=v.overdue,
+        items=[KitchenItemOut.model_validate(i, from_attributes=True) for i in v.items],
+        assignment=KitchenAssignmentOut(status=v.assignment.status, agent_name=v.assignment.agent_name)
+        if v.assignment
+        else None,
+    )
+
+
+@kitchen_router.get("", response_model=KitchenQueueOut)
+def kitchen_queue(principal: CurrentPrincipal, kitchen_id: uuid.UUID | None = None) -> KitchenQueueOut:
+    """Incoming orders and the FIFO queue by acceptance time (KI-01, KI-03). Poll; realtime is Task 11."""
+    q = _call(lambda: service.kitchen_queue(principal, kitchen_id))
+    return KitchenQueueOut(
+        kitchen_id=q.kitchen.id,
+        kitchen_name=q.kitchen.name,
+        intake=KitchenIntakeOut(
+            mode=q.intake.mode.value,
+            capacity=q.intake.capacity,
+            active_orders=q.intake.active,
+            accepting=q.intake.accepting,
+            refusal=q.intake.refusal,
+        ),
+        acceptance_timeout_minutes=q.acceptance_timeout_minutes,
+        incoming=[_kitchen_out(v) for v in q.incoming],
+        held=[_kitchen_out(v) for v in q.held],
+        can_process=q.can_process,
+        can_reject_accepted=q.can_reject_accepted,
+    )
+
+
+def _kitchen_respond(fn: Callable[[], service.KitchenOrderView]) -> KitchenOrderOut | JSONResponse:
+    result = _respond(fn)
+    return result if isinstance(result, JSONResponse) else _kitchen_out(result)
+
+
+@kitchen_router.post("/{order_id}/accept", response_model=KitchenOrderOut, responses=KITCHEN_REFUSALS)
+def kitchen_accept(order_id: uuid.UUID, principal: CurrentPrincipal) -> KitchenOrderOut | JSONResponse:
+    """Accept: capacity, ACTIVE recipe pin, all-or-nothing stock reservation, agent offer (DDR-51)."""
+    return _kitchen_respond(lambda: service.kitchen_accept(principal, order_id))
+
+
+@kitchen_router.post("/{order_id}/reject", response_model=KitchenOrderOut, responses=KITCHEN_REFUSALS)
+def kitchen_reject(
+    order_id: uuid.UUID, body: KitchenRejectIn, principal: CurrentPrincipal
+) -> KitchenOrderOut | JSONResponse:
+    """Reject with a reason; after acceptance KM/RM/CA only. Releases stock and refunds prepaid."""
+    return _kitchen_respond(lambda: service.kitchen_reject(principal, order_id, body.reason))
+
+
+@kitchen_router.post("/{order_id}/start", response_model=KitchenOrderOut, responses=KITCHEN_REFUSALS)
+def kitchen_start(order_id: uuid.UUID, principal: CurrentPrincipal) -> KitchenOrderOut | JSONResponse:
+    """Every pending item to Preparing; the order follows automatically."""
+    return _kitchen_respond(lambda: service.kitchen_start(principal, order_id))
+
+
+@kitchen_router.post(
+    "/{order_id}/items/{item_id}/status", response_model=KitchenOrderOut, responses=KITCHEN_REFUSALS
+)
+def kitchen_item_status(
+    order_id: uuid.UUID, item_id: uuid.UUID, body: KitchenItemStatusIn, principal: CurrentPrincipal
+) -> KitchenOrderOut | JSONResponse:
+    """Item Preparing or Prepared; the order becomes Ready for Pickup when all are Prepared (KI-05)."""
+    return _kitchen_respond(lambda: service.kitchen_set_item(principal, order_id, item_id, body.status))
