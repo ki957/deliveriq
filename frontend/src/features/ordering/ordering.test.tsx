@@ -400,6 +400,14 @@ describe("cart and checkout (CU-11–CU-18)", () => {
     );
   });
 
+  it("explains why checkout waits while the kitchen is paused (DDR-111 (3))", async () => {
+    cartApi(() => cart({ blockers: ["kitchen_paused"] }));
+    renderAt("/customer/cart");
+    const blockers = await screen.findByRole("list", { name: "Before you can order" });
+    expect(blockers).toHaveTextContent("The kitchen is not taking new orders right now.");
+    expect(screen.getByRole("button", { name: /Place order/ })).toBeDisabled();
+  });
+
   it("asks the customer to accept a changed price (DDR-110 (6))", async () => {
     const changed = cart({ blockers: ["price_changed"] }, [
       line({ price_changed: true, cart_price_paise: 11100, charge_price_paise: 12000 }),

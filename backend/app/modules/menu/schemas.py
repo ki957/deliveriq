@@ -59,3 +59,46 @@ class MenuFiltersOut(BaseModel):
     has_bestsellers: bool
     has_veg: bool
     has_non_veg: bool
+
+
+# ---------------------------------------------------------------- dish availability (KI-24; DDR-111 (7))
+AvailabilityKind = Literal["MAKE_UNAVAILABLE", "MAKE_AVAILABLE"]
+
+
+class KitchenDishOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    publication_status: Publication
+    is_test_fixture: bool
+
+
+class AvailabilityRequestIn(BaseModel):
+    menu_item_id: uuid.UUID
+    kind: AvailabilityKind
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class AvailabilityDecisionIn(BaseModel):
+    approve: bool
+    # Required to reject; optional note on approval.
+    reason: str | None = Field(default=None, max_length=500)
+
+
+class AvailabilityRequestOut(BaseModel):
+    id: uuid.UUID
+    menu_item_id: uuid.UUID
+    dish_name: str
+    publication_status: Publication
+    is_test_fixture: bool
+    kitchen_id: uuid.UUID
+    region_id: uuid.UUID
+    kind: AvailabilityKind
+    reason: str
+    status: Literal["PENDING", "APPROVED", "REJECTED"]
+    requested_by_name: str
+    requested_role: str
+    requested_at: datetime
+    decided_by_name: str | None
+    decided_role: str | None
+    decided_at: datetime | None
+    decision_reason: str | None

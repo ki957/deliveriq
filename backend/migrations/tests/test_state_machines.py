@@ -199,25 +199,29 @@ def test_assignment_changes_never_touch_fulfilment(api: Conn) -> None:
         assert one(api, "SELECT fulfilment_status FROM app.orders WHERE id = %s", (order,)) == "ACCEPTED"
 
 
-def test_one_active_delivery_per_agent(api: Conn) -> None:
+def test_one_live_assignment_per_agent(api: Conn) -> None:
+    """DL-03 one active delivery, tightened by DDR-111 (6): one open offer or live delivery per agent."""
     agent = make_user(api, "Busy agent", "DELIVERY_AGENT")
-    assignments = []
-    for _ in range(2):
-        customer = make_user(api, "Busy customer", "CUSTOMER")
-        order = _order(api, customer)
-        act_as(api, "SYSTEM")
-        assignments.append(one(
-            api,
-            "INSERT INTO app.delivery_assignments (order_id, agent_user_id, status) "
-            "VALUES (%s, %s, 'OFFERED') RETURNING id",
-            (order, agent),
-        ))  # fmt: skip
+    orders = [_order(api, make_user(api, "Busy customer", "CUSTOMER")) for _ in range(2)]
+    act_as(api, "SYSTEM")
+    first = one(
+        api,
+        "INSERT INTO app.delivery_assignments (order_id, agent_user_id, status) "
+        "VALUES (%s, %s, 'OFFERED') RETURNING id",
+        (orders[0], agent),
+    )
+    insert_second = (
+        "INSERT INTO app.delivery_assignments (order_id, agent_user_id, status) VALUES (%s, %s, 'OFFERED')"
+    )
+    api.execute("SAVEPOINT offered")
+    with pytest.raises(psycopg.errors.UniqueViolation, match="one_live_per_agent"):
+        api.execute(insert_second, (orders[1], agent))
+    api.execute("ROLLBACK TO SAVEPOINT offered")
     act_as(api, "DELIVERY_AGENT", agent)
-    api.execute("UPDATE app.delivery_assignments SET status = 'ACCEPTED' WHERE id = %s", (assignments[0],))
+    api.execute("UPDATE app.delivery_assignments SET status = 'ACCEPTED' WHERE id = %s", (first,))
+    act_as(api, "SYSTEM")
     with pytest.raises(psycopg.errors.UniqueViolation):
-        api.execute(
-            "UPDATE app.delivery_assignments SET status = 'ACCEPTED' WHERE id = %s", (assignments[1],)
-        )
+        api.execute(insert_second, (orders[1], agent))
 
 
 def test_illegal_assignment_and_item_transitions(api: Conn) -> None:

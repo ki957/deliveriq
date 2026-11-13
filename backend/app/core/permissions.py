@@ -57,6 +57,10 @@ class Permission(StrEnum):
     KITCHEN_MODE_CHANGE = "kitchen.mode.change"
     KITCHEN_ETA_UPDATE = "kitchen.eta.update"
     KITCHEN_UNAVAILABILITY_REQUEST = "kitchen.unavailability.request"
+    # Full stock view (KM); Kitchen Staff see low-stock alerts only (Matrix §3.1; DDR-111 (9)).
+    KITCHEN_INVENTORY_VIEW = "kitchen.inventory.view"
+    # "Cannot fulfil" after acceptance: KM, RM and CA (KI-11; DDR-111 (5)).
+    KITCHEN_ORDERS_REJECT_ACCEPTED = "kitchen.orders.reject_accepted"
     # Recipe workflow (DDR-10, DDR-54, DDR-103, DDR-105, DDR-107): KM submits, returns, validates,
     # rejects and activates; KM records four sign-offs; KS and KM view the review queue; KM acknowledges.
     KITCHEN_RECIPES_WORKFLOW = "kitchen.recipes.workflow"
@@ -103,6 +107,7 @@ _MGMT_SHARED = frozenset(
         P.MGMT_AGENTS_ASSIGN,
         P.KITCHEN_MODE_CHANGE,
         P.MGMT_UNAVAILABILITY_APPROVE,
+        P.KITCHEN_ORDERS_REJECT_ACCEPTED,
         P.MGMT_REFUND_EXCEPTIONAL,
         P.MGMT_REGIONAL_SETTINGS,
         P.MGMT_AUDIT_REGIONAL,
@@ -129,6 +134,8 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
         P.KITCHEN_RECIPES_ACTIVATE,
         P.KITCHEN_INGREDIENTS_MANAGE,
         P.KITCHEN_STOCK_ADJUST,
+        P.KITCHEN_INVENTORY_VIEW,
+        P.KITCHEN_ORDERS_REJECT_ACCEPTED,
         P.KITCHEN_MODE_CHANGE,
         P.KITCHEN_ETA_UPDATE,
         P.KITCHEN_RECIPES_WORKFLOW,

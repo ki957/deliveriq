@@ -51,9 +51,16 @@ FULFILMENT_TRANSITIONS = frozenset(
         (F.PICKED_UP, F.OUT_FOR_DELIVERY),
         (F.OUT_FOR_DELIVERY, F.DELIVERED),
         (F.OUT_FOR_DELIVERY, F.DELIVERY_FAILED),
+        # "Cannot fulfil" after acceptance: KM, RM or CA with a reason (KI-11; DDR-111 (5)).
+        (F.ACCEPTED, F.REJECTED),
+        (F.PREPARING, F.REJECTED),
+        (F.READY_FOR_PICKUP, F.REJECTED),
     }
 )
 FULFILMENT_TERMINAL = frozenset({F.DELIVERED, F.CANCELLED, F.REJECTED, F.DELIVERY_FAILED})
+# Orders the kitchen holds: they count towards capacity (#4 §3; DDR-111 (2)) and form the FIFO queue.
+KITCHEN_ACTIVE = frozenset({F.ACCEPTED, F.PREPARING, F.READY_FOR_PICKUP})
+REJECT_REASON_MAX = 500  # DDR-111 (10)
 
 ITEM_INITIAL = frozenset({ItemPrep.PENDING})
 ITEM_TRANSITIONS = frozenset(
@@ -67,6 +74,22 @@ def can_fulfil(current: Fulfilment, target: Fulfilment) -> bool:
 
 def can_prepare(current: ItemPrep, target: ItemPrep) -> bool:
     return (current, target) in ITEM_TRANSITIONS
+
+
+def order_status_after_items(current: Fulfilment, items: list[ItemPrep]) -> list[Fulfilment]:
+    """Automatic order steps after an item change (KI-05; DDR-111 (11)), in the order to apply them.
+
+    The first item in Preparing moves an accepted order to Preparing; once every item is Prepared the
+    order is Ready for Pickup. Nothing moves an order backwards.
+    """
+    steps: list[Fulfilment] = []
+    status = current
+    if status is F.ACCEPTED and any(i is not ItemPrep.PENDING for i in items):
+        steps.append(F.PREPARING)
+        status = F.PREPARING
+    if status is F.PREPARING and items and all(i is ItemPrep.PREPARED for i in items):
+        steps.append(F.READY_FOR_PICKUP)
+    return steps
 
 
 # ---------------------------------------------------- display mapping (Matrix §7.3, DDR-16, DDR-17)

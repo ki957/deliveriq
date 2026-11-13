@@ -128,3 +128,28 @@ def test_request_hash_ignores_line_order_but_not_content() -> None:
     assert a != request_hash([("x", 1), ("y", 3)], "COD", None)
     assert a != request_hash([("x", 1), ("y", 2)], "SIM_UPI", None)
     assert a != request_hash([("x", 1), ("y", 2)], "COD", "no onion")
+
+
+# ---------------------------------------------------------------- kitchen (Task 8; KI-05, DDR-111 (5), (11))
+def test_kitchen_can_reject_held_orders_but_never_after_handover() -> None:
+    from app.modules.orders.domain import KITCHEN_ACTIVE
+
+    assert all(can_fulfil(s, F.REJECTED) for s in KITCHEN_ACTIVE)
+    assert not any(can_fulfil(s, F.REJECTED) for s in (F.PICKED_UP, F.OUT_FOR_DELIVERY, F.PLACED))
+
+
+@pytest.mark.parametrize(
+    ("current", "items", "steps"),
+    [
+        (F.ACCEPTED, [ItemPrep.PENDING, ItemPrep.PENDING], []),
+        (F.ACCEPTED, [ItemPrep.PREPARING, ItemPrep.PENDING], [F.PREPARING]),
+        (F.PREPARING, [ItemPrep.PREPARED, ItemPrep.PREPARING], []),
+        (F.PREPARING, [ItemPrep.PREPARED, ItemPrep.PREPARED], [F.READY_FOR_PICKUP]),
+        (F.ACCEPTED, [ItemPrep.PREPARED], [F.PREPARING, F.READY_FOR_PICKUP]),
+        (F.READY_FOR_PICKUP, [ItemPrep.PREPARED], []),
+    ],
+)
+def test_order_follows_its_items(current: Fulfilment, items: list[ItemPrep], steps: list[Fulfilment]) -> None:
+    from app.modules.orders.domain import order_status_after_items
+
+    assert order_status_after_items(current, items) == steps

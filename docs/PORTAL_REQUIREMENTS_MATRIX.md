@@ -128,7 +128,7 @@ Note: #4 grants Kitchen Staff "view low-stock alerts", while #6 §15.1 lists `ge
 | KI-08 | Agent "Picked Up" is authoritative → Handed Over; no second kitchen confirmation; blocked until Ready | #4 §9 | KP-16, KP-17 |
 | KI-09 | Early agent does not make order ready; late agent alerts Manager | #4 §8 | — |
 | KI-10 | Delay records keep original ETA, revised ETA, reason, actor, timestamps; customer notified | #4 §8 | KP-15 |
-| KI-11 | Inability to fulfil an accepted order escalates to RM | #4 §8 | — |
+| KI-11 | Inability to fulfil an accepted order escalates to RM; KM, RM or CA may reject it after acceptance with a reason (DDR-111 (5)) | #4 §8; DDR-111 | — |
 
 ### 3.3 Modes and capacity
 
@@ -307,7 +307,7 @@ Backend stores **three independent state machines**. Portals derive display labe
 | `OUT_FOR_DELIVERY` | Agent en route to customer | Automatic after validated pickup (DDR-16) |
 | `DELIVERED` | OTP verified | Backend after OTP |
 | `CANCELLED` | Terminal: customer cancel before acceptance, or prepaid payment failure | Customer / system |
-| `REJECTED` | Terminal: kitchen rejection | Kitchen |
+| `REJECTED` | Terminal: kitchen rejection before acceptance, or "cannot fulfil" after acceptance (from `ACCEPTED`, `PREPARING` or `READY_FOR_PICKUP`; KM, RM or CA; reason required; releases stock, refunds prepaid; DDR-111 (5)) | Kitchen / KM, RM, CA |
 | `DELIVERY_FAILED` | Terminal: manager-approved failure | Manager |
 
 Non-terminal flag: `delivery_exception_open` (customer unavailable, OTP escalation, refusal pending) — a flag, not a status, so the main status does not regress.

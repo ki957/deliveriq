@@ -151,6 +151,210 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/kitchen/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stock
+         * @description Full stock (Kitchen Manager).
+         */
+        get: operations["stock_api_v1_kitchen_inventory_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kitchen/inventory/low-stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Low Stock
+         * @description Low-stock alerts (Kitchen Staff and Manager).
+         */
+        get: operations["low_stock_api_v1_kitchen_inventory_low_stock_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kitchen/inventory/{ingredient_id}/adjust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adjust
+         * @description Signed stock adjustment with a reason (Kitchen Manager); ledger and audit record.
+         */
+        post: operations["adjust_api_v1_kitchen_inventory__ingredient_id__adjust_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kitchen/inventory/{ingredient_id}/threshold": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Threshold
+         * @description Set or clear the low-stock threshold with a reason (Kitchen Manager); audited.
+         */
+        put: operations["set_threshold_api_v1_kitchen_inventory__ingredient_id__threshold_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kitchen/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Kitchen Queue
+         * @description Incoming orders and the FIFO queue by acceptance time (KI-01, KI-03). Poll; realtime is Task 11.
+         */
+        get: operations["kitchen_queue_api_v1_kitchen_orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kitchen/orders/{order_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kitchen Accept
+         * @description Accept: capacity, ACTIVE recipe pin, all-or-nothing stock reservation, agent offer (DDR-51).
+         */
+        post: operations["kitchen_accept_api_v1_kitchen_orders__order_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kitchen/orders/{order_id}/items/{item_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kitchen Item Status
+         * @description Item Preparing or Prepared; the order becomes Ready for Pickup when all are Prepared (KI-05).
+         */
+        post: operations["kitchen_item_status_api_v1_kitchen_orders__order_id__items__item_id__status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kitchen/orders/{order_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kitchen Reject
+         * @description Reject with a reason; after acceptance KM/RM/CA only. Releases stock and refunds prepaid.
+         */
+        post: operations["kitchen_reject_api_v1_kitchen_orders__order_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kitchen/orders/{order_id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kitchen Start
+         * @description Every pending item to Preparing; the order follows automatically.
+         */
+        post: operations["kitchen_start_api_v1_kitchen_orders__order_id__start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kitchen/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Settings
+         * @description Mode, capacities (labelled when they are DDR-42 test defaults) and current intake.
+         */
+        get: operations["get_settings_api_v1_kitchen_settings_get"];
+        /**
+         * Update Settings
+         * @description Change mode and capacities with a reason (KM own kitchen; RM own region; CA). Audited.
+         */
+        put: operations["update_settings_api_v1_kitchen_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -249,6 +453,70 @@ export interface paths {
         post?: never;
         /** Revoke My Device */
         delete: operations["revoke_my_device_api_v1_me_devices__device_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/menu/availability/dishes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Kitchen Dishes
+         * @description The kitchen's dishes that are on the menu or temporarily unavailable.
+         */
+        get: operations["kitchen_dishes_api_v1_menu_availability_dishes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/menu/availability/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Availability Requests
+         * @description Kitchen roles: their kitchen's requests. RM: assigned regions. CA: all regions.
+         */
+        get: operations["availability_requests_api_v1_menu_availability_requests_get"];
+        put?: never;
+        /**
+         * Request Availability
+         * @description Kitchen Staff or Manager ask to take a dish off the menu, or to bring it back, with a reason.
+         */
+        post: operations["request_availability_api_v1_menu_availability_requests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/menu/availability/requests/{request_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decide Availability
+         * @description RM (own region) or CA approves (the menu changes) or rejects with a reason. Audited.
+         */
+        post: operations["decide_availability_api_v1_menu_availability_requests__request_id__decision_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -726,6 +994,92 @@ export interface components {
             lng: number;
             serviceability: components["schemas"]["ServiceabilityOut"];
         };
+        /** AdjustIn */
+        AdjustIn: {
+            /** Delta */
+            delta: number | string;
+            /** Reason */
+            reason: string;
+        };
+        /** AvailabilityDecisionIn */
+        AvailabilityDecisionIn: {
+            /** Approve */
+            approve: boolean;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** AvailabilityRequestIn */
+        AvailabilityRequestIn: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "MAKE_UNAVAILABLE" | "MAKE_AVAILABLE";
+            /**
+             * Menu Item Id
+             * Format: uuid
+             */
+            menu_item_id: string;
+            /** Reason */
+            reason: string;
+        };
+        /** AvailabilityRequestOut */
+        AvailabilityRequestOut: {
+            /** Decided At */
+            decided_at: string | null;
+            /** Decided By Name */
+            decided_by_name: string | null;
+            /** Decided Role */
+            decided_role: string | null;
+            /** Decision Reason */
+            decision_reason: string | null;
+            /** Dish Name */
+            dish_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "MAKE_UNAVAILABLE" | "MAKE_AVAILABLE";
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /**
+             * Menu Item Id
+             * Format: uuid
+             */
+            menu_item_id: string;
+            publication_status: components["schemas"]["Publication"];
+            /** Reason */
+            reason: string;
+            /**
+             * Region Id
+             * Format: uuid
+             */
+            region_id: string;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Requested By Name */
+            requested_by_name: string;
+            /** Requested Role */
+            requested_role: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PENDING" | "APPROVED" | "REJECTED";
+        };
         /** BillOut */
         BillOut: {
             /** Delivery Fee Paise */
@@ -802,6 +1156,13 @@ export interface components {
         CartQuantityIn: {
             /** Quantity */
             quantity: number;
+        };
+        /** ConfiguredValueOut */
+        ConfiguredValueOut: {
+            /** Is Test Default */
+            is_test_default: boolean;
+            /** Value */
+            value: number;
         };
         /** CustomerMenuItemOut */
         CustomerMenuItemOut: {
@@ -950,6 +1311,177 @@ export interface components {
             source_line: number | null;
             /** Unit */
             unit: string;
+        };
+        /** IntakeOut */
+        IntakeOut: {
+            /** Accepting */
+            accepting: boolean;
+            /** Active Orders */
+            active_orders: number;
+            /** Capacity */
+            capacity: number | null;
+            mode: components["schemas"]["KitchenMode"];
+            /** Refusal */
+            refusal: string | null;
+        };
+        /**
+         * ItemPrep
+         * @enum {string}
+         */
+        ItemPrep: "PENDING" | "PREPARING" | "PREPARED";
+        /** KitchenAssignmentOut */
+        KitchenAssignmentOut: {
+            /** Agent Name */
+            agent_name: string;
+            /** Status */
+            status: string;
+        };
+        /** KitchenDishOut */
+        KitchenDishOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Name */
+            name: string;
+            publication_status: components["schemas"]["Publication"];
+        };
+        /** KitchenIntakeOut */
+        KitchenIntakeOut: {
+            /** Accepting */
+            accepting: boolean;
+            /** Active Orders */
+            active_orders: number;
+            /** Capacity */
+            capacity: number | null;
+            /** Mode */
+            mode: string;
+            /** Refusal */
+            refusal: string | null;
+        };
+        /** KitchenItemOut */
+        KitchenItemOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Item Name */
+            item_name: string | null;
+            /**
+             * Menu Item Id
+             * Format: uuid
+             */
+            menu_item_id: string;
+            prep_status: components["schemas"]["ItemPrep"];
+            /** Quantity */
+            quantity: number;
+            /** Recipe Version */
+            recipe_version: number | null;
+            /** Recipe Version Id */
+            recipe_version_id: string | null;
+        };
+        /** KitchenItemStatusIn */
+        KitchenItemStatusIn: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PREPARING" | "PREPARED";
+        };
+        /**
+         * KitchenMode
+         * @enum {string}
+         */
+        KitchenMode: "NORMAL" | "BUSY" | "PAUSED";
+        /**
+         * KitchenOrderOut
+         * @description What the line needs (KI-07). No customer name, phone or address is exposed to the kitchen.
+         */
+        KitchenOrderOut: {
+            /** Accepted At */
+            accepted_at: string | null;
+            assignment: components["schemas"]["KitchenAssignmentOut"] | null;
+            fulfilment_status: components["schemas"]["Fulfilment"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Items */
+            items: components["schemas"]["KitchenItemOut"][];
+            /** Overdue */
+            overdue: boolean;
+            payment_method: components["schemas"]["PaymentMethod"] | null;
+            /**
+             * Placed At
+             * Format: date-time
+             */
+            placed_at: string;
+            /** Queued At */
+            queued_at: string | null;
+            /** Special Instructions */
+            special_instructions: string | null;
+            /** Status Label */
+            status_label: string;
+        };
+        /** KitchenQueueOut */
+        KitchenQueueOut: {
+            /** Acceptance Timeout Minutes */
+            acceptance_timeout_minutes: number | null;
+            /** Can Process */
+            can_process: boolean;
+            /** Can Reject Accepted */
+            can_reject_accepted: boolean;
+            /** Held */
+            held: components["schemas"]["KitchenOrderOut"][];
+            /** Incoming */
+            incoming: components["schemas"]["KitchenOrderOut"][];
+            intake: components["schemas"]["KitchenIntakeOut"];
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /** Kitchen Name */
+            kitchen_name: string;
+        };
+        /** KitchenRejectIn */
+        KitchenRejectIn: {
+            /** Reason */
+            reason: string;
+        };
+        /** KitchenSettingsIn */
+        KitchenSettingsIn: {
+            /** Busy Capacity */
+            busy_capacity: number;
+            mode: components["schemas"]["KitchenMode"];
+            /** Normal Capacity */
+            normal_capacity: number;
+            /** Reason */
+            reason: string;
+        };
+        /** KitchenSettingsOut */
+        KitchenSettingsOut: {
+            acceptance_timeout_minutes: components["schemas"]["ConfiguredValueOut"] | null;
+            busy_capacity: components["schemas"]["ConfiguredValueOut"];
+            /** Can Change */
+            can_change: boolean;
+            intake: components["schemas"]["IntakeOut"];
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /** Kitchen Name */
+            kitchen_name: string;
+            mode: components["schemas"]["KitchenMode"];
+            normal_capacity: components["schemas"]["ConfiguredValueOut"];
         };
         /** LineageOut */
         LineageOut: {
@@ -1557,6 +2089,44 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** StockOut */
+        StockOut: {
+            /** Available */
+            available: string;
+            /**
+             * Ingredient Id
+             * Format: uuid
+             */
+            ingredient_id: string;
+            /** Is Low */
+            is_low: boolean;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Low Stock Threshold */
+            low_stock_threshold: string | null;
+            /** Name */
+            name: string;
+            /** On Hand */
+            on_hand: string;
+            /** Reserved */
+            reserved: string;
+            /** Unit */
+            unit: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Used In */
+            used_in: string[];
+        };
+        /** ThresholdIn */
+        ThresholdIn: {
+            /** Low Stock Threshold */
+            low_stock_threshold: number | string | null;
+            /** Reason */
+            reason: string;
+        };
         /** TransitionIn */
         TransitionIn: {
             /**
@@ -1873,6 +2443,400 @@ export interface operations {
             };
         };
     };
+    stock_api_v1_kitchen_inventory_get: {
+        parameters: {
+            query?: {
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    low_stock_api_v1_kitchen_inventory_low_stock_get: {
+        parameters: {
+            query?: {
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    adjust_api_v1_kitchen_inventory__ingredient_id__adjust_post: {
+        parameters: {
+            query?: {
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path: {
+                ingredient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjustIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_threshold_api_v1_kitchen_inventory__ingredient_id__threshold_put: {
+        parameters: {
+            query?: {
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path: {
+                ingredient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ThresholdIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    kitchen_queue_api_v1_kitchen_orders_get: {
+        parameters: {
+            query?: {
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KitchenQueueOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    kitchen_accept_api_v1_kitchen_orders__order_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KitchenOrderOut"];
+                };
+            };
+            /** @description Wrong step, or the kitchen cannot accept now (`code`: kitchen_paused, kitchen_at_capacity, recipe_not_active, stock_short with `shortages`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    kitchen_item_status_api_v1_kitchen_orders__order_id__items__item_id__status_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KitchenItemStatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KitchenOrderOut"];
+                };
+            };
+            /** @description Wrong step, or the kitchen cannot accept now (`code`: kitchen_paused, kitchen_at_capacity, recipe_not_active, stock_short with `shortages`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    kitchen_reject_api_v1_kitchen_orders__order_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KitchenRejectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KitchenOrderOut"];
+                };
+            };
+            /** @description Wrong step, or the kitchen cannot accept now (`code`: kitchen_paused, kitchen_at_capacity, recipe_not_active, stock_short with `shortages`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    kitchen_start_api_v1_kitchen_orders__order_id__start_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KitchenOrderOut"];
+                };
+            };
+            /** @description Wrong step, or the kitchen cannot accept now (`code`: kitchen_paused, kitchen_at_capacity, recipe_not_active, stock_short with `shortages`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_settings_api_v1_kitchen_settings_get: {
+        parameters: {
+            query?: {
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KitchenSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_settings_api_v1_kitchen_settings_put: {
+        parameters: {
+            query?: {
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KitchenSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KitchenSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     me_api_v1_me_get: {
         parameters: {
             query?: never;
@@ -2043,6 +3007,136 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    kitchen_dishes_api_v1_menu_availability_dishes_get: {
+        parameters: {
+            query: {
+                kitchen_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KitchenDishOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    availability_requests_api_v1_menu_availability_requests_get: {
+        parameters: {
+            query?: {
+                pending_only?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityRequestOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_availability_api_v1_menu_availability_requests_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AvailabilityRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityRequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_availability_api_v1_menu_availability_requests__request_id__decision_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AvailabilityDecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityRequestOut"];
+                };
             };
             /** @description Validation Error */
             422: {

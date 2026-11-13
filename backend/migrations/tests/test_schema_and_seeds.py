@@ -33,6 +33,9 @@ EXPECTED_CONFIG = {
     "SPECIAL_INSTRUCTIONS_MAX_CHARS": ("250", "characters"),
     "GPS_RETENTION_DAYS": ("30", "days"),
     "PRICE_PROTECTION_MINUTES": ("30", "minutes"),
+    # DDR-42 open: labelled test defaults (DDR-111 (1)).
+    "MAX_CONCURRENT_ORDERS_BUSY": ("5", "orders"),
+    "KITCHEN_ACCEPTANCE_TIMEOUT": ("5", "minutes"),
 }
 
 
@@ -42,7 +45,7 @@ def test_all_approved_schemas_exist(api: Conn) -> None:
 
 
 def test_migrations_at_head(migrator: Conn) -> None:
-    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0009"
+    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0010"
 
 
 def test_is_test_fixture_on_all_five_tables(api: Conn) -> None:
@@ -75,7 +78,11 @@ def test_config_seeds_match_sources(api: Conn) -> None:
     seeded = {r[0]: (r[1], r[2]) for r in rows}
     assert seeded == EXPECTED_CONFIG
     test_defaults = {r[0] for r in rows if r[3]}
-    assert test_defaults == {"MAX_CONCURRENT_ORDERS"}
+    assert test_defaults == {
+        "MAX_CONCURRENT_ORDERS",
+        "MAX_CONCURRENT_ORDERS_BUSY",
+        "KITCHEN_ACCEPTANCE_TIMEOUT",
+    }
 
 
 def test_no_free_delivery_threshold_setting(api: Conn) -> None:

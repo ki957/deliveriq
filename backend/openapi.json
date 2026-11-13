@@ -109,6 +109,225 @@
         "title": "AddressOut",
         "type": "object"
       },
+      "AdjustIn": {
+        "properties": {
+          "delta": {
+            "anyOf": [
+              {
+                "maximum": 1000000.0,
+                "minimum": -1000000.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Delta"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "delta",
+          "reason"
+        ],
+        "title": "AdjustIn",
+        "type": "object"
+      },
+      "AvailabilityDecisionIn": {
+        "properties": {
+          "approve": {
+            "title": "Approve",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "approve"
+        ],
+        "title": "AvailabilityDecisionIn",
+        "type": "object"
+      },
+      "AvailabilityRequestIn": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "MAKE_UNAVAILABLE",
+              "MAKE_AVAILABLE"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "menu_item_id": {
+            "format": "uuid",
+            "title": "Menu Item Id",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "menu_item_id",
+          "kind",
+          "reason"
+        ],
+        "title": "AvailabilityRequestIn",
+        "type": "object"
+      },
+      "AvailabilityRequestOut": {
+        "properties": {
+          "decided_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided At"
+          },
+          "decided_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided By Name"
+          },
+          "decided_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided Role"
+          },
+          "decision_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Reason"
+          },
+          "dish_name": {
+            "title": "Dish Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "MAKE_UNAVAILABLE",
+              "MAKE_AVAILABLE"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "menu_item_id": {
+            "format": "uuid",
+            "title": "Menu Item Id",
+            "type": "string"
+          },
+          "publication_status": {
+            "$ref": "#/components/schemas/Publication"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "region_id": {
+            "format": "uuid",
+            "title": "Region Id",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "requested_by_name": {
+            "title": "Requested By Name",
+            "type": "string"
+          },
+          "requested_role": {
+            "title": "Requested Role",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "menu_item_id",
+          "dish_name",
+          "publication_status",
+          "is_test_fixture",
+          "kitchen_id",
+          "region_id",
+          "kind",
+          "reason",
+          "status",
+          "requested_by_name",
+          "requested_role",
+          "requested_at",
+          "decided_by_name",
+          "decided_role",
+          "decided_at",
+          "decision_reason"
+        ],
+        "title": "AvailabilityRequestOut",
+        "type": "object"
+      },
       "BillOut": {
         "properties": {
           "delivery_fee_paise": {
@@ -337,6 +556,24 @@
           "quantity"
         ],
         "title": "CartQuantityIn",
+        "type": "object"
+      },
+      "ConfiguredValueOut": {
+        "properties": {
+          "is_test_default": {
+            "title": "Is Test Default",
+            "type": "boolean"
+          },
+          "value": {
+            "title": "Value",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "value",
+          "is_test_default"
+        ],
+        "title": "ConfiguredValueOut",
         "type": "object"
       },
       "CustomerMenuItemOut": {
@@ -822,6 +1059,514 @@
           "original_text"
         ],
         "title": "IngredientLineOut",
+        "type": "object"
+      },
+      "IntakeOut": {
+        "properties": {
+          "accepting": {
+            "title": "Accepting",
+            "type": "boolean"
+          },
+          "active_orders": {
+            "title": "Active Orders",
+            "type": "integer"
+          },
+          "capacity": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/KitchenMode"
+          },
+          "refusal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refusal"
+          }
+        },
+        "required": [
+          "mode",
+          "capacity",
+          "active_orders",
+          "accepting",
+          "refusal"
+        ],
+        "title": "IntakeOut",
+        "type": "object"
+      },
+      "ItemPrep": {
+        "enum": [
+          "PENDING",
+          "PREPARING",
+          "PREPARED"
+        ],
+        "title": "ItemPrep",
+        "type": "string"
+      },
+      "KitchenAssignmentOut": {
+        "properties": {
+          "agent_name": {
+            "title": "Agent Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "agent_name"
+        ],
+        "title": "KitchenAssignmentOut",
+        "type": "object"
+      },
+      "KitchenDishOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "publication_status": {
+            "$ref": "#/components/schemas/Publication"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "publication_status",
+          "is_test_fixture"
+        ],
+        "title": "KitchenDishOut",
+        "type": "object"
+      },
+      "KitchenIntakeOut": {
+        "properties": {
+          "accepting": {
+            "title": "Accepting",
+            "type": "boolean"
+          },
+          "active_orders": {
+            "title": "Active Orders",
+            "type": "integer"
+          },
+          "capacity": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "refusal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refusal"
+          }
+        },
+        "required": [
+          "mode",
+          "capacity",
+          "active_orders",
+          "accepting",
+          "refusal"
+        ],
+        "title": "KitchenIntakeOut",
+        "type": "object"
+      },
+      "KitchenItemOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "item_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Name"
+          },
+          "menu_item_id": {
+            "format": "uuid",
+            "title": "Menu Item Id",
+            "type": "string"
+          },
+          "prep_status": {
+            "$ref": "#/components/schemas/ItemPrep"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "recipe_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipe Version"
+          },
+          "recipe_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipe Version Id"
+          }
+        },
+        "required": [
+          "id",
+          "menu_item_id",
+          "item_name",
+          "quantity",
+          "prep_status",
+          "recipe_version_id",
+          "recipe_version"
+        ],
+        "title": "KitchenItemOut",
+        "type": "object"
+      },
+      "KitchenItemStatusIn": {
+        "properties": {
+          "status": {
+            "enum": [
+              "PREPARING",
+              "PREPARED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "KitchenItemStatusIn",
+        "type": "object"
+      },
+      "KitchenMode": {
+        "enum": [
+          "NORMAL",
+          "BUSY",
+          "PAUSED"
+        ],
+        "title": "KitchenMode",
+        "type": "string"
+      },
+      "KitchenOrderOut": {
+        "description": "What the line needs (KI-07). No customer name, phone or address is exposed to the kitchen.",
+        "properties": {
+          "accepted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
+          },
+          "assignment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KitchenAssignmentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fulfilment_status": {
+            "$ref": "#/components/schemas/Fulfilment"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/KitchenItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "overdue": {
+            "title": "Overdue",
+            "type": "boolean"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "placed_at": {
+            "format": "date-time",
+            "title": "Placed At",
+            "type": "string"
+          },
+          "queued_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queued At"
+          },
+          "special_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Special Instructions"
+          },
+          "status_label": {
+            "title": "Status Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "fulfilment_status",
+          "status_label",
+          "is_test_fixture",
+          "special_instructions",
+          "payment_method",
+          "placed_at",
+          "queued_at",
+          "accepted_at",
+          "overdue",
+          "items",
+          "assignment"
+        ],
+        "title": "KitchenOrderOut",
+        "type": "object"
+      },
+      "KitchenQueueOut": {
+        "properties": {
+          "acceptance_timeout_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acceptance Timeout Minutes"
+          },
+          "can_process": {
+            "title": "Can Process",
+            "type": "boolean"
+          },
+          "can_reject_accepted": {
+            "title": "Can Reject Accepted",
+            "type": "boolean"
+          },
+          "held": {
+            "items": {
+              "$ref": "#/components/schemas/KitchenOrderOut"
+            },
+            "title": "Held",
+            "type": "array"
+          },
+          "incoming": {
+            "items": {
+              "$ref": "#/components/schemas/KitchenOrderOut"
+            },
+            "title": "Incoming",
+            "type": "array"
+          },
+          "intake": {
+            "$ref": "#/components/schemas/KitchenIntakeOut"
+          },
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "kitchen_name": {
+            "title": "Kitchen Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kitchen_id",
+          "kitchen_name",
+          "intake",
+          "acceptance_timeout_minutes",
+          "incoming",
+          "held",
+          "can_process",
+          "can_reject_accepted"
+        ],
+        "title": "KitchenQueueOut",
+        "type": "object"
+      },
+      "KitchenRejectIn": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "KitchenRejectIn",
+        "type": "object"
+      },
+      "KitchenSettingsIn": {
+        "properties": {
+          "busy_capacity": {
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Busy Capacity",
+            "type": "integer"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/KitchenMode"
+          },
+          "normal_capacity": {
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Normal Capacity",
+            "type": "integer"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mode",
+          "normal_capacity",
+          "busy_capacity",
+          "reason"
+        ],
+        "title": "KitchenSettingsIn",
+        "type": "object"
+      },
+      "KitchenSettingsOut": {
+        "properties": {
+          "acceptance_timeout_minutes": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConfiguredValueOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "busy_capacity": {
+            "$ref": "#/components/schemas/ConfiguredValueOut"
+          },
+          "can_change": {
+            "title": "Can Change",
+            "type": "boolean"
+          },
+          "intake": {
+            "$ref": "#/components/schemas/IntakeOut"
+          },
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "kitchen_name": {
+            "title": "Kitchen Name",
+            "type": "string"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/KitchenMode"
+          },
+          "normal_capacity": {
+            "$ref": "#/components/schemas/ConfiguredValueOut"
+          }
+        },
+        "required": [
+          "kitchen_id",
+          "kitchen_name",
+          "mode",
+          "normal_capacity",
+          "busy_capacity",
+          "acceptance_timeout_minutes",
+          "intake",
+          "can_change"
+        ],
+        "title": "KitchenSettingsOut",
         "type": "object"
       },
       "LineageOut": {
@@ -2652,6 +3397,113 @@
         "title": "StageOut",
         "type": "object"
       },
+      "StockOut": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "string"
+          },
+          "ingredient_id": {
+            "format": "uuid",
+            "title": "Ingredient Id",
+            "type": "string"
+          },
+          "is_low": {
+            "title": "Is Low",
+            "type": "boolean"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "low_stock_threshold": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Low Stock Threshold"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "on_hand": {
+            "title": "On Hand",
+            "type": "string"
+          },
+          "reserved": {
+            "title": "Reserved",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "used_in": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Used In",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ingredient_id",
+          "name",
+          "unit",
+          "on_hand",
+          "reserved",
+          "available",
+          "low_stock_threshold",
+          "is_low",
+          "is_test_fixture",
+          "used_in",
+          "updated_at"
+        ],
+        "title": "StockOut",
+        "type": "object"
+      },
+      "ThresholdIn": {
+        "properties": {
+          "low_stock_threshold": {
+            "anyOf": [
+              {
+                "maximum": 1000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Low Stock Threshold"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "low_stock_threshold",
+          "reason"
+        ],
+        "title": "ThresholdIn",
+        "type": "object"
+      },
       "TransitionIn": {
         "properties": {
           "action": {
@@ -3102,6 +3954,637 @@
         ]
       }
     },
+    "/api/v1/kitchen/inventory": {
+      "get": {
+        "description": "Full stock (Kitchen Manager).",
+        "operationId": "stock_api_v1_kitchen_inventory_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StockOut"
+                  },
+                  "title": "Response Stock Api V1 Kitchen Inventory Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Stock",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
+    "/api/v1/kitchen/inventory/low-stock": {
+      "get": {
+        "description": "Low-stock alerts (Kitchen Staff and Manager).",
+        "operationId": "low_stock_api_v1_kitchen_inventory_low_stock_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StockOut"
+                  },
+                  "title": "Response Low Stock Api V1 Kitchen Inventory Low Stock Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Low Stock",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
+    "/api/v1/kitchen/inventory/{ingredient_id}/adjust": {
+      "post": {
+        "description": "Signed stock adjustment with a reason (Kitchen Manager); ledger and audit record.",
+        "operationId": "adjust_api_v1_kitchen_inventory__ingredient_id__adjust_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ingredient_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ingredient Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Adjust",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
+    "/api/v1/kitchen/inventory/{ingredient_id}/threshold": {
+      "put": {
+        "description": "Set or clear the low-stock threshold with a reason (Kitchen Manager); audited.",
+        "operationId": "set_threshold_api_v1_kitchen_inventory__ingredient_id__threshold_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ingredient_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ingredient Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThresholdIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Threshold",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
+    "/api/v1/kitchen/orders": {
+      "get": {
+        "description": "Incoming orders and the FIFO queue by acceptance time (KI-01, KI-03). Poll; realtime is Task 11.",
+        "operationId": "kitchen_queue_api_v1_kitchen_orders_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KitchenQueueOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Kitchen Queue",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
+    "/api/v1/kitchen/orders/{order_id}/accept": {
+      "post": {
+        "description": "Accept: capacity, ACTIVE recipe pin, all-or-nothing stock reservation, agent offer (DDR-51).",
+        "operationId": "kitchen_accept_api_v1_kitchen_orders__order_id__accept_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KitchenOrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "description": "Wrong step, or the kitchen cannot accept now (`code`: kitchen_paused, kitchen_at_capacity, recipe_not_active, stock_short with `shortages`)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Kitchen Accept",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
+    "/api/v1/kitchen/orders/{order_id}/items/{item_id}/status": {
+      "post": {
+        "description": "Item Preparing or Prepared; the order becomes Ready for Pickup when all are Prepared (KI-05).",
+        "operationId": "kitchen_item_status_api_v1_kitchen_orders__order_id__items__item_id__status_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KitchenItemStatusIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KitchenOrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "description": "Wrong step, or the kitchen cannot accept now (`code`: kitchen_paused, kitchen_at_capacity, recipe_not_active, stock_short with `shortages`)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Kitchen Item Status",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
+    "/api/v1/kitchen/orders/{order_id}/reject": {
+      "post": {
+        "description": "Reject with a reason; after acceptance KM/RM/CA only. Releases stock and refunds prepaid.",
+        "operationId": "kitchen_reject_api_v1_kitchen_orders__order_id__reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KitchenRejectIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KitchenOrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "description": "Wrong step, or the kitchen cannot accept now (`code`: kitchen_paused, kitchen_at_capacity, recipe_not_active, stock_short with `shortages`)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Kitchen Reject",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
+    "/api/v1/kitchen/orders/{order_id}/start": {
+      "post": {
+        "description": "Every pending item to Preparing; the order follows automatically.",
+        "operationId": "kitchen_start_api_v1_kitchen_orders__order_id__start_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KitchenOrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "description": "Wrong step, or the kitchen cannot accept now (`code`: kitchen_paused, kitchen_at_capacity, recipe_not_active, stock_short with `shortages`)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Kitchen Start",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
+    "/api/v1/kitchen/settings": {
+      "get": {
+        "description": "Mode, capacities (labelled when they are DDR-42 test defaults) and current intake.",
+        "operationId": "get_settings_api_v1_kitchen_settings_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KitchenSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Settings",
+        "tags": [
+          "kitchen"
+        ]
+      },
+      "put": {
+        "description": "Change mode and capacities with a reason (KM own kitchen; RM own region; CA). Audited.",
+        "operationId": "update_settings_api_v1_kitchen_settings_put",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KitchenSettingsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KitchenSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Settings",
+        "tags": [
+          "kitchen"
+        ]
+      }
+    },
     "/api/v1/me": {
       "get": {
         "operationId": "me_api_v1_me_get",
@@ -3324,6 +4807,196 @@
         "summary": "Revoke My Device",
         "tags": [
           "me"
+        ]
+      }
+    },
+    "/api/v1/menu/availability/dishes": {
+      "get": {
+        "description": "The kitchen's dishes that are on the menu or temporarily unavailable.",
+        "operationId": "kitchen_dishes_api_v1_menu_availability_dishes_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Kitchen Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/KitchenDishOut"
+                  },
+                  "title": "Response Kitchen Dishes Api V1 Menu Availability Dishes Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Kitchen Dishes",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
+    "/api/v1/menu/availability/requests": {
+      "get": {
+        "description": "Kitchen roles: their kitchen's requests. RM: assigned regions. CA: all regions.",
+        "operationId": "availability_requests_api_v1_menu_availability_requests_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pending_only",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Pending Only",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AvailabilityRequestOut"
+                  },
+                  "title": "Response Availability Requests Api V1 Menu Availability Requests Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Availability Requests",
+        "tags": [
+          "menu"
+        ]
+      },
+      "post": {
+        "description": "Kitchen Staff or Manager ask to take a dish off the menu, or to bring it back, with a reason.",
+        "operationId": "request_availability_api_v1_menu_availability_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityRequestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityRequestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Availability",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
+    "/api/v1/menu/availability/requests/{request_id}/decision": {
+      "post": {
+        "description": "RM (own region) or CA approves (the menu changes) or rejects with a reason. Audited.",
+        "operationId": "decide_availability_api_v1_menu_availability_requests__request_id__decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityDecisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityRequestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Decide Availability",
+        "tags": [
+          "menu"
         ]
       }
     },

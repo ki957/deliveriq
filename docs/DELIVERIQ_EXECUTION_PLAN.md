@@ -368,6 +368,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
   - Opening stock carries a visible "Test stock" label in UI and reports; no code path presents it as actual stock.
   - Dish-unavailability request needs RM approval and toggles `TEMPORARILY_UNAVAILABLE`.
   - Tablet and KDS (≥ 1920 px) viewport tests; axe; screenshots.
+- **Status:** delivered as 8A (backend: migration 0010, `kitchen_ops`, `inventory`, `delivery` services, kitchen order and dish-availability APIs, TEST opening stock; branch `task-08a-kitchen-ops-api`, built and verified, in review) and 8B (Kitchen and Management UI, tablet and KDS E2E); decisions DDR-111.
 
 ### Task 9 — Delivery and tracking
 

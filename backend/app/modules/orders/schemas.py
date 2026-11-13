@@ -9,7 +9,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 from app.modules.customers.schemas import ServiceabilityOut
-from app.modules.orders.domain import SPECIAL_INSTRUCTIONS_MAX, Fulfilment
+from app.modules.orders.domain import REJECT_REASON_MAX, SPECIAL_INSTRUCTIONS_MAX, Fulfilment, ItemPrep
 from app.modules.payments.domain import PaymentMethod, PaymentStatus, SimOutcome
 
 # Input-size guards against oversized requests; not business limits (none are defined in the sources).
@@ -128,3 +128,67 @@ class CartOut(BaseModel):
     address_error: str | None
     # Reasons checkout is not possible yet; empty when the order can be placed.
     blockers: list[str]
+
+
+# ---------------------------------------------------------------- kitchen (Task 8; KI-01–KI-07, DDR-111)
+class KitchenItemOut(BaseModel):
+    id: uuid.UUID
+    menu_item_id: uuid.UUID
+    item_name: str | None
+    quantity: int
+    prep_status: ItemPrep
+    # Pinned at acceptance (KI-18); a later recipe version never changes it.
+    recipe_version_id: uuid.UUID | None
+    recipe_version: int | None
+
+
+class KitchenAssignmentOut(BaseModel):
+    # OFFERED until the agent responds (Task 9); ACCEPTED shows the agent on the card (Matrix §7.3).
+    status: str
+    agent_name: str
+
+
+class KitchenOrderOut(BaseModel):
+    """What the line needs (KI-07). No customer name, phone or address is exposed to the kitchen."""
+
+    id: uuid.UUID
+    fulfilment_status: Fulfilment
+    status_label: str
+    is_test_fixture: bool
+    special_instructions: str | None
+    payment_method: PaymentMethod | None
+    placed_at: datetime
+    queued_at: datetime | None
+    accepted_at: datetime | None
+    overdue: bool
+    items: list[KitchenItemOut]
+    assignment: KitchenAssignmentOut | None
+
+
+class KitchenIntakeOut(BaseModel):
+    mode: str
+    capacity: int | None
+    active_orders: int
+    accepting: bool
+    refusal: str | None
+
+
+class KitchenQueueOut(BaseModel):
+    kitchen_id: uuid.UUID
+    kitchen_name: str
+    intake: KitchenIntakeOut
+    # DDR-42 test default until approved; drives the "Overdue" warning only.
+    acceptance_timeout_minutes: int | None
+    incoming: list[KitchenOrderOut]
+    # FIFO by acceptance time (KI-03).
+    held: list[KitchenOrderOut]
+    can_process: bool
+    can_reject_accepted: bool
+
+
+class KitchenRejectIn(BaseModel):
+    reason: str = Field(min_length=1, max_length=REJECT_REASON_MAX)
+
+
+class KitchenItemStatusIn(BaseModel):
+    status: Literal[ItemPrep.PREPARING, ItemPrep.PREPARED]

@@ -22,6 +22,10 @@ from app.core.db import get_engine
 from app.core.permissions import Permission, Principal, can
 from app.core.request_context import current_request_id
 from app.modules.customers import service as customers
+from app.modules.delivery import service as delivery
+from app.modules.inventory import service as inventory
+from app.modules.kitchen_ops import service as kitchens
+from app.modules.kitchen_ops.domain import Intake as KitchenIntake
 from app.modules.orders import domain as d
 from app.modules.orders import repository as repo
 from app.modules.payments import service as payments
@@ -91,6 +95,10 @@ def _event(conn: Connection, order: repo.OrderRow, event_type: str, data: dict[s
     )
 
 
+def _ref(order: repo.OrderRow) -> inventory.OrderRef:
+    return inventory.OrderRef(order.id, order.kitchen_id, order.region_id, order.is_test_fixture)
+
+
 def _reread(conn: Connection, order_id: uuid.UUID) -> repo.OrderRow:
     order = repo.find(conn, order_id)
     if order is None:  # pragma: no cover - the row exists in this transaction
@@ -127,6 +135,12 @@ class PricesChanged(Exception):
     def __init__(self, changes: list[pricing_domain.PriceChange]) -> None:
         super().__init__("A price has changed. Review and confirm the new price before placing the order.")
         self.changes = changes
+
+
+INTAKE_MESSAGES = {
+    "kitchen_paused": "The kitchen is not taking new orders right now",
+    "kitchen_at_capacity": "The kitchen is at capacity right now. Try again in a few minutes",
+}
 
 
 @dataclass(frozen=True)
@@ -233,6 +247,11 @@ def place(
                     "road_km_estimated": reach.road_km_estimated,
                 },
             )
+
+        # The kitchen must be taking orders: not Paused and below capacity (KI-13; DDR-111 (3)).
+        intake = kitchens.intake_for(conn, kitchen.id)
+        if intake.refusal:
+            raise CheckoutRefused(intake.refusal, INTAKE_MESSAGES[intake.refusal])
 
         # 3. ₹500 minimum on the food subtotal before any coupon (DDR-53).
         minimum = pricing.minimum_paise(conn, kitchen.id)
@@ -441,6 +460,8 @@ def record_pickup(agent: Principal, order_id: uuid.UUID) -> OrderView:
         )
         repo.set_status(conn, order_id, F.PICKED_UP.value)
         repo.set_status(conn, order_id, F.OUT_FOR_DELIVERY.value)
+        # Reserved stock is deducted at the validated handover, once (KI-22; DDR-111).
+        inventory.consume(conn, _ref(order), actor_user_id=agent.user_id, actor_role="DELIVERY_AGENT")
         emit(
             conn,
             event_type="delivery.picked_up",
@@ -453,6 +474,289 @@ def record_pickup(agent: Principal, order_id: uuid.UUID) -> OrderView:
             data={"order_id": str(order.id)},
         )
         return _view(conn, _reread(conn, order_id))
+
+
+def _kitchen_allowed(principal: Principal, order: repo.OrderRow, permission: Permission) -> str:
+    """The acting role for a kitchen action on this order; Forbidden or NotFound otherwise."""
+    if can(principal, permission, kitchen_id=order.kitchen_id, region_id=order.region_id):
+        return kitchens.acting_role(
+            principal, permission, kitchen_id=order.kitchen_id, region_id=order.region_id
+        )
+    if _can_view_kitchen(principal, order.kitchen_id, order.region_id):
+        raise Forbidden
+    raise NotFound  # another kitchen's order reads as not found
+
+
+def _can_view_kitchen(principal: Principal, kitchen_id: uuid.UUID, region_id: uuid.UUID) -> bool:
+    return can(principal, P.KITCHEN_ORDERS_VIEW, kitchen_id=kitchen_id, region_id=region_id) or can(
+        principal, P.MGMT_OPERATIONS_VIEW, kitchen_id=kitchen_id, region_id=region_id
+    )
+
+
+# ---------------------------------------------------------------- kitchen queue and preparation (Task 8)
+class KitchenRefused(Exception):
+    """The kitchen cannot accept the order now (409). `code` is stable for the UI (DDR-111 (3), (4))."""
+
+    def __init__(self, code: str, message: str, detail: dict[str, object] | None = None) -> None:
+        super().__init__(message)
+        self.code = code
+        self.detail = detail or {}
+
+
+class InvalidInput(Exception):
+    """The request breaks an input rule (422)."""
+
+
+MissingKitchenSetting = kitchens.MissingSetting
+
+
+@dataclass(frozen=True)
+class KitchenOrderView:
+    order: repo.OrderRow
+    items: list[repo.ItemRow]
+    kitchen_label: str
+    payment_method: str | None
+    queued_at: datetime | None
+    # Incoming beyond the acceptance timeout (KI-02). A warning only: it never reorders the queue.
+    overdue: bool
+    assignment: delivery.LiveAssignment | None
+
+
+@dataclass(frozen=True)
+class KitchenQueue:
+    kitchen: kitchens.KitchenRow
+    intake: KitchenIntake
+    acceptance_timeout_minutes: int | None
+    incoming: list[KitchenOrderView]
+    held: list[KitchenOrderView]
+    can_process: bool
+    can_reject_accepted: bool
+
+
+def _kitchen_views(
+    conn: Connection, kitchen: kitchens.KitchenRow, orders: list[repo.OrderRow]
+) -> list[KitchenOrderView]:
+    ids = [o.id for o in orders]
+    queued = repo.queued_since(conn, ids)
+    live = delivery.live_for(conn, ids)
+    timeout = kitchens.acceptance_timeout_minutes(conn, kitchen)
+    now = pricing.now(conn)
+    views = []
+    for o in orders:
+        payment = payments.for_order(conn, o.id)
+        since = queued.get(o.id)
+        overdue = (
+            o.fulfilment_status == F.PENDING_KITCHEN
+            and since is not None
+            and timeout is not None
+            and (now - since).total_seconds() > timeout * 60
+        )
+        views.append(
+            KitchenOrderView(
+                order=o,
+                items=repo.items(conn, o.id),
+                kitchen_label=d.display(F(o.fulfilment_status), o.assignment_accepted).kitchen or "",
+                payment_method=payment.method if payment else None,
+                queued_at=since,
+                overdue=overdue,
+                assignment=live.get(o.id),
+            )
+        )
+    return views
+
+
+def kitchen_queue(principal: Principal, kitchen_id: uuid.UUID | None) -> KitchenQueue:
+    """Incoming orders, then the orders the kitchen holds in FIFO by acceptance time (KI-01, KI-03)."""
+    with get_engine().connect() as conn:
+        try:
+            kitchen = kitchens.resolve(conn, principal, kitchen_id)
+        except kitchens.NotFound:
+            raise NotFound from None
+        if not _can_view_kitchen(principal, kitchen.id, kitchen.region_id):
+            raise NotFound
+        incoming = repo.kitchen_orders(conn, kitchen.id, [F.PENDING_KITCHEN.value])
+        held = repo.kitchen_orders(conn, kitchen.id, [s.value for s in d.KITCHEN_ACTIVE])
+        return KitchenQueue(
+            kitchen=kitchen,
+            intake=kitchens.intake(conn, kitchen),
+            acceptance_timeout_minutes=kitchens.acceptance_timeout_minutes(conn, kitchen),
+            incoming=_kitchen_views(conn, kitchen, incoming),
+            held=_kitchen_views(conn, kitchen, held),
+            can_process=kitchens.allowed(principal, P.KITCHEN_ORDERS_PROCESS, kitchen),
+            can_reject_accepted=kitchens.allowed(principal, P.KITCHEN_ORDERS_REJECT_ACCEPTED, kitchen),
+        )
+
+
+def _kitchen_view(conn: Connection, order_id: uuid.UUID) -> KitchenOrderView:
+    order = _reread(conn, order_id)
+    return _kitchen_views(conn, kitchens.find(conn, order.kitchen_id), [order])[0]
+
+
+def kitchen_accept(principal: Principal, order_id: uuid.UUID) -> KitchenOrderView:
+    """Accept: capacity and mode, pin ACTIVE versions, reserve all stock or none, offer to an agent.
+
+    One transaction, serialised per kitchen by a row lock, so concurrent acceptances cannot exceed
+    capacity or oversell. Any refusal leaves the order Incoming with nothing pinned or reserved.
+    """
+    with get_engine().begin() as conn:
+        order = repo.find(conn, order_id)
+        if order is None:
+            raise NotFound
+        role = _kitchen_allowed(principal, order, P.KITCHEN_ORDERS_PROCESS)
+        kitchen = kitchens.lock(conn, order.kitchen_id)
+        order = repo.find(conn, order_id, lock=True)
+        if order is None:  # pragma: no cover - read above
+            raise NotFound
+        if order.fulfilment_status != F.PENDING_KITCHEN:
+            raise Conflict(f"Order is {order.fulfilment_status}; only incoming orders can be accepted")
+        intake = kitchens.intake(conn, kitchen)
+        if intake.refusal:
+            raise KitchenRefused(
+                intake.refusal,
+                INTAKE_MESSAGES[intake.refusal],
+                {"mode": intake.mode.value, "capacity": intake.capacity, "active_orders": intake.active},
+            )
+        set_actor(
+            conn, role=role, user_id=principal.user_id, reason=None, correlation_id=current_request_id()
+        )
+        if repo.pin_active_versions(conn, order_id):
+            raise KitchenRefused("recipe_not_active", "A dish in this order has no active recipe version")
+        try:
+            inventory.reserve(conn, _ref(order))
+        except inventory.InsufficientStock as exc:
+            raise KitchenRefused(
+                "stock_short",
+                str(exc),
+                {
+                    "shortages": [
+                        {
+                            "ingredient": s.ingredient_name,
+                            "unit": s.unit,
+                            "needed": str(s.needed),
+                            "available": str(s.available),
+                        }
+                        for s in exc.shortages
+                    ]
+                },
+            ) from None
+        repo.set_accepted_at(conn, order_id)
+        repo.set_status(conn, order_id, F.ACCEPTED.value)
+        offer = delivery.offer_on_acceptance(conn, order.id, order.region_id)
+        _event(conn, order, "order.accepted", {"agent_offered": offer is not None})
+        return _kitchen_view(conn, order_id)
+
+
+def kitchen_reject(principal: Principal, order_id: uuid.UUID, reason: str) -> KitchenOrderView:
+    """Reject an incoming order, or "cannot fulfil" a held one (KM, RM, CA; DDR-111 (5)).
+
+    Releases reserved stock, refunds a prepaid order in full (DDR-109 (5)) and revokes the agent offer.
+    """
+    text_reason = reason.strip()
+    with get_engine().begin() as conn:
+        # Authorize on a plain read before taking the row lock (no lock for callers outside scope).
+        seen = repo.find(conn, order_id)
+        if seen is None or not _can_view_kitchen(principal, seen.kitchen_id, seen.region_id):
+            raise NotFound
+        if not (
+            can(principal, P.KITCHEN_ORDERS_PROCESS, kitchen_id=seen.kitchen_id, region_id=seen.region_id)
+            or can(
+                principal,
+                P.KITCHEN_ORDERS_REJECT_ACCEPTED,
+                kitchen_id=seen.kitchen_id,
+                region_id=seen.region_id,
+            )
+        ):
+            raise Forbidden
+        if not text_reason or len(text_reason) > d.REJECT_REASON_MAX:
+            raise InvalidInput(f"A reason of 1 to {d.REJECT_REASON_MAX} characters is required")
+        order = repo.find(conn, order_id, lock=True)
+        if order is None:  # pragma: no cover - read above
+            raise NotFound
+        status = F(order.fulfilment_status)
+        if status is F.PENDING_KITCHEN:
+            permission = P.KITCHEN_ORDERS_PROCESS
+        elif status in d.KITCHEN_ACTIVE:
+            permission = P.KITCHEN_ORDERS_REJECT_ACCEPTED
+        else:
+            raise Conflict(f"Order is {order.fulfilment_status}; it can no longer be rejected")
+        role = _kitchen_allowed(principal, order, permission)
+        set_actor(
+            conn,
+            role=role,
+            user_id=principal.user_id,
+            reason=text_reason,
+            correlation_id=current_request_id(),
+        )
+        repo.set_status(conn, order_id, F.REJECTED.value)
+        released = inventory.release(conn, _ref(order))
+        payment = payments.for_order(conn, order_id, lock=True)
+        refunded = payment is not None and payments.refund_routine(conn, payment)
+        revoked = delivery.revoke(conn, order_id)
+        _event(
+            conn,
+            order,
+            "order.rejected",
+            {
+                "after_acceptance": status is not F.PENDING_KITCHEN,
+                "stock_released": released,
+                "refunded": refunded,
+                "assignment_revoked": revoked,
+            },
+        )
+        return _kitchen_view(conn, order_id)
+
+
+def _advance(conn: Connection, order: repo.OrderRow) -> None:
+    """Apply the automatic order steps after item changes (KI-05; DDR-111 (11))."""
+    items = [d.ItemPrep(i.prep_status) for i in repo.items(conn, order.id)]
+    for step in d.order_status_after_items(F(order.fulfilment_status), items):
+        repo.set_status(conn, order.id, step.value)
+        _event(conn, order, "order.preparing" if step is F.PREPARING else "order.ready_for_pickup", {})
+
+
+def _held_for_prep(conn: Connection, principal: Principal, order_id: uuid.UUID) -> repo.OrderRow:
+    seen = repo.find(conn, order_id)
+    if seen is None:
+        raise NotFound
+    role = _kitchen_allowed(principal, seen, P.KITCHEN_ORDERS_PROCESS)  # before the row lock
+    order = repo.find(conn, order_id, lock=True)
+    if order is None:  # pragma: no cover - read above
+        raise NotFound
+    if order.fulfilment_status not in (F.ACCEPTED, F.PREPARING):
+        raise Conflict(
+            f"Order is {order.fulfilment_status}; items can change only while it is being prepared"
+        )
+    # Any staff member may continue another's order; the actor of each change is kept (KI-06).
+    set_actor(conn, role=role, user_id=principal.user_id, reason=None, correlation_id=current_request_id())
+    return order
+
+
+def kitchen_set_item(
+    principal: Principal, order_id: uuid.UUID, item_id: uuid.UUID, target: d.ItemPrep
+) -> KitchenOrderView:
+    with get_engine().begin() as conn:
+        order = _held_for_prep(conn, principal, order_id)
+        item = next((i for i in repo.items(conn, order_id) if i.id == item_id), None)
+        if item is None:
+            raise NotFound
+        if not d.can_prepare(d.ItemPrep(item.prep_status), target):
+            raise Conflict(f"Item is {item.prep_status}; it cannot move to {target.value}")
+        repo.set_item_status(conn, item_id, target.value)
+        _advance(conn, order)
+        return _kitchen_view(conn, order_id)
+
+
+def kitchen_start(principal: Principal, order_id: uuid.UUID) -> KitchenOrderView:
+    """ "Start order": every pending item to Preparing in one tap (KI-U5; DDR-111 (11))."""
+    with get_engine().begin() as conn:
+        order = _held_for_prep(conn, principal, order_id)
+        pending = [i for i in repo.items(conn, order_id) if i.prep_status == d.ItemPrep.PENDING]
+        if not pending:
+            raise Conflict("Every item has already started")
+        for item in pending:
+            repo.set_item_status(conn, item.id, d.ItemPrep.PREPARING.value)
+        _advance(conn, order)
+        return _kitchen_view(conn, order_id)
 
 
 def record_cod_collection(
@@ -550,6 +854,9 @@ def _cart_view(
     blockers: list[str] = []
     if not views:
         blockers.append("cart_empty")
+    intake = kitchens.intake_for(conn, kitchen.id)
+    if intake.refusal:
+        blockers.append(intake.refusal)
     if any(not v.available for v in views):
         blockers.append("dish_unavailable")
     if any(v.price_changed for v in views):

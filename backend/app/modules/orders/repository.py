@@ -16,6 +16,7 @@ _ORDER_COLUMNS = """
     o.id, o.customer_user_id, o.kitchen_id, o.region_id, o.fulfilment_status, o.special_instructions,
     o.is_test_fixture, o.idempotency_key, o.request_hash, o.food_subtotal_paise, o.delivery_fee_paise,
     o.discount_paise, o.payable_paise, o.delivery_address, o.road_km_estimated, o.placed_at, o.updated_at,
+    o.accepted_at,
     EXISTS (SELECT 1 FROM app.delivery_assignments a WHERE a.order_id = o.id AND a.status = 'ACCEPTED')
         AS assignment_accepted
 """
@@ -40,6 +41,7 @@ class OrderRow:
     road_km_estimated: bool | None
     placed_at: datetime
     updated_at: datetime
+    accepted_at: datetime | None
     assignment_accepted: bool
 
 
@@ -50,6 +52,10 @@ class ItemRow:
     unit_price_paise: int | None
     quantity: int
     prep_status: str
+    id: uuid.UUID
+    # Pinned at kitchen acceptance (KI-18); None before.
+    recipe_version_id: uuid.UUID | None
+    recipe_version: int | None
 
 
 @dataclass(frozen=True)
@@ -160,8 +166,10 @@ def insert_item(
 def items(conn: Connection, order_id: uuid.UUID) -> list[ItemRow]:
     rows = conn.execute(
         text(
-            "SELECT menu_item_id, item_name, unit_price_paise, quantity, prep_status FROM app.order_items "
-            "WHERE order_id = :o ORDER BY created_at, id"
+            "SELECT oi.menu_item_id, oi.item_name, oi.unit_price_paise, oi.quantity, oi.prep_status, oi.id, "
+            "oi.recipe_version_id, v.version FROM app.order_items oi "
+            "LEFT JOIN app.recipe_versions v ON v.id = oi.recipe_version_id "
+            "WHERE oi.order_id = :o ORDER BY oi.created_at, oi.id"
         ),
         {"o": order_id},
     ).all()
@@ -283,3 +291,87 @@ def set_delivery_snapshot(
             "id": order_id,
         },
     )
+
+
+# ---------------------------------------------------------------- kitchen (Task 8; KI-01–KI-05, KI-18)
+def pin_active_versions(conn: Connection, order_id: uuid.UUID) -> list[uuid.UUID]:
+    """Pin each item to its dish's ACTIVE recipe version (KI-18); returns items that have none.
+
+    The versions are share-locked, so a concurrent activation cannot supersede them mid-acceptance.
+    The database also refuses any non-ACTIVE pin (migration 0003).
+    """
+    rows = conn.execute(
+        text(
+            "SELECT oi.id, (SELECT v.id FROM app.recipe_versions v WHERE v.recipe_id = m.recipe_id "
+            "AND v.status = 'ACTIVE') FROM app.order_items oi "
+            "JOIN app.menu_items m ON m.id = oi.menu_item_id "
+            "WHERE oi.order_id = :o ORDER BY oi.id"
+        ),
+        {"o": order_id},
+    ).all()
+    versions = sorted({version for _, version in rows if version is not None})
+    still_active = set(
+        conn.execute(
+            text(
+                "SELECT id FROM app.recipe_versions WHERE id = ANY(:ids) AND status = 'ACTIVE' "
+                "ORDER BY id FOR SHARE"
+            ),
+            {"ids": versions},
+        ).scalars()
+    )
+    missing = [item for item, version in rows if version is None or version not in still_active]
+    if not missing:
+        for item, version in rows:
+            conn.execute(
+                text("UPDATE app.order_items SET recipe_version_id = :v WHERE id = :id"),
+                {"v": version, "id": item},
+            )
+    return missing
+
+
+def set_accepted_at(conn: Connection, order_id: uuid.UUID) -> None:
+    """Wall-clock time taken under the kitchen lock, so FIFO follows the real acceptance order (KI-03).
+
+    `now()` would be the transaction start, which can precede a competing acceptance that won the lock.
+    """
+    conn.execute(
+        text("UPDATE app.orders SET accepted_at = clock_timestamp() WHERE id = :id"), {"id": order_id}
+    )
+
+
+def set_item_status(conn: Connection, item_id: uuid.UUID, status: str) -> None:
+    conn.execute(
+        text("UPDATE app.order_items SET prep_status = :s WHERE id = :id"), {"s": status, "id": item_id}
+    )
+
+
+def kitchen_orders(conn: Connection, kitchen_id: uuid.UUID, statuses: list[str]) -> list[OrderRow]:
+    """FIFO: incoming by queue entry (payment or COD placement), held orders by acceptance time (KI-03).
+
+    Warnings such as "Overdue" never reorder either list.
+    """
+    rows = conn.execute(
+        text(
+            f"SELECT {_ORDER_COLUMNS} FROM app.orders o "  # noqa: S608 - fixed SQL, values bound
+            "WHERE o.kitchen_id = :k AND o.fulfilment_status = ANY(:st) "
+            "ORDER BY o.accepted_at NULLS FIRST, "
+            "(SELECT max(h.changed_at) FROM app.status_history h WHERE h.machine = 'fulfilment' "
+            "AND h.entity_id = o.id AND h.to_status = 'PENDING_KITCHEN'), o.placed_at, o.id"
+        ),
+        {"k": kitchen_id, "st": statuses},
+    ).all()
+    return [_order(r) for r in rows]
+
+
+def queued_since(conn: Connection, order_ids: list[uuid.UUID]) -> dict[uuid.UUID, datetime]:
+    """When each order entered the kitchen queue (its PENDING_KITCHEN transition)."""
+    if not order_ids:
+        return {}
+    rows = conn.execute(
+        text(
+            "SELECT entity_id, max(changed_at) FROM app.status_history WHERE machine = 'fulfilment' "
+            "AND to_status = 'PENDING_KITCHEN' AND entity_id = ANY(:ids) GROUP BY entity_id"
+        ),
+        {"ids": order_ids},
+    ).all()
+    return {r[0]: r[1] for r in rows}
