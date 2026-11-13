@@ -262,6 +262,140 @@
         "title": "AssignmentOut",
         "type": "object"
       },
+      "AuditOut": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name"
+          },
+          "actor_role": {
+            "title": "Actor Role",
+            "type": "string"
+          },
+          "after_summary": {
+            "title": "After Summary"
+          },
+          "before_summary": {
+            "title": "Before Summary"
+          },
+          "correlation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Id"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "region_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Id"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "target_type": {
+            "title": "Target Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "occurred_at",
+          "actor_role",
+          "actor_name",
+          "action",
+          "target_type",
+          "target_id",
+          "region_id",
+          "outcome",
+          "reason",
+          "correlation_id",
+          "before_summary",
+          "after_summary"
+        ],
+        "title": "AuditOut",
+        "type": "object"
+      },
+      "AuditPageOut": {
+        "properties": {
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/AuditOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rows",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "title": "AuditPageOut",
+        "type": "object"
+      },
       "AvailabilityDecisionIn": {
         "properties": {
           "approve": {
@@ -890,6 +1024,118 @@
         "title": "DecisionIn",
         "type": "object"
       },
+      "DeliveryOut": {
+        "properties": {
+          "agent_id": {
+            "format": "uuid",
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "agent_name": {
+            "title": "Agent Name",
+            "type": "string"
+          },
+          "assignment_id": {
+            "format": "uuid",
+            "title": "Assignment Id",
+            "type": "string"
+          },
+          "assignment_status": {
+            "title": "Assignment Status",
+            "type": "string"
+          },
+          "delivery_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Address"
+          },
+          "delivery_exception_open": {
+            "title": "Delivery Exception Open",
+            "type": "boolean"
+          },
+          "fulfilment_status": {
+            "title": "Fulfilment Status",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lng": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lng"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At"
+          },
+          "simulated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simulated"
+          }
+        },
+        "required": [
+          "order_id",
+          "assignment_id",
+          "assignment_status",
+          "fulfilment_status",
+          "is_test_fixture",
+          "agent_id",
+          "agent_name",
+          "delivery_address",
+          "delivery_exception_open",
+          "lat",
+          "lng",
+          "recorded_at",
+          "simulated"
+        ],
+        "title": "DeliveryOut",
+        "type": "object"
+      },
       "DeviceOut": {
         "properties": {
           "created_at": {
@@ -1417,6 +1663,36 @@
         "title": "IntakeOut",
         "type": "object"
       },
+      "InventoryOut": {
+        "properties": {
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "movements": {
+            "items": {
+              "$ref": "#/components/schemas/MovementOut"
+            },
+            "title": "Movements",
+            "type": "array"
+          },
+          "stock": {
+            "items": {
+              "$ref": "#/components/schemas/ManagedStockOut"
+            },
+            "title": "Stock",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kitchen_id",
+          "stock",
+          "movements"
+        ],
+        "title": "InventoryOut",
+        "type": "object"
+      },
       "ItemPrep": {
         "enum": [
           "PENDING",
@@ -1879,6 +2155,57 @@
         "title": "KitchenSettingsOut",
         "type": "object"
       },
+      "KitchenStatusOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "intake": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ManagedIntakeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "region_id": {
+            "format": "uuid",
+            "title": "Region Id",
+            "type": "string"
+          },
+          "region_name": {
+            "title": "Region Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "region_id",
+          "region_name",
+          "mode",
+          "intake"
+        ],
+        "title": "KitchenStatusOut",
+        "type": "object"
+      },
       "LineageOut": {
         "properties": {
           "source_card_id": {
@@ -2030,6 +2357,71 @@
           "status"
         ],
         "title": "LiveResponse",
+        "type": "object"
+      },
+      "ManagedIntakeOut": {
+        "properties": {
+          "accepting": {
+            "title": "Accepting",
+            "type": "boolean"
+          },
+          "active_orders": {
+            "title": "Active Orders",
+            "type": "integer"
+          },
+          "capacity": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "refusal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refusal"
+          }
+        },
+        "required": [
+          "mode",
+          "capacity",
+          "active_orders",
+          "accepting",
+          "refusal"
+        ],
+        "title": "ManagedIntakeOut",
+        "type": "object"
+      },
+      "ManagedItemOut": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "quantity"
+        ],
+        "title": "ManagedItemOut",
         "type": "object"
       },
       "ManagedMenuItemOut": {
@@ -2195,6 +2587,62 @@
         "title": "ManagedMenuItemOut",
         "type": "object"
       },
+      "ManagedStockOut": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "string"
+          },
+          "ingredient_id": {
+            "format": "uuid",
+            "title": "Ingredient Id",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "low_stock_threshold": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Low Stock Threshold"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "on_hand": {
+            "title": "On Hand",
+            "type": "string"
+          },
+          "reserved": {
+            "title": "Reserved",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ingredient_id",
+          "name",
+          "unit",
+          "on_hand",
+          "reserved",
+          "available",
+          "low_stock_threshold",
+          "is_test_fixture"
+        ],
+        "title": "ManagedStockOut",
+        "type": "object"
+      },
       "MeOut": {
         "properties": {
           "display_name": {
@@ -2328,6 +2776,75 @@
           "action"
         ],
         "title": "MenuTransitionIn",
+        "type": "object"
+      },
+      "MovementOut": {
+        "properties": {
+          "actor_role": {
+            "title": "Actor Role",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "delta": {
+            "title": "Delta",
+            "type": "string"
+          },
+          "ingredient_name": {
+            "title": "Ingredient Name",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "order_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "created_at",
+          "ingredient_name",
+          "unit",
+          "delta",
+          "kind",
+          "reason",
+          "actor_role",
+          "order_id",
+          "is_test_fixture"
+        ],
+        "title": "MovementOut",
         "type": "object"
       },
       "MyWorkOut": {
@@ -2509,6 +3026,34 @@
           "address_id"
         ],
         "title": "OrderCreateIn",
+        "type": "object"
+      },
+      "OrderDetailOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ManagedItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "order": {
+            "$ref": "#/components/schemas/OrderRowOut"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineOut"
+            },
+            "title": "Timeline",
+            "type": "array"
+          }
+        },
+        "required": [
+          "order",
+          "items",
+          "timeline"
+        ],
+        "title": "OrderDetailOut",
         "type": "object"
       },
       "OrderItemOut": {
@@ -2742,6 +3287,142 @@
         "title": "OrderOut",
         "type": "object"
       },
+      "OrderPageOut": {
+        "properties": {
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/OrderRowOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rows",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "title": "OrderPageOut",
+        "type": "object"
+      },
+      "OrderRowOut": {
+        "properties": {
+          "agent_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Name"
+          },
+          "assignment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignment Status"
+          },
+          "delivery_exception_open": {
+            "title": "Delivery Exception Open",
+            "type": "boolean"
+          },
+          "fulfilment_status": {
+            "title": "Fulfilment Status",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "kitchen_name": {
+            "title": "Kitchen Name",
+            "type": "string"
+          },
+          "payable_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payable Paise"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method"
+          },
+          "payment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Status"
+          },
+          "placed_at": {
+            "format": "date-time",
+            "title": "Placed At",
+            "type": "string"
+          },
+          "status_label": {
+            "title": "Status Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "placed_at",
+          "fulfilment_status",
+          "status_label",
+          "is_test_fixture",
+          "kitchen_name",
+          "payable_paise",
+          "payment_method",
+          "payment_status",
+          "agent_name",
+          "assignment_status",
+          "delivery_exception_open"
+        ],
+        "title": "OrderRowOut",
+        "type": "object"
+      },
       "OtpRequestIn": {
         "properties": {
           "mobile": {
@@ -2838,6 +3519,66 @@
           "code"
         ],
         "title": "OtpVerifyIn",
+        "type": "object"
+      },
+      "OverviewOut": {
+        "properties": {
+          "active_deliveries": {
+            "title": "Active Deliveries",
+            "type": "integer"
+          },
+          "availability_requests": {
+            "title": "Availability Requests",
+            "type": "integer"
+          },
+          "delivery_exceptions": {
+            "title": "Delivery Exceptions",
+            "type": "integer"
+          },
+          "failure_requests": {
+            "title": "Failure Requests",
+            "type": "integer"
+          },
+          "kitchens": {
+            "items": {
+              "$ref": "#/components/schemas/KitchenStatusOut"
+            },
+            "title": "Kitchens",
+            "type": "array"
+          },
+          "kpis_available": {
+            "const": false,
+            "default": false,
+            "title": "Kpis Available",
+            "type": "boolean"
+          },
+          "online_agents": {
+            "title": "Online Agents",
+            "type": "integer"
+          },
+          "orders_by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Orders By Status",
+            "type": "object"
+          },
+          "overdue_incoming": {
+            "title": "Overdue Incoming",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "orders_by_status",
+          "overdue_incoming",
+          "availability_requests",
+          "failure_requests",
+          "delivery_exceptions",
+          "online_agents",
+          "active_deliveries",
+          "kitchens"
+        ],
+        "title": "OverviewOut",
         "type": "object"
       },
       "PaymentMethod": {
@@ -3435,6 +4176,152 @@
         "title": "RecipeVersionOut",
         "type": "object"
       },
+      "RefundOut": {
+        "properties": {
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name"
+          },
+          "actor_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Role"
+          },
+          "amount_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Paise"
+          },
+          "changed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Changed At"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "pending_decision": {
+            "title": "Pending Decision",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "is_test_fixture",
+          "amount_paise",
+          "method",
+          "status",
+          "reason",
+          "actor_role",
+          "actor_name",
+          "changed_at",
+          "pending_decision"
+        ],
+        "title": "RefundOut",
+        "type": "object"
+      },
+      "RefundsOut": {
+        "properties": {
+          "disabled_reason": {
+            "default": "Disabled: no threshold configured (DDR-44)",
+            "title": "Disabled Reason",
+            "type": "string"
+          },
+          "exceptional_refunds_enabled": {
+            "const": false,
+            "default": false,
+            "title": "Exceptional Refunds Enabled",
+            "type": "boolean"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/RefundOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "title": "RefundsOut",
+        "type": "object"
+      },
+      "RegionOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name"
+        ],
+        "title": "RegionOut",
+        "type": "object"
+      },
       "RespondIn": {
         "properties": {
           "accept": {
@@ -3967,6 +4854,151 @@
         "title": "SimulateIn",
         "type": "object"
       },
+      "StaffIn": {
+        "properties": {
+          "display_name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "kitchen_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kitchen Id"
+          },
+          "mobile": {
+            "maxLength": 20,
+            "minLength": 10,
+            "title": "Mobile",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "region_id": {
+            "format": "uuid",
+            "title": "Region Id",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "KITCHEN_STAFF",
+              "KITCHEN_MANAGER",
+              "DELIVERY_AGENT",
+              "REGIONAL_MANAGER"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "display_name",
+          "mobile",
+          "role",
+          "region_id",
+          "reason"
+        ],
+        "title": "StaffIn",
+        "type": "object"
+      },
+      "StaffOut": {
+        "properties": {
+          "assignment_id": {
+            "format": "uuid",
+            "title": "Assignment Id",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "granted_at": {
+            "format": "date-time",
+            "title": "Granted At",
+            "type": "string"
+          },
+          "kitchen_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kitchen Id"
+          },
+          "mobile_masked": {
+            "title": "Mobile Masked",
+            "type": "string"
+          },
+          "region_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Id"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "user_status": {
+            "title": "User Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assignment_id",
+          "user_id",
+          "display_name",
+          "mobile_masked",
+          "user_status",
+          "role",
+          "region_id",
+          "kitchen_id",
+          "granted_at"
+        ],
+        "title": "StaffOut",
+        "type": "object"
+      },
+      "StaffReasonIn": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "StaffReasonIn",
+        "type": "object"
+      },
       "StageOut": {
         "properties": {
           "detail": {
@@ -4056,6 +5088,26 @@
           "finished_at"
         ],
         "title": "StageOut",
+        "type": "object"
+      },
+      "StatusIn": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "active",
+          "reason"
+        ],
+        "title": "StatusIn",
         "type": "object"
       },
       "StockOut": {
@@ -4163,6 +5215,71 @@
           "reason"
         ],
         "title": "ThresholdIn",
+        "type": "object"
+      },
+      "TimelineOut": {
+        "properties": {
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name"
+          },
+          "actor_role": {
+            "title": "Actor Role",
+            "type": "string"
+          },
+          "changed_at": {
+            "format": "date-time",
+            "title": "Changed At",
+            "type": "string"
+          },
+          "from_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Status"
+          },
+          "machine": {
+            "title": "Machine",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "to_status": {
+            "title": "To Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "machine",
+          "from_status",
+          "to_status",
+          "actor_role",
+          "actor_name",
+          "reason",
+          "changed_at"
+        ],
+        "title": "TimelineOut",
         "type": "object"
       },
       "TransitionIn": {
@@ -6240,6 +7357,897 @@
         "summary": "Update Settings",
         "tags": [
           "kitchen"
+        ]
+      }
+    },
+    "/api/v1/management/audit": {
+      "get": {
+        "description": "RM: events of assigned regions. CA: all events (#10 \u00a712; DDR-114 (7)).",
+        "operationId": "audit_api_v1_management_audit_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "action",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 80,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Action"
+            }
+          },
+          {
+            "in": "query",
+            "name": "target_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 60,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Target Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actor_role",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Actor Role"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Audit",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/audit.csv": {
+      "get": {
+        "operationId": "audit_csv_api_v1_management_audit_csv_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "action",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 80,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Action"
+            }
+          },
+          {
+            "in": "query",
+            "name": "target_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 60,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Target Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actor_role",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Actor Role"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Audit Csv",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/deliveries": {
+      "get": {
+        "description": "Live offers and deliveries with the latest position (Simulated labelled; DDR-114 (11)).",
+        "operationId": "deliveries_api_v1_management_deliveries_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryOut"
+                  },
+                  "title": "Response Deliveries Api V1 Management Deliveries Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Deliveries",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/kitchens": {
+      "get": {
+        "operationId": "kitchens_api_v1_management_kitchens_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/KitchenStatusOut"
+                  },
+                  "title": "Response Kitchens Api V1 Management Kitchens Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Kitchens",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/kitchens/{kitchen_id}/inventory": {
+      "get": {
+        "description": "Read-only stock, reservations, thresholds and the latest 100 ledger rows (DDR-114 (12)).",
+        "operationId": "inventory_api_v1_management_kitchens__kitchen_id__inventory_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kitchen_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Kitchen Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Inventory",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/orders": {
+      "get": {
+        "description": "Orders by status, date (\u2264 31 days), kitchen, agent and exception flag (#10 \u00a77).",
+        "operationId": "orders_api_v1_management_orders_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Agent Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "exception",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Exception"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Orders",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/orders.csv": {
+      "get": {
+        "description": "The current filtered view as CSV (\u2264 5,000 rows), same scope as the screen; the export is audited.",
+        "operationId": "orders_csv_api_v1_management_orders_csv_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Agent Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "exception",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Exception"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Orders Csv",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/orders/{order_id}": {
+      "get": {
+        "description": "Fulfilment, item, payment and assignment timelines with actor and reason.",
+        "operationId": "order_detail_api_v1_management_orders__order_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Order Detail",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/overview": {
+      "get": {
+        "description": "Counts from persisted records only (DDR-114 (10)); KPIs wait for Task 13.",
+        "operationId": "overview_api_v1_management_overview_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Overview",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/refunds": {
+      "get": {
+        "description": "Refund records (actor, amount, reason, order, outcome; MG-05) and pending decisions (DDR-114 (6)).",
+        "operationId": "refunds_api_v1_management_refunds_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Refunds",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/regions": {
+      "get": {
+        "operationId": "regions_api_v1_management_regions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RegionOut"
+                  },
+                  "title": "Response Regions Api V1 Management Regions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Regions",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/staff": {
+      "get": {
+        "description": "Staff the caller may manage (RM: KM, KS, agents of assigned regions; CA: all staff).",
+        "operationId": "staff_api_v1_management_staff_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StaffOut"
+                  },
+                  "title": "Response Staff Api V1 Management Staff Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Staff",
+        "tags": [
+          "management"
+        ]
+      },
+      "post": {
+        "description": "Grant a staff role (creating the account if the mobile is new); the person signs in by OTP.",
+        "operationId": "add_staff_api_v1_management_staff_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Staff",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/staff/roles/{assignment_id}/remove": {
+      "post": {
+        "description": "Remove a role; blocked while an agent holds a delivery; ends the person's sessions at once.",
+        "operationId": "remove_role_api_v1_management_staff_roles__assignment_id__remove_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assignment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assignment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffReasonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Role",
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/staff/{user_id}/status": {
+      "put": {
+        "description": "Deactivate (blocked while an agent holds a delivery; ends sessions) or reactivate, with a reason.",
+        "operationId": "set_status_api_v1_management_staff__user_id__status_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatusIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Status",
+        "tags": [
+          "management"
         ]
       }
     },
