@@ -5,8 +5,9 @@
 
 Loads the six #15 §4 seed users and role assignments (`load-users`), the TEST menu
 (`load-menu`, see `fixtures_menu.py`) and the TEST opening stock (`load-stock`, DDR-37); `load-all`
-does all three. Their mobile numbers are the #15 placeholder range, accepted only in local/test.
-Refuses to run unless APP_ENV is local or test. Idempotent.
+does all three; `reset-shared` restores the shared TEST baseline. Their mobile numbers are the
+#15 placeholder range, accepted only in local/test. Refuses to run unless APP_ENV is local or
+test. Idempotent.
 """
 
 from __future__ import annotations
@@ -76,7 +77,8 @@ def load_users() -> int:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Load local/test fixtures")
     parser.add_argument(
-        "command", choices=["load-users", "load-menu", "load-stock", "load-all", "load-e2e-recipe"]
+        "command",
+        choices=["load-users", "load-menu", "load-stock", "load-all", "load-e2e-recipe", "reset-shared"],
     )
     args = parser.parse_args(argv)
     settings = get_settings()
@@ -86,6 +88,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command in ("load-users", "load-all"):
         created = load_users()
         print(f"seed users ready ({len(SEED_USERS)}); role grants created: {created}")
+    if args.command == "reset-shared":
+        from app.cli.fixtures_menu import reset_shared
+
+        print("shared TEST state reset: " + ", ".join(f"{k}={v}" for k, v in reset_shared().items()))
+        return 0
     if args.command == "load-e2e-recipe":
         from app.cli.fixtures_menu import load_e2e_recipe
 

@@ -110,6 +110,10 @@ stats:
 fixtures: env-check
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-all
 
+# Back to the fixture baseline: kitchen NORMAL, test defaults, TEST dishes published, TEST stock 10,000 g.
+reset-fixtures: env-check
+	$(COMPOSE) run --rm migrate python -m app.cli.fixtures reset-shared
+
 # Playwright in the pinned container against the running core stack (needs `make up` + `make fixtures`).
 # Needs the core stack, the worker and fixtures (`make up worker fixtures`). Setup makes the data
 # independent of earlier runs: the real SOP import (idempotent, through the worker) and one fresh

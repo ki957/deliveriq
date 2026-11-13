@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Edit(/home/k/Downloads/task1/**)",
+      "Write(/home/k/Downloads/task1/**)",
+      "Edit(./data/source/**)",
+      "Write(./data/source/**)",
+      "Edit(./frontend/src/shared/api/generated/**)",
+      "Write(./frontend/src/shared/api/generated/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-git.sh\"" }]
+      }
+    ]
+  }
+}

@@ -211,6 +211,8 @@ Requested only when the task needs them. Secrets go in a git-ignored local `.env
 
 Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (must pass to close the task) and **Gated features** (built but disabled, or not built, per §5).
 
+**Live build status is kept in `passon.md` §2** (repo root). The per-task "Status" lines below are history written when each task closed; if they differ, `passon.md` is current.
+
 ### Task 0 — Source registry, hashing and ADRs
 
 - **Objective:** Make every source verifiable and every decision recorded.
