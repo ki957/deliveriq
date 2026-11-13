@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is built and verified on `task-09a-delivery-api`, waiting for the owner's approval and merge; 9B (Delivery PWA UI) is next.
+`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). **9B (Delivery PWA UI) is in progress on `task-09b-delivery-pwa`**; its plan and D19–D20 are approved (DDR-113 (19), (20)).
 
 | Task | Scope | State |
 |---|---|---|
@@ -46,8 +46,8 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | **8A** | Kitchen operations and inventory **backend** (migration 0010, DDR-111) | ✅ merged (PR #13) |
 | tooling | `CLAUDE.md`, `.claude/` commands + hook, `make reset-fixtures`, this guide | ✅ merged (PR #14) |
 | 8B | Kitchen + Management UI for Task 8, tablet + KDS E2E (DDR-112) | ✅ merged (PR #15) |
-| **9A** | Delivery backend (migration 0011, DDR-113) | 🟡 **built and verified on `task-09a-delivery-api`; waiting for approval/merge** |
-| **9B** | Delivery PWA UI | ⏭️ **next task** (decisions already approved in DDR-113) |
+| 9A | Delivery backend (migration 0011, DDR-113) | ✅ merged (PR #16) |
+| **9B** | Delivery PWA UI | 🟡 **in progress on `task-09b-delivery-pwa`; plan approved** |
 | 9 – 22 | See §6 | ⬜ not started |
 
 **Milestones** (plan §4.1):
@@ -55,7 +55,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 - **M2 Core order flow (5–9): only Task 9 (9A, 9B) remains.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** ask the owner whether the 9A PR is merged. Then build **9B** from §5: its decisions are already approved in DDR-113, so present only a short plan (no new decision sheet unless something is undefined).
+**First thing to do:** 9B is approved: `git checkout task-09b-delivery-pwa`, check `git log --oneline main..` and `git status`, and continue building from §5 (no new plan or decision sheet).
 
 ---
 
@@ -286,6 +286,7 @@ Rules:
 | 2026-11-12 | 8A / #13 | DDR-111 | Migration 0010; kitchen accept/reject/prep, stock, availability; migrate image must be rebuilt after migration edits |
 | 2026-11-12 | tooling / #14 | rules v1.1 | `CLAUDE.md`, `.claude/` commands + guard hook, `make reset-fixtures`, this guide |
 | 2026-11-12 | 9 plan | DDR-113 | Approved |
+| 2026-11-12 | 9B plan | DDR-113 (19)–(20) | Approved; 9B started on `task-09b-delivery-pwa` |
 | 2026-11-12 | 9A / #16 | DDR-113 | Migration 0011; delivery lifecycle, code, GPS, retention; worker uses 2 SECURITY DEFINER functions only |
 | 2026-11-12 | 8B / #15 | DDR-112 | Kitchen screens + Management Dish Availability; `kds` 1920×1080 project (`@kitchen` on tablet + kds only); `e2e-setup` runs `reset-shared`; mask live counts in screenshots |
 
