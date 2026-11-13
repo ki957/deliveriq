@@ -16,6 +16,142 @@
         "title": "AcknowledgeIn",
         "type": "object"
       },
+      "AddressIn": {
+        "properties": {
+          "address_line": {
+            "maxLength": 300,
+            "minLength": 3,
+            "title": "Address Line",
+            "type": "string"
+          },
+          "label": {
+            "examples": [
+              "Home"
+            ],
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "lat": {
+            "maximum": 37.5,
+            "minimum": 6.0,
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "maximum": 97.5,
+            "minimum": 68.0,
+            "title": "Lng",
+            "type": "number"
+          },
+          "make_default": {
+            "default": false,
+            "title": "Make Default",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "label",
+          "address_line",
+          "lat",
+          "lng"
+        ],
+        "title": "AddressIn",
+        "type": "object"
+      },
+      "AddressOut": {
+        "properties": {
+          "address_line": {
+            "title": "Address Line",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "serviceability": {
+            "$ref": "#/components/schemas/ServiceabilityOut"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "address_line",
+          "lat",
+          "lng",
+          "is_default",
+          "created_at",
+          "serviceability"
+        ],
+        "title": "AddressOut",
+        "type": "object"
+      },
+      "BillOut": {
+        "properties": {
+          "delivery_fee_paise": {
+            "title": "Delivery Fee Paise",
+            "type": "integer"
+          },
+          "discount_paise": {
+            "title": "Discount Paise",
+            "type": "integer"
+          },
+          "food_subtotal_paise": {
+            "title": "Food Subtotal Paise",
+            "type": "integer"
+          },
+          "minimum_food_subtotal_paise": {
+            "title": "Minimum Food Subtotal Paise",
+            "type": "integer"
+          },
+          "minimum_met": {
+            "title": "Minimum Met",
+            "type": "boolean"
+          },
+          "payable_paise": {
+            "title": "Payable Paise",
+            "type": "integer"
+          },
+          "tax_note": {
+            "title": "Tax Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "food_subtotal_paise",
+          "minimum_food_subtotal_paise",
+          "minimum_met",
+          "delivery_fee_paise",
+          "discount_paise",
+          "payable_paise",
+          "tax_note"
+        ],
+        "title": "BillOut",
+        "type": "object"
+      },
       "CancelIn": {
         "properties": {
           "reason": {
@@ -49,6 +185,158 @@
           "outcome"
         ],
         "title": "CancelOut",
+        "type": "object"
+      },
+      "CartLineOut": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "cart_price_paise": {
+            "title": "Cart Price Paise",
+            "type": "integer"
+          },
+          "charge_price_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Charge Price Paise"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "menu_item_id": {
+            "format": "uuid",
+            "title": "Menu Item Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "price_changed": {
+            "title": "Price Changed",
+            "type": "boolean"
+          },
+          "protected_until": {
+            "format": "date-time",
+            "title": "Protected Until",
+            "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "menu_item_id",
+          "name",
+          "quantity",
+          "is_test_fixture",
+          "available",
+          "cart_price_paise",
+          "protected_until",
+          "charge_price_paise",
+          "price_changed"
+        ],
+        "title": "CartLineOut",
+        "type": "object"
+      },
+      "CartOut": {
+        "properties": {
+          "address_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Error"
+          },
+          "bill": {
+            "$ref": "#/components/schemas/BillOut"
+          },
+          "blockers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Blockers",
+            "type": "array"
+          },
+          "coupon_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coupon Code"
+          },
+          "coupon_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coupon Error"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CartLineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "serviceability": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ServiceabilityOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "lines",
+          "bill",
+          "coupon_code",
+          "coupon_error",
+          "serviceability",
+          "address_error",
+          "blockers"
+        ],
+        "title": "CartOut",
+        "type": "object"
+      },
+      "CartQuantityIn": {
+        "properties": {
+          "quantity": {
+            "maximum": 99.0,
+            "minimum": 1.0,
+            "title": "Quantity",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "quantity"
+        ],
+        "title": "CartQuantityIn",
         "type": "object"
       },
       "CustomerMenuItemOut": {
@@ -94,6 +382,10 @@
               }
             ],
             "title": "Image Url"
+          },
+          "is_bestseller": {
+            "title": "Is Bestseller",
+            "type": "boolean"
           },
           "is_test_fixture": {
             "title": "Is Test Fixture",
@@ -159,7 +451,8 @@
           "image_url",
           "image_is_placeholder",
           "category",
-          "is_test_fixture"
+          "is_test_fixture",
+          "is_bestseller"
         ],
         "title": "CustomerMenuItemOut",
         "type": "object"
@@ -200,6 +493,140 @@
           "expires_at"
         ],
         "title": "DeviceOut",
+        "type": "object"
+      },
+      "DishDetailOut": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "customizations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Customizations",
+            "type": "array"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "image_is_placeholder": {
+            "title": "Image Is Placeholder",
+            "type": "boolean"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "ingredients": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ingredients",
+            "type": "array"
+          },
+          "is_bestseller": {
+            "title": "Is Bestseller",
+            "type": "boolean"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "is_veg": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Veg"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "prep_time_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prep Time Minutes"
+          },
+          "price_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Paise"
+          },
+          "spice_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spice Level"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "price_paise",
+          "is_veg",
+          "spice_level",
+          "prep_time_minutes",
+          "image_url",
+          "image_is_placeholder",
+          "category",
+          "is_test_fixture",
+          "is_bestseller",
+          "ingredients",
+          "customizations"
+        ],
+        "title": "DishDetailOut",
         "type": "object"
       },
       "DqResultOut": {
@@ -539,6 +966,10 @@
             ],
             "title": "Image Url"
           },
+          "is_bestseller": {
+            "title": "Is Bestseller",
+            "type": "boolean"
+          },
           "is_test_fixture": {
             "title": "Is Test Fixture",
             "type": "boolean"
@@ -638,6 +1069,7 @@
           "image_is_placeholder",
           "category",
           "is_test_fixture",
+          "is_bestseller",
           "tax_classification",
           "publication_status",
           "kitchen_id",
@@ -692,6 +1124,69 @@
         "title": "MeOut",
         "type": "object"
       },
+      "MenuFiltersOut": {
+        "properties": {
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "has_bestsellers": {
+            "title": "Has Bestsellers",
+            "type": "boolean"
+          },
+          "has_non_veg": {
+            "title": "Has Non Veg",
+            "type": "boolean"
+          },
+          "has_veg": {
+            "title": "Has Veg",
+            "type": "boolean"
+          },
+          "max_price_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Price Paise"
+          },
+          "min_price_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price Paise"
+          },
+          "spice_levels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Spice Levels",
+            "type": "array"
+          }
+        },
+        "required": [
+          "categories",
+          "spice_levels",
+          "min_price_paise",
+          "max_price_paise",
+          "has_bestsellers",
+          "has_veg",
+          "has_non_veg"
+        ],
+        "title": "MenuFiltersOut",
+        "type": "object"
+      },
       "MenuTransitionIn": {
         "properties": {
           "action": {
@@ -723,6 +1218,23 @@
       },
       "OrderCreateIn": {
         "properties": {
+          "address_id": {
+            "format": "uuid",
+            "title": "Address Id",
+            "type": "string"
+          },
+          "coupon_code": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coupon Code"
+          },
           "lines": {
             "items": {
               "$ref": "#/components/schemas/OrderLineIn"
@@ -750,7 +1262,8 @@
         },
         "required": [
           "lines",
-          "payment_method"
+          "payment_method",
+          "address_id"
         ],
         "title": "OrderCreateIn",
         "type": "object"
@@ -815,11 +1328,17 @@
             "minimum": 1.0,
             "title": "Quantity",
             "type": "integer"
+          },
+          "unit_price_paise": {
+            "exclusiveMinimum": 0.0,
+            "title": "Unit Price Paise",
+            "type": "integer"
           }
         },
         "required": [
           "menu_item_id",
-          "quantity"
+          "quantity",
+          "unit_price_paise"
         ],
         "title": "OrderLineIn",
         "type": "object"
@@ -829,6 +1348,17 @@
           "agent_assigned": {
             "title": "Agent Assigned",
             "type": "boolean"
+          },
+          "delivery_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Address"
           },
           "delivery_fee_paise": {
             "anyOf": [
@@ -840,6 +1370,10 @@
               }
             ],
             "title": "Delivery Fee Paise"
+          },
+          "discount_paise": {
+            "title": "Discount Paise",
+            "type": "integer"
           },
           "food_subtotal_paise": {
             "anyOf": [
@@ -897,6 +1431,17 @@
             "title": "Placed At",
             "type": "string"
           },
+          "road_km_estimated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Road Km Estimated"
+          },
           "special_instructions": {
             "anyOf": [
               {
@@ -922,7 +1467,10 @@
           "special_instructions",
           "food_subtotal_paise",
           "delivery_fee_paise",
+          "discount_paise",
           "payable_paise",
+          "delivery_address",
+          "road_km_estimated",
           "placed_at",
           "items",
           "payment"
@@ -1861,6 +2409,64 @@
         "title": "RunSummaryOut",
         "type": "object"
       },
+      "ServiceabilityOut": {
+        "properties": {
+          "kitchen_location_is_synthetic": {
+            "title": "Kitchen Location Is Synthetic",
+            "type": "boolean"
+          },
+          "kitchen_name": {
+            "title": "Kitchen Name",
+            "type": "string"
+          },
+          "road_km": {
+            "title": "Road Km",
+            "type": "string"
+          },
+          "road_km_estimated": {
+            "title": "Road Km Estimated",
+            "type": "boolean"
+          },
+          "road_max_km": {
+            "title": "Road Max Km",
+            "type": "string"
+          },
+          "road_ok": {
+            "title": "Road Ok",
+            "type": "boolean"
+          },
+          "serviceable": {
+            "title": "Serviceable",
+            "type": "boolean"
+          },
+          "straight_line_km": {
+            "title": "Straight Line Km",
+            "type": "string"
+          },
+          "straight_line_max_km": {
+            "title": "Straight Line Max Km",
+            "type": "string"
+          },
+          "straight_line_ok": {
+            "title": "Straight Line Ok",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "serviceable",
+          "straight_line_km",
+          "straight_line_max_km",
+          "straight_line_ok",
+          "road_km",
+          "road_max_km",
+          "road_ok",
+          "road_km_estimated",
+          "kitchen_name",
+          "kitchen_location_is_synthetic"
+        ],
+        "title": "ServiceabilityOut",
+        "type": "object"
+      },
       "SignoffIn": {
         "properties": {
           "note": {
@@ -2270,6 +2876,232 @@
         ]
       }
     },
+    "/api/v1/cart": {
+      "delete": {
+        "operationId": "clear_api_v1_cart_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Clear",
+        "tags": [
+          "cart"
+        ]
+      },
+      "get": {
+        "description": "The cart with a live quote: protected prices, the bill, serviceability and checkout blockers.",
+        "operationId": "get_cart_api_v1_cart_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "address_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Address Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "coupon_code",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 20,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Coupon Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Cart",
+        "tags": [
+          "cart"
+        ]
+      }
+    },
+    "/api/v1/cart/items/{menu_item_id}": {
+      "delete": {
+        "operationId": "remove_item_api_v1_cart_items__menu_item_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "menu_item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Menu Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Item",
+        "tags": [
+          "cart"
+        ]
+      },
+      "put": {
+        "operationId": "set_quantity_api_v1_cart_items__menu_item_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "menu_item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Menu Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartQuantityIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "A checkout rule refused the order; `code` names the rule"
+          }
+        },
+        "summary": "Set Quantity",
+        "tags": [
+          "cart"
+        ]
+      }
+    },
+    "/api/v1/cart/items/{menu_item_id}/accept-price": {
+      "post": {
+        "description": "Explicit confirmation of a revised price (CU-13).",
+        "operationId": "accept_price_api_v1_cart_items__menu_item_id__accept_price_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "menu_item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Menu Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "A checkout rule refused the order; `code` names the rule"
+          }
+        },
+        "summary": "Accept Price",
+        "tags": [
+          "cart"
+        ]
+      }
+    },
+    "/api/v1/cart/remove-unavailable": {
+      "post": {
+        "description": "The customer confirms removal of dishes that became unavailable (CU-14).",
+        "operationId": "remove_unavailable_api_v1_cart_remove_unavailable_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Remove Unavailable",
+        "tags": [
+          "cart"
+        ]
+      }
+    },
     "/api/v1/me": {
       "get": {
         "operationId": "me_api_v1_me_get",
@@ -2288,6 +3120,149 @@
         "summary": "Me",
         "tags": [
           "me"
+        ]
+      }
+    },
+    "/api/v1/me/addresses": {
+      "get": {
+        "operationId": "list_addresses_api_v1_me_addresses_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AddressOut"
+                  },
+                  "title": "Response List Addresses Api V1 Me Addresses Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Addresses",
+        "tags": [
+          "customers"
+        ]
+      },
+      "post": {
+        "operationId": "add_address_api_v1_me_addresses_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Address",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/me/addresses/{address_id}": {
+      "delete": {
+        "operationId": "delete_address_api_v1_me_addresses__address_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Address Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Address",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/me/addresses/{address_id}/default": {
+      "post": {
+        "operationId": "make_default_api_v1_me_addresses__address_id__default_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Address Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Make Default",
+        "tags": [
+          "customers"
         ]
       }
     },
@@ -2352,9 +3327,150 @@
         ]
       }
     },
+    "/api/v1/menu/filters": {
+      "get": {
+        "operationId": "menu_filters_api_v1_menu_filters_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuFiltersOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Menu Filters",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
     "/api/v1/menu/items": {
       "get": {
+        "description": "PUBLISHED dishes only (DDR-11); fixtures excluded in production (leak control 4); CU-06 filters.",
         "operationId": "customer_menu_api_v1_menu_items_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 80,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 80,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "veg",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Veg"
+            }
+          },
+          {
+            "in": "query",
+            "name": "spice",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Spice"
+            }
+          },
+          {
+            "in": "query",
+            "name": "min_price_paise",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Price Paise"
+            }
+          },
+          {
+            "in": "query",
+            "name": "max_price_paise",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Price Paise"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bestseller",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bestseller"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -2369,9 +3485,62 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "Customer Menu",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
+    "/api/v1/menu/items/{item_id}": {
+      "get": {
+        "operationId": "dish_detail_api_v1_menu_items__item_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DishDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Dish Detail",
         "tags": [
           "menu"
         ]
@@ -2519,15 +3688,11 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "description": "A price changed (`price_changes`), a wrong step, or a reused Idempotency-Key"
+          },
           "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
+            "description": "A checkout rule refused the order; `code` names the rule"
           }
         },
         "summary": "Place Order",
@@ -3310,6 +4475,62 @@
         "summary": "Transition",
         "tags": [
           "recipes"
+        ]
+      }
+    },
+    "/api/v1/serviceability": {
+      "get": {
+        "description": "For visitors too (CU-01): no location is stored on the server (DDR-110).",
+        "operationId": "check_api_v1_serviceability_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lat",
+            "required": true,
+            "schema": {
+              "maximum": 37.5,
+              "minimum": 6.0,
+              "title": "Lat",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lng",
+            "required": true,
+            "schema": {
+              "maximum": 97.5,
+              "minimum": 68.0,
+              "title": "Lng",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceabilityOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check",
+        "tags": [
+          "customers"
         ]
       }
     },

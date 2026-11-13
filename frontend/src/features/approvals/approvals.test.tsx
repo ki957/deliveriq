@@ -29,6 +29,7 @@ function item(overrides: Partial<MenuItem> = {}): MenuItem {
     image_is_placeholder: true,
     category: "TEST – Category",
     is_test_fixture: true,
+    is_bestseller: false,
     tax_classification: "TEST",
     publication_status: "DRAFT",
     kitchen_id: "k1",

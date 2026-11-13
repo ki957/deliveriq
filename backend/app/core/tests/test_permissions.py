@@ -117,3 +117,11 @@ def test_only_customers_place_and_cancel_their_own_orders() -> None:
     me = principal(Role.CUSTOMER)
     assert can(me, P.CUSTOMER_ORDERS_PLACE, customer_id=me.user_id)
     assert not can(me, P.CUSTOMER_ORDERS_CANCEL, customer_id=uuid.uuid4())
+
+
+def test_only_customers_manage_their_own_addresses() -> None:
+    holders = {r for r, perms in ROLE_PERMISSIONS.items() if P.CUSTOMER_ADDRESSES_MANAGE in perms}
+    assert holders == {Role.CUSTOMER}
+    me = principal(Role.CUSTOMER)
+    assert can(me, P.CUSTOMER_ADDRESSES_MANAGE, customer_id=me.user_id)
+    assert not can(me, P.CUSTOMER_ADDRESSES_MANAGE, customer_id=uuid.uuid4())

@@ -32,6 +32,7 @@ EXPECTED_CONFIG = {
     "GPS_UPDATE_INTERVAL_MAX": ("5", "seconds"),
     "SPECIAL_INSTRUCTIONS_MAX_CHARS": ("250", "characters"),
     "GPS_RETENTION_DAYS": ("30", "days"),
+    "PRICE_PROTECTION_MINUTES": ("30", "minutes"),
 }
 
 
@@ -41,7 +42,7 @@ def test_all_approved_schemas_exist(api: Conn) -> None:
 
 
 def test_migrations_at_head(migrator: Conn) -> None:
-    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0008"
+    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0009"
 
 
 def test_is_test_fixture_on_all_five_tables(api: Conn) -> None:

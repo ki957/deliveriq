@@ -51,12 +51,47 @@ def place(c: httpx.Client, body: dict[str, Any], key: str | None = None) -> http
     return c.post(ORDERS, json=body, headers={"Idempotency-Key": key or str(uuid.uuid4())})
 
 
+# The module customer's saved address (#15 §5 synthetic seed coordinates, inside the delivery area).
+ADDRESS: dict[str, str] = {}
+SEED_LAT, SEED_LNG = 13.0835, 80.2710
+
+
+def price(world: World, letter: str) -> int:
+    return int(
+        scalar(
+            world, "SELECT price_paise FROM app.menu_items WHERE name = %s", f"TEST – Synthetic Dish {letter}"
+        )
+    )
+
+
 def body(world: World, method: str, *lines: tuple[str, int], note: str | None = None) -> dict[str, Any]:
+    """A checkout request at today's prices to the module customer's address (Task 6 contract)."""
     return {
-        "lines": [{"menu_item_id": dish(world, letter), "quantity": q} for letter, q in lines],
+        "lines": [
+            {"menu_item_id": dish(world, letter), "quantity": q, "unit_price_paise": price(world, letter)}
+            for letter, q in lines
+        ],
         "payment_method": method,
+        "address_id": ADDRESS["customer"],
         **({"special_instructions": note} if note is not None else {}),
     }
+
+
+def add_address(world: World, customer: uuid.UUID) -> uuid.UUID:
+    """A serviceable saved address inserted directly (for in-process service calls)."""
+    return uuid.UUID(
+        str(
+            scalar(
+                world,
+                "INSERT INTO app.customer_addresses (customer_user_id, label, address_line, location, is_default) "
+                "VALUES (%s, 'Home', 'Synthetic Test Address, Chennai', "
+                "ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography, true) RETURNING id",
+                customer,
+                SEED_LNG,
+                SEED_LAT,
+            )
+        )
+    )
 
 
 def history(world: World, machine: str, entity: str) -> list[tuple[Any, ...]]:
@@ -140,6 +175,8 @@ def remove_test_orders(world: World) -> Iterator[None]:
     world.db.execute("DELETE FROM app.payments WHERE order_id = ANY(%s)", (orders,))
     world.db.execute("DELETE FROM app.order_items WHERE order_id = ANY(%s)", (orders,))
     world.db.execute("DELETE FROM app.orders WHERE id = ANY(%s)", (orders,))
+    world.db.execute("DELETE FROM app.cart_items WHERE customer_user_id = ANY(%s)", (users,))
+    world.db.execute("DELETE FROM app.customer_addresses WHERE customer_user_id = ANY(%s)", (users,))
 
 
 @pytest.fixture(scope="module")
@@ -151,7 +188,19 @@ def customer(world: World) -> httpx.Client:
         )
         >= 3
     ), "run `make fixtures`"
-    return login(world.user("CUSTOMER"), "customer")
+    c = login(world.user("CUSTOMER"), "customer")
+    address = c.post(
+        "/api/v1/me/addresses",
+        json={
+            "label": "Home",
+            "address_line": "Synthetic Test Address, Chennai",
+            "lat": SEED_LAT,
+            "lng": SEED_LNG,
+        },
+    )
+    assert address.status_code == 201, address.text
+    ADDRESS["customer"] = address.json()["id"]
+    return c
 
 
 @pytest.fixture()
@@ -234,7 +283,7 @@ def test_prepaid_waits_for_the_simulated_payment(world: World, customer: httpx.C
     assert [e[0] for e in events(world, order["id"])] == ["order.placed", "payment.succeeded"]
     assert (
         customer.post(
-            f"{ORDERS}/{place(customer, body(world, 'COD', ('A', 1))).json()['id']}/payment/simulate",
+            f"{ORDERS}/{place(customer, body(world, 'COD', ('A', 5))).json()['id']}/payment/simulate",
             json={"outcome": "SUCCESS"},
         ).status_code
         == 409
@@ -266,19 +315,19 @@ def test_failed_or_timed_out_payment_never_reaches_the_kitchen(
 # ---------------------------------------------------------------- idempotency (DDR-109)
 def test_duplicate_submissions_create_one_order_and_one_payment(world: World, customer: httpx.Client) -> None:
     key = str(uuid.uuid4())
-    request = body(world, "SIM_CARD", ("B", 2))
+    request = body(world, "SIM_CARD", ("B", 3))
     first = place(customer, request, key)
     second = place(customer, request, key)
     assert (first.status_code, second.status_code) == (201, 200)
     assert first.json()["id"] == second.json()["id"]
     assert scalar(world, "SELECT count(*) FROM app.orders WHERE idempotency_key = %s", key) == 1
     assert scalar(world, "SELECT count(*) FROM app.payments WHERE order_id = %s", first.json()["id"]) == 1
-    assert place(customer, body(world, "SIM_CARD", ("B", 3)), key).status_code == 409  # same key, new request
+    assert place(customer, body(world, "SIM_CARD", ("B", 4)), key).status_code == 409  # same key, new request
 
 
 def test_concurrent_duplicates_still_create_one_order(world: World, customer: httpx.Client) -> None:
     key = str(uuid.uuid4())
-    request = body(world, "COD", ("C", 1))
+    request = body(world, "COD", ("C", 2))
     codes: list[int] = []
 
     def submit() -> None:
@@ -298,7 +347,7 @@ def test_concurrent_duplicates_still_create_one_order(world: World, customer: ht
 
 # ---------------------------------------------------------------- validation and access
 def test_input_validation(world: World, customer: httpx.Client) -> None:
-    ok = body(world, "COD", ("A", 1))
+    ok = body(world, "COD", ("A", 5))
     assert customer.post(ORDERS, json=ok).status_code == 422  # no Idempotency-Key
     assert place(customer, {**ok, "special_instructions": "x" * 250}).status_code == 201  # DDR-07
     assert place(customer, {**ok, "special_instructions": "x" * 251}).status_code == 422
@@ -306,12 +355,19 @@ def test_input_validation(world: World, customer: httpx.Client) -> None:
     assert place(customer, {**ok, "payment_method": "CASH"}).status_code == 422
     unpublished = scalar(world, "SELECT id FROM app.menu_items WHERE name = 'TEST – Synthetic Dish D'")
     for menu_item in (str(unpublished), str(uuid.uuid4())):
-        r = place(customer, {"lines": [{"menu_item_id": menu_item, "quantity": 1}], "payment_method": "COD"})
+        r = place(
+            customer,
+            {
+                "lines": [{"menu_item_id": menu_item, "quantity": 1, "unit_price_paise": 100}],
+                "payment_method": "COD",
+                "address_id": ok["address_id"],
+            },
+        )
         assert r.status_code == 422 and r.json()["message"] == "A dish in this order is not available"
 
 
 def test_orders_are_private_to_their_customer(world: World, customer: httpx.Client) -> None:
-    order = place(customer, body(world, "SIM_UPI", ("A", 1))).json()
+    order = place(customer, body(world, "SIM_UPI", ("A", 5))).json()
     other = login(world.user("CUSTOMER"), "customer")
     assert other.get(f"{ORDERS}/{order['id']}").status_code == 404
     assert (
@@ -321,7 +377,7 @@ def test_orders_are_private_to_their_customer(world: World, customer: httpx.Clie
     assert order["id"] not in [o["id"] for o in other.get(ORDERS).json()]
     assert order["id"] in [o["id"] for o in customer.get(ORDERS).json()]
     staff = login(world.user("KITCHEN_STAFF", region=world.region_a, kitchen=world.kitchen_a), "kitchen")
-    assert place(staff, body(world, "COD", ("A", 1))).status_code == 403
+    assert place(staff, body(world, "COD", ("A", 5))).status_code == 403
     with client() as anonymous:
         assert anonymous.get(ORDERS).status_code == 401
     other.close()
@@ -330,7 +386,7 @@ def test_orders_are_private_to_their_customer(world: World, customer: httpx.Clie
 
 # ---------------------------------------------------------------- cancellation (CU-19, DDR-109 routine refund)
 def test_cancel_before_acceptance_refunds_prepaid_in_full(world: World, customer: httpx.Client) -> None:
-    order = place(customer, body(world, "SIM_CARD", ("B", 1))).json()
+    order = place(customer, body(world, "SIM_CARD", ("B", 3))).json()
     assert customer.post(f"{ORDERS}/{order['id']}/cancel").status_code == 409  # payment still pending
     customer.post(f"{ORDERS}/{order['id']}/payment/simulate", json={"outcome": "SUCCESS"})
     r = customer.post(f"{ORDERS}/{order['id']}/cancel", json={"reason": "Changed my mind"})
@@ -348,13 +404,13 @@ def test_cancel_before_acceptance_refunds_prepaid_in_full(world: World, customer
 def test_cod_cancel_has_no_refund_and_accepted_orders_cannot_be_cancelled(
     world: World, customer: httpx.Client
 ) -> None:
-    cod = place(customer, body(world, "COD", ("A", 1))).json()
+    cod = place(customer, body(world, "COD", ("A", 5))).json()
     r = customer.post(f"{ORDERS}/{cod['id']}/cancel")
     assert (r.json()["fulfilment_status"], r.json()["payment"]["status"]) == (
         "CANCELLED",
         "COLLECTION_PENDING",
     )
-    accepted = place(customer, body(world, "COD", ("A", 1))).json()
+    accepted = place(customer, body(world, "COD", ("A", 5))).json()
     walk_kitchen(world, accepted["id"], "ACCEPTED")
     assert customer.post(f"{ORDERS}/{accepted['id']}/cancel").status_code == 409
 
@@ -363,7 +419,7 @@ def test_cod_cancel_has_no_refund_and_accepted_orders_cannot_be_cancelled(
 def test_agent_assigned_is_shown_without_changing_the_fulfilment_status(
     world: World, customer: httpx.Client
 ) -> None:
-    order = place(customer, body(world, "COD", ("C", 1))).json()
+    order = place(customer, body(world, "COD", ("C", 2))).json()
     walk_kitchen(world, order["id"], "PREPARING")
     agent = user_id(world, world.user("DELIVERY_AGENT", region=world.region_a))
     assignment = assign(world, order["id"], agent, accept=False)
@@ -403,7 +459,7 @@ def test_pickup_enters_out_for_delivery_in_the_same_transaction(
 ) -> None:
     from app.modules.orders import service
 
-    order = place(customer, body(world, "COD", ("A", 2))).json()
+    order = place(customer, body(world, "COD", ("A", 5))).json()
     agent_mobile = world.user("DELIVERY_AGENT", region=world.region_a)
     agent = user_id(world, agent_mobile)
     principal = Principal(agent, (Grant(Role.DELIVERY_AGENT, world.region_a),))
@@ -440,7 +496,7 @@ def test_cod_mismatch_is_recorded_with_its_reason(
 ) -> None:
     from app.modules.orders import service
 
-    order = place(customer, body(world, "COD", ("B", 1))).json()
+    order = place(customer, body(world, "COD", ("B", 3))).json()
     agent = user_id(world, world.user("DELIVERY_AGENT", region=world.region_a))
     principal = Principal(agent, (Grant(Role.DELIVERY_AGENT, world.region_a),))
     walk_kitchen(world, order["id"], "READY_FOR_PICKUP")
@@ -472,9 +528,11 @@ def test_a_failure_before_commit_leaves_neither_order_nor_event(
         service.place(
             principal,
             idempotency_key=key,
-            lines=[(uuid.UUID(dish(world, "A")), 1)],
+            lines=[service.Line(uuid.UUID(dish(world, "A")), 5, price(world, "A"))],
             method=PaymentMethod.COD,
             special_instructions=None,
+            address_id=add_address(world, principal.user_id),
+            coupon_code=None,
         )
     assert scalar(world, "SELECT count(*) FROM app.orders WHERE idempotency_key = %s", key) == 0
     assert (
@@ -510,7 +568,7 @@ def test_a_killed_connection_before_commit_loses_both(world: World) -> None:
             (str(customer_id),),
         )
         row = conn.execute(
-            "SELECT app.create_order(%s, ARRAY[%s]::uuid[], %s, repeat('0', 64), NULL, 11100, 3000)",
+            "SELECT app.create_order(%s, ARRAY[%s]::uuid[], %s, repeat('0', 64), NULL, 55500, 3000, 0)",
             (customer_id, dish(world, "A"), key),
         ).fetchone()
         assert row is not None
@@ -535,7 +593,7 @@ def test_a_killed_connection_before_commit_loses_both(world: World) -> None:
 
 
 def test_committed_events_wait_unpublished_for_the_relay(world: World, customer: httpx.Client) -> None:
-    order = place(customer, body(world, "COD", ("A", 1))).json()
+    order = place(customer, body(world, "COD", ("A", 5))).json()
     # Committed with the order; the worker relay (Task 12) publishes it later; nothing is lost meanwhile.
     assert (
         scalar(
@@ -580,7 +638,7 @@ def test_mixing_test_and_real_dishes_is_refused_by_the_database(world: World) ->
             )
             with pytest.raises(psycopg.errors.CheckViolation, match="cannot mix TEST and real"):
                 api.execute(
-                    "SELECT app.create_order(%s, ARRAY[%s, %s]::uuid[], %s, repeat('0', 64), NULL, 1, 0)",
+                    "SELECT app.create_order(%s, ARRAY[%s, %s]::uuid[], %s, repeat('0', 64), NULL, 1, 0, 0)",
                     (customer_id, dish(world, "A"), real, str(uuid.uuid4())),
                 )
             api.rollback()
@@ -601,12 +659,14 @@ def test_production_refuses_fixture_dishes(
     monkeypatch.setattr(service, "get_settings", lambda: SimpleNamespace(is_local_or_test=False))
     principal = Principal(user_id(world, world.user("CUSTOMER")), (Grant(Role.CUSTOMER),))
     key = str(uuid.uuid4())
-    with pytest.raises(service.Unavailable):
+    with pytest.raises(service.CheckoutRefused, match="not available"):
         service.place(
             principal,
             idempotency_key=key,
-            lines=[(uuid.UUID(dish(world, "A")), 1)],
+            lines=[service.Line(uuid.UUID(dish(world, "A")), 5, price(world, "A"))],
             method=PaymentMethod.COD,
             special_instructions=None,
+            address_id=add_address(world, principal.user_id),
+            coupon_code=None,
         )
     assert scalar(world, "SELECT count(*) FROM app.orders WHERE idempotency_key = %s", key) == 0

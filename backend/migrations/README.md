@@ -12,6 +12,7 @@ Alembic revisions in `versions/`, run by the one-off `migrate` service as `app_m
 | 0006 | Identity: OTP challenges, sessions, trusted devices, revocation trigger (DDR-96–DDR-99) |
 | 0007 | Worker grants, `ops.workers`, `ops.cancel_run()`, run report and failure class, P1 staging tables, SOP lineage columns, recipe review queue and its submit block (DDR-102–DDR-105). Needs the `worker` role: `make up` runs `make db-roles` first |
 | 0008 | Order placement (DDR-109): price and fee snapshots, checkout idempotency key, one payment per order with amount and `SIM-` reference, `app.create_order()` (derives kitchen, region and fixture flag from the dishes; refuses mixed TEST/real orders), order items and payments inherit their order's fixture flag |
+| 0009 | Customer checkout (DDR-110): `app.customer_addresses` (one default), persisted `app.cart_items` with price and time for 30-minute protection, `app.coupons` (no rows; TEST codes only via the fixture loader), `menu_items.is_bestseller` (never set without approval), `PRICE_PROTECTION_MINUTES`, order discount, coupon and delivery snapshot (address, distances, estimated flag); `app.create_order()` takes the discount |
 
 ## How rules are enforced
 

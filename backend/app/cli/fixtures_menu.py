@@ -38,6 +38,7 @@ KM_MOBILE = "+910000000004"
 CA_MOBILE = "+910000000006"
 REASON = "TEST fixture loader (DDR-106)"
 E2E_PREFIX = "TEST – E2E "
+TEST_COUPON = ("TEST50", 5000)  # DDR-110 (3): ₹50, no minimum, no usage limit
 
 
 def dish_name(letter: str) -> str:
@@ -140,7 +141,7 @@ def _insert_dish(
 
 
 def _insert_rows(conn: Connection) -> dict[str, int]:
-    added = {"ingredients": 0, "recipes": 0, "menu_items": 0}
+    added = {"ingredients": 0, "recipes": 0, "menu_items": 0, "coupons": 0}
     _system(conn)
     kitchen = conn.execute(
         text("SELECT id FROM app.kitchens WHERE code = :c"), {"c": KITCHEN_CODE}
@@ -166,6 +167,15 @@ def _insert_rows(conn: Connection) -> dict[str, int]:
         )
         added["recipes"] += recipes_added
         added["menu_items"] += items_added
+    # DDR-110 (3): one TEST coupon, local/test only, to prove a coupon may take the payable below ₹500.
+    added["coupons"] = conn.execute(
+        text(
+            "INSERT INTO app.coupons "
+            "(code, discount_paise, min_food_subtotal_paise, is_active, is_test_fixture) "
+            "VALUES (:c, :d, 0, true, true) ON CONFLICT (code) DO NOTHING"
+        ),
+        {"c": TEST_COUPON[0], "d": TEST_COUPON[1]},
+    ).rowcount
     return added
 
 
