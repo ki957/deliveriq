@@ -9,6 +9,8 @@ export const SEED = {
   kitchenManager: "+91-00000-00004",
   regionalManager: "+91-00000-00005",
   centralAdmin: "+91-00000-00006",
+  // Loaded by `make e2e-setup` only (fixtures load-e2e-agent).
+  e2eAgent: "+91-00000-00007",
 } as const;
 
 export const MOCK_OTP = "123456"; // MOCK_OTP fixed test code, local/test only (#15 §4.2)

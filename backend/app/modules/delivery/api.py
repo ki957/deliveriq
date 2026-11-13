@@ -35,6 +35,7 @@ from app.modules.delivery.schemas import (
     ReasonIn,
     RespondIn,
     UnavailableOut,
+    WorkItemOut,
     WorkOrderOut,
 )
 from app.modules.identity.dependencies import CurrentPrincipal, csrf_protect
@@ -70,6 +71,7 @@ def _work_out(w: service.MyWork) -> MyWorkOut:
         attempts = d.OTP_MAX_ATTEMPTS - o.otp_failed_attempts if o.otp_failed_attempts is not None else None
         order = WorkOrderOut(
             order_id=o.order_id,
+            items=[WorkItemOut(name=n, quantity=q) for n, q in w.items],
             fulfilment_status=o.fulfilment_status,
             status_label=display(Fulfilment(o.fulfilment_status), accepted).delivery or "Go to kitchen",
             is_test_fixture=o.is_test_fixture,

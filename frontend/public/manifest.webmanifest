@@ -1,0 +1,11 @@
+{
+  "name": "DeliverIQ Delivery (POC)",
+  "short_name": "DeliverIQ",
+  "description": "DeliverIQ delivery agent app (portfolio POC). Placeholder icon.",
+  "start_url": "/delivery",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#171717",
+  "theme_color": "#171717",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

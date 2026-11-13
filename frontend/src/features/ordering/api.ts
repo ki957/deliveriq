@@ -196,6 +196,9 @@ export function useOrder(id: string) {
     queryKey: keys.order(id),
     queryFn: async () =>
       unwrap(await api.GET("/api/v1/orders/{order_id}", { params: { path: { order_id: id } } })),
+    // While the order is on its way, refresh the code and position (DDR-113 (8); realtime is Task 11).
+    refetchInterval: (query) => (query.state.data?.fulfilment_status === "OUT_FOR_DELIVERY" ? 10_000 : false),
+    refetchIntervalInBackground: false,
   });
 }
 

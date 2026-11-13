@@ -1,0 +1,21 @@
+# Delivery feature (Delivery PWA)
+
+**Purpose and scope:** the delivery agent's app (#7, #8; DL-01–DL-19, DL-G1–DL-G6, DL-U1–DL-U7; DDR-15, DDR-52, DDR-113). Backend: `delivery` and `orders` modules. Notifications are Task 11; the manager's delivery screens are Task 10; road routing (OSRM) is deferred (DDR-55).
+
+| Item          | Value                                                                                                                                                                                                                                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| UI screens    | `/delivery` Home, `/delivery/assignment`, `/delivery/active`, `/delivery/map` (lazy-loaded Leaflet), `/delivery/pickup`, `/delivery/completion`, `/delivery/exceptions`, `/delivery/history`, `/delivery/profile`; customer `/customer/orders/:id` shows the code and position while on the way                             |
+| API endpoints | `GET /api/v1/delivery/me` · `PUT …/me/availability` · `POST …/assignments/{id}/respond` · `GET …/orders/{id}/customer-phone` · `POST …/orders/{id}/pickup`, `/deliver`, `/cod`, `/customer-unavailable`, `/contact-manager`, `/failure-request` · `POST …/locations` · `GET …/history` · `PUT …/me/name` (generated client) |
+| Permissions   | `delivery.assignments.view` for every screen; the backend scopes each call to the agent's own offer or delivery                                                                                                                                                                                                             |
+| States        | Loading, empty ("No active delivery"), error, denied, offline banner, GPS denied / unavailable, locked code                                                                                                                                                                                                                 |
+| Tests         | `delivery.test.tsx` (screens and the GPS tracker); `tests/e2e/specs/delivery.spec.ts` (screens on desktop, both phones, tablet; full flow on phone-390)                                                                                                                                                                     |
+
+## Behaviour
+
+- **Home:** Online/Offline switch; an offer shows a 60 s countdown, items and the kitchen (the address only after accepting), Accept, and Reject with a reason. An accepted delivery shows its next step.
+- **GPS (`tracker.ts`):** real (browser Geolocation, honest denied / unavailable / accuracy messages, never an invented position) or simulated (labelled; 15 m every 5 s in a straight line, moving only after pickup). Points are buffered in memory (at most 300, oldest dropped), sent every 5 s in batches of up to 100 and re-sent on reconnect. Foreground only: "Keep this app open while delivering" (DDR-15).
+- **Offline:** a banner; pickup, code entry and other actions are disabled. No action is queued.
+- **Map:** kitchen, customer and the agent; dashed straight line labelled "estimated"; configurable tiles (`VITE_MAP_TILE_URL`, default public OSM for local demo only, attributed); a labelled list when tiles fail.
+- **Pickup** is enabled only when the order is Ready (the backend checks too). **Completion:** the customer's six-digit code (attempts left; locked after three), COD collected or mismatch with a reason. **Exceptions:** the 5-minute customer-unavailable wait, then Contact manager; refusal or failure with a reason, decided by the manager.
+- **Active delivery:** "Show customer number" (audited), Contact manager with a reason.
+- **PWA:** `public/manifest.webmanifest` (placeholder icon, DDR-08) and `public/sw.js`, which caches only the app shell and never API calls; registered in production builds only.

@@ -2759,6 +2759,13 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /** WorkItemOut */
+        WorkItemOut: {
+            /** Name */
+            name: string;
+            /** Quantity */
+            quantity: number;
+        };
         /** WorkOrderOut */
         WorkOrderOut: {
             /** Code Attempts Left */
@@ -2776,6 +2783,8 @@ export interface components {
             fulfilment_status: string;
             /** Is Test Fixture */
             is_test_fixture: boolean;
+            /** Items */
+            items: components["schemas"]["WorkItemOut"][];
             kitchen: components["schemas"]["Place"];
             /** Kitchen Location Is Synthetic */
             kitchen_location_is_synthetic: boolean;
