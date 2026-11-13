@@ -140,3 +140,12 @@ def test_kitchen_operations_authority_matches_ddr_111() -> None:
     assert can(principal(Role.CENTRAL_ADMIN), P.KITCHEN_ORDERS_REJECT_ACCEPTED, region_id=REGION_B)
     assert not can(rm, P.KITCHEN_ORDERS_PROCESS, region_id=REGION_A)  # RM does not run the line
     assert not can(principal(Role.DELIVERY_AGENT, region=REGION_A), P.KITCHEN_ORDERS_VIEW, region_id=REGION_A)
+
+
+def test_management_inventory_view_is_read_only_and_scoped() -> None:
+    rm = principal(Role.REGIONAL_MANAGER, region=REGION_A)
+    assert can(rm, P.MGMT_INVENTORY_VIEW, region_id=REGION_A)
+    assert not can(rm, P.MGMT_INVENTORY_VIEW, region_id=REGION_B)
+    assert not can(rm, P.KITCHEN_STOCK_ADJUST, kitchen_id=KITCHEN_A)  # management never adjusts stock
+    assert not can(principal(Role.KITCHEN_MANAGER, region=REGION_A, kitchen=KITCHEN_A), P.MGMT_INVENTORY_VIEW,
+                   region_id=REGION_A)  # fmt: skip

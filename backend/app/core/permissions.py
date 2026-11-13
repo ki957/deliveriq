@@ -71,6 +71,8 @@ class Permission(StrEnum):
     DELIVERY_ASSIGNMENTS_VIEW = "delivery.assignments.view"
     # Management (Matrix §5.1)
     MGMT_OPERATIONS_VIEW = "management.operations.view"
+    # Read-only stock, reservations, thresholds and ledger (DDR-114 (12)).
+    MGMT_INVENTORY_VIEW = "management.inventory.view"
     MGMT_STAFF_MANAGE = "management.staff.manage"
     MGMT_RM_MANAGE = "management.regional_managers.manage"
     MGMT_AGENTS_ASSIGN = "management.agents.assign"
@@ -103,6 +105,7 @@ _KITCHEN_SHARED = frozenset(
 _MGMT_SHARED = frozenset(
     {
         P.MGMT_OPERATIONS_VIEW,
+        P.MGMT_INVENTORY_VIEW,
         P.MGMT_STAFF_MANAGE,
         P.MGMT_AGENTS_ASSIGN,
         P.KITCHEN_MODE_CHANGE,

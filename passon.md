@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is in progress on `task-10a-management-api`.**
+`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is built and verified on `task-10a-management-api`, report in review.**
 
 | Task | Scope | State |
 |---|---|---|
@@ -48,7 +48,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | 8B | Kitchen + Management UI for Task 8, tablet + KDS E2E (DDR-112) | ✅ merged (PR #15) |
 | 9A | Delivery backend (migration 0011, DDR-113) | ✅ merged (PR #16) |
 | 9B | Delivery PWA UI | ✅ merged (PR #17) |
-| **10A** | Management backend (DDR-114) | 🟡 **in progress on `task-10a-management-api`; plan approved** |
+| **10A** | Management backend (DDR-114) | 🟡 **built and verified on `task-10a-management-api`; report in review** |
 | **10B** | Management UI | ⬜ after 10A |
 | 9 – 22 | See §6 | ⬜ not started |
 
@@ -57,7 +57,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 - **M2 Core order flow (5–9): only Task 9 (9A, 9B) remains.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** Task 10 is approved (DDR-114, 14 points): `git checkout task-10a-management-api`, check `git log --oneline main..` and `git status`, then build 10A per DDR-114 (no new plan or sheet).
+**First thing to do:** if 10A is not merged yet, check `git log --oneline main..task-10a-management-api` and wait for the owner. Once merged, sync `main`, check CI, branch `task-10b-management-ui` and build 10B per §5 and DDR-114 (no new plan or sheet).
 
 ---
 
@@ -146,9 +146,15 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Next task: 10 (Unified management portal)
+## 5. Next task: 10B (Management UI)
 
-Run `/start-task 10`. Read plan "### Task 10", Matrix §5 (MG-*, capability rows) and DDR-44 (YAML editor B: not built; exceptional-refund threshold A: disabled).
+Task 10 is approved as DDR-114; 10A (backend) is built. Read plan "### Task 10", DDR-114, Matrix §5 (MG-*) and `backend/app/modules/management/README.md`.
+
+**10A backend for 10B to use (`/api/v1/management`, do not rebuild):** `overview`, `regions`, `kitchens`, `orders` (+ `.csv`, `/{id}` timeline), `deliveries`, `refunds` (read-only), `kitchens/{id}/inventory`, `audit` (+ `.csv`), `staff` (GET/POST), `staff/roles/{id}/remove`, `PUT staff/{user_id}/status`. Lists page at 50; date ranges ≤ 31 days; exports ≤ 5,000 rows. No migration 0012 was needed (DDR-114 (1) wording raised in the 10A report).
+
+**10B scope (DDR-114 (2), (6)–(14)):** screens Overview, Kitchen Ops (existing kitchen settings API), Delivery Ops (lazy Leaflet, Simulated labelled), Orders & Exceptions (filters, timelines, actions via existing routes with a reason), read-only Menu & Inventory, Staff & Access (RM) / Global Staff (CA), Audit logs, Payments refund view ("Disabled: no threshold configured (DDR-44)"), Data Pipelines gaps (run-history filters; RM without trigger/cancel/retry). Labelled placeholders with reasons: Customers & Support, Promotions, Regional/Global settings, Integrations, YAML, Reports (Task 13), AI (Task 15). E2E desktop-first plus tablet and phone-390 navigation; scope tests use a second-region RM fixture. WebSocket scope tests are Task 11.
+
+The notes below were written before 10A and still apply.
 
 **APIs already built that Task 10 puts a UI on (do not rebuild):**
 - Kitchen settings for RM/CA: `GET/PUT /api/v1/kitchen/settings?kitchen_id=` (mode, capacities, reason).
@@ -289,6 +295,7 @@ Rules:
 | 2026-11-12 | tooling / #14 | rules v1.1 | `CLAUDE.md`, `.claude/` commands + guard hook, `make reset-fixtures`, this guide |
 | 2026-11-12 | 9 plan | DDR-113 | Approved |
 | 2026-11-12 | 10 plan | DDR-114 | Approved; 10A started |
+| 2026-11-12 | 10A / branch | DDR-114 | Management API (`/api/v1/management`); no migration; new code-only permission `management.inventory.view`; staff changes revoke sessions and devices at once |
 | 2026-11-12 | 9B / #17 | DDR-113 (19)–(20) | Delivery PWA; Leaflet pinned (lazy chunk); E2E agent fixture `load-e2e-agent`; full flow on phone-390, screens `@devices`. M2 complete |
 | 2026-11-12 | 9A / #16 | DDR-113 | Migration 0011; delivery lifecycle, code, GPS, retention; worker uses 2 SECURITY DEFINER functions only |
 | 2026-11-12 | 8B / #15 | DDR-112 | Kitchen screens + Management Dish Availability; `kds` 1920×1080 project (`@kitchen` on tablet + kds only); `e2e-setup` runs `reset-shared`; mask live counts in screenshots |

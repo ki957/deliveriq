@@ -713,6 +713,281 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/management/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Audit
+         * @description RM: events of assigned regions. CA: all events (#10 §12; DDR-114 (7)).
+         */
+        get: operations["audit_api_v1_management_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/audit.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audit Csv */
+        get: operations["audit_csv_api_v1_management_audit_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Deliveries
+         * @description Live offers and deliveries with the latest position (Simulated labelled; DDR-114 (11)).
+         */
+        get: operations["deliveries_api_v1_management_deliveries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/kitchens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Kitchens */
+        get: operations["kitchens_api_v1_management_kitchens_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/kitchens/{kitchen_id}/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inventory
+         * @description Read-only stock, reservations, thresholds and the latest 100 ledger rows (DDR-114 (12)).
+         */
+        get: operations["inventory_api_v1_management_kitchens__kitchen_id__inventory_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Orders
+         * @description Orders by status, date (≤ 31 days), kitchen, agent and exception flag (#10 §7).
+         */
+        get: operations["orders_api_v1_management_orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/orders.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Orders Csv
+         * @description The current filtered view as CSV (≤ 5,000 rows), same scope as the screen; the export is audited.
+         */
+        get: operations["orders_csv_api_v1_management_orders_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/orders/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Order Detail
+         * @description Fulfilment, item, payment and assignment timelines with actor and reason.
+         */
+        get: operations["order_detail_api_v1_management_orders__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Overview
+         * @description Counts from persisted records only (DDR-114 (10)); KPIs wait for Task 13.
+         */
+        get: operations["overview_api_v1_management_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Refunds
+         * @description Refund records (actor, amount, reason, order, outcome; MG-05) and pending decisions (DDR-114 (6)).
+         */
+        get: operations["refunds_api_v1_management_refunds_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/regions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Regions */
+        get: operations["regions_api_v1_management_regions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Staff
+         * @description Staff the caller may manage (RM: KM, KS, agents of assigned regions; CA: all staff).
+         */
+        get: operations["staff_api_v1_management_staff_get"];
+        put?: never;
+        /**
+         * Add Staff
+         * @description Grant a staff role (creating the account if the mobile is new); the person signs in by OTP.
+         */
+        post: operations["add_staff_api_v1_management_staff_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/staff/roles/{assignment_id}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remove Role
+         * @description Remove a role; blocked while an agent holds a delivery; ends the person's sessions at once.
+         */
+        post: operations["remove_role_api_v1_management_staff_roles__assignment_id__remove_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/staff/{user_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Status
+         * @description Deactivate (blocked while an agent holds a delivery; ends sessions) or reactivate, with a reason.
+         */
+        put: operations["set_status_api_v1_management_staff__user_id__status_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -1407,6 +1682,47 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** AuditOut */
+        AuditOut: {
+            /** Action */
+            action: string;
+            /** Actor Name */
+            actor_name: string | null;
+            /** Actor Role */
+            actor_role: string;
+            /** After Summary */
+            after_summary: unknown;
+            /** Before Summary */
+            before_summary: unknown;
+            /** Correlation Id */
+            correlation_id: string | null;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Outcome */
+            outcome: string;
+            /** Reason */
+            reason: string | null;
+            /** Region Id */
+            region_id: string | null;
+            /** Target Id */
+            target_id: string | null;
+            /** Target Type */
+            target_type: string;
+        };
+        /** AuditPageOut */
+        AuditPageOut: {
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Rows */
+            rows: components["schemas"]["AuditOut"][];
+            /** Total */
+            total: number;
+        };
         /** AvailabilityDecisionIn */
         AvailabilityDecisionIn: {
             /** Approve */
@@ -1624,6 +1940,44 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** DeliveryOut */
+        DeliveryOut: {
+            /**
+             * Agent Id
+             * Format: uuid
+             */
+            agent_id: string;
+            /** Agent Name */
+            agent_name: string;
+            /**
+             * Assignment Id
+             * Format: uuid
+             */
+            assignment_id: string;
+            /** Assignment Status */
+            assignment_status: string;
+            /** Delivery Address */
+            delivery_address: string | null;
+            /** Delivery Exception Open */
+            delivery_exception_open: boolean;
+            /** Fulfilment Status */
+            fulfilment_status: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Lat */
+            lat: number | null;
+            /** Lng */
+            lng: number | null;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /** Recorded At */
+            recorded_at: string | null;
+            /** Simulated */
+            simulated: boolean | null;
+        };
         /** DeviceOut */
         DeviceOut: {
             /**
@@ -1795,6 +2149,18 @@ export interface components {
             /** Refusal */
             refusal: string | null;
         };
+        /** InventoryOut */
+        InventoryOut: {
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /** Movements */
+            movements: components["schemas"]["MovementOut"][];
+            /** Stock */
+            stock: components["schemas"]["ManagedStockOut"][];
+        };
         /**
          * ItemPrep
          * @enum {string}
@@ -1954,6 +2320,28 @@ export interface components {
             mode: components["schemas"]["KitchenMode"];
             normal_capacity: components["schemas"]["ConfiguredValueOut"];
         };
+        /** KitchenStatusOut */
+        KitchenStatusOut: {
+            /** Code */
+            code: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            intake: components["schemas"]["ManagedIntakeOut"] | null;
+            /** Mode */
+            mode: string;
+            /** Name */
+            name: string;
+            /**
+             * Region Id
+             * Format: uuid
+             */
+            region_id: string;
+            /** Region Name */
+            region_name: string;
+        };
         /** LineageOut */
         LineageOut: {
             /** Source Card Id */
@@ -2007,6 +2395,26 @@ export interface components {
              * @constant
              */
             status: "alive";
+        };
+        /** ManagedIntakeOut */
+        ManagedIntakeOut: {
+            /** Accepting */
+            accepting: boolean;
+            /** Active Orders */
+            active_orders: number;
+            /** Capacity */
+            capacity: number | null;
+            /** Mode */
+            mode: string;
+            /** Refusal */
+            refusal: string | null;
+        };
+        /** ManagedItemOut */
+        ManagedItemOut: {
+            /** Name */
+            name: string;
+            /** Quantity */
+            quantity: number;
         };
         /** ManagedMenuItemOut */
         ManagedMenuItemOut: {
@@ -2063,6 +2471,28 @@ export interface components {
              */
             updated_at: string;
         };
+        /** ManagedStockOut */
+        ManagedStockOut: {
+            /** Available */
+            available: string;
+            /**
+             * Ingredient Id
+             * Format: uuid
+             */
+            ingredient_id: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Low Stock Threshold */
+            low_stock_threshold: string | null;
+            /** Name */
+            name: string;
+            /** On Hand */
+            on_hand: string;
+            /** Reserved */
+            reserved: string;
+            /** Unit */
+            unit: string;
+        };
         /** MeOut */
         MeOut: {
             /** Display Name */
@@ -2105,6 +2535,30 @@ export interface components {
             action: "mark_ready" | "publish";
             /** Reason */
             reason?: string | null;
+        };
+        /** MovementOut */
+        MovementOut: {
+            /** Actor Role */
+            actor_role: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Delta */
+            delta: string;
+            /** Ingredient Name */
+            ingredient_name: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Kind */
+            kind: string;
+            /** Order Id */
+            order_id: string | null;
+            /** Reason */
+            reason: string | null;
+            /** Unit */
+            unit: string;
         };
         /** MyWorkOut */
         MyWorkOut: {
@@ -2162,6 +2616,14 @@ export interface components {
             payment_method: components["schemas"]["PaymentMethod"];
             /** Special Instructions */
             special_instructions?: string | null;
+        };
+        /** OrderDetailOut */
+        OrderDetailOut: {
+            /** Items */
+            items: components["schemas"]["ManagedItemOut"][];
+            order: components["schemas"]["OrderRowOut"];
+            /** Timeline */
+            timeline: components["schemas"]["TimelineOut"][];
         };
         /** OrderItemOut */
         OrderItemOut: {
@@ -2231,6 +2693,50 @@ export interface components {
             /** Status Label */
             status_label: string;
         };
+        /** OrderPageOut */
+        OrderPageOut: {
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Rows */
+            rows: components["schemas"]["OrderRowOut"][];
+            /** Total */
+            total: number;
+        };
+        /** OrderRowOut */
+        OrderRowOut: {
+            /** Agent Name */
+            agent_name: string | null;
+            /** Assignment Status */
+            assignment_status: string | null;
+            /** Delivery Exception Open */
+            delivery_exception_open: boolean;
+            /** Fulfilment Status */
+            fulfilment_status: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Kitchen Name */
+            kitchen_name: string;
+            /** Payable Paise */
+            payable_paise: number | null;
+            /** Payment Method */
+            payment_method: string | null;
+            /** Payment Status */
+            payment_status: string | null;
+            /**
+             * Placed At
+             * Format: date-time
+             */
+            placed_at: string;
+            /** Status Label */
+            status_label: string;
+        };
         /** OtpRequestIn */
         OtpRequestIn: {
             /**
@@ -2275,6 +2781,33 @@ export interface components {
              * @default false
              */
             trust_device: boolean;
+        };
+        /** OverviewOut */
+        OverviewOut: {
+            /** Active Deliveries */
+            active_deliveries: number;
+            /** Availability Requests */
+            availability_requests: number;
+            /** Delivery Exceptions */
+            delivery_exceptions: number;
+            /** Failure Requests */
+            failure_requests: number;
+            /** Kitchens */
+            kitchens: components["schemas"]["KitchenStatusOut"][];
+            /**
+             * Kpis Available
+             * @default false
+             * @constant
+             */
+            kpis_available: false;
+            /** Online Agents */
+            online_agents: number;
+            /** Orders By Status */
+            orders_by_status: {
+                [key: string]: number;
+            };
+            /** Overdue Incoming */
+            overdue_incoming: number;
         };
         /**
          * PaymentMethod
@@ -2482,6 +3015,60 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** RefundOut */
+        RefundOut: {
+            /** Actor Name */
+            actor_name: string | null;
+            /** Actor Role */
+            actor_role: string | null;
+            /** Amount Paise */
+            amount_paise: number | null;
+            /** Changed At */
+            changed_at: string | null;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Method */
+            method: string;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /** Pending Decision */
+            pending_decision: boolean;
+            /** Reason */
+            reason: string | null;
+            /** Status */
+            status: string;
+        };
+        /** RefundsOut */
+        RefundsOut: {
+            /**
+             * Disabled Reason
+             * @default Disabled: no threshold configured (DDR-44)
+             */
+            disabled_reason: string;
+            /**
+             * Exceptional Refunds Enabled
+             * @default false
+             * @constant
+             */
+            exceptional_refunds_enabled: false;
+            /** Rows */
+            rows: components["schemas"]["RefundOut"][];
+        };
+        /** RegionOut */
+        RegionOut: {
+            /** Code */
+            code: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
         /** RespondIn */
         RespondIn: {
             /** Accept */
@@ -2661,6 +3248,62 @@ export interface components {
         SimulateIn: {
             outcome: components["schemas"]["SimOutcome"];
         };
+        /** StaffIn */
+        StaffIn: {
+            /** Display Name */
+            display_name: string;
+            /** Kitchen Id */
+            kitchen_id?: string | null;
+            /** Mobile */
+            mobile: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Region Id
+             * Format: uuid
+             */
+            region_id: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "KITCHEN_STAFF" | "KITCHEN_MANAGER" | "DELIVERY_AGENT" | "REGIONAL_MANAGER";
+        };
+        /** StaffOut */
+        StaffOut: {
+            /**
+             * Assignment Id
+             * Format: uuid
+             */
+            assignment_id: string;
+            /** Display Name */
+            display_name: string;
+            /**
+             * Granted At
+             * Format: date-time
+             */
+            granted_at: string;
+            /** Kitchen Id */
+            kitchen_id: string | null;
+            /** Mobile Masked */
+            mobile_masked: string;
+            /** Region Id */
+            region_id: string | null;
+            /** Role */
+            role: string;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** User Status */
+            user_status: string;
+        };
+        /** StaffReasonIn */
+        StaffReasonIn: {
+            /** Reason */
+            reason: string;
+        };
         /** StageOut */
         StageOut: {
             /** Detail */
@@ -2683,6 +3326,13 @@ export interface components {
             started_at: string | null;
             /** Status */
             status: string;
+        };
+        /** StatusIn */
+        StatusIn: {
+            /** Active */
+            active: boolean;
+            /** Reason */
+            reason: string;
         };
         /** StockOut */
         StockOut: {
@@ -2721,6 +3371,26 @@ export interface components {
             low_stock_threshold: number | string | null;
             /** Reason */
             reason: string;
+        };
+        /** TimelineOut */
+        TimelineOut: {
+            /** Actor Name */
+            actor_name: string | null;
+            /** Actor Role */
+            actor_role: string;
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** From Status */
+            from_status: string | null;
+            /** Machine */
+            machine: string;
+            /** Reason */
+            reason: string | null;
+            /** To Status */
+            to_status: string;
         };
         /** TransitionIn */
         TransitionIn: {
@@ -4040,6 +4710,431 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["KitchenSettingsOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audit_api_v1_management_audit_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                action?: string | null;
+                target_type?: string | null;
+                actor_role?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audit_csv_api_v1_management_audit_csv_get: {
+        parameters: {
+            query?: {
+                action?: string | null;
+                target_type?: string | null;
+                actor_role?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deliveries_api_v1_management_deliveries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryOut"][];
+                };
+            };
+        };
+    };
+    kitchens_api_v1_management_kitchens_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KitchenStatusOut"][];
+                };
+            };
+        };
+    };
+    inventory_api_v1_management_kitchens__kitchen_id__inventory_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kitchen_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    orders_api_v1_management_orders_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                status?: string | null;
+                kitchen_id?: string | null;
+                agent_id?: string | null;
+                exception?: boolean | null;
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    orders_csv_api_v1_management_orders_csv_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                kitchen_id?: string | null;
+                agent_id?: string | null;
+                exception?: boolean | null;
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    order_detail_api_v1_management_orders__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    overview_api_v1_management_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverviewOut"];
+                };
+            };
+        };
+    };
+    refunds_api_v1_management_refunds_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundsOut"];
+                };
+            };
+        };
+    };
+    regions_api_v1_management_regions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegionOut"][];
+                };
+            };
+        };
+    };
+    staff_api_v1_management_staff_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOut"][];
+                };
+            };
+        };
+    };
+    add_staff_api_v1_management_staff_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_role_api_v1_management_staff_roles__assignment_id__remove_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_status_api_v1_management_staff__user_id__status_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

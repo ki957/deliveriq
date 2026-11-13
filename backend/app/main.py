@@ -22,6 +22,7 @@ from app.modules.identity.api import auth_router, me_router
 from app.modules.identity.dependencies import CSRF_HEADER
 from app.modules.inventory.api import router as inventory_router
 from app.modules.kitchen_ops.api import router as kitchen_settings_router
+from app.modules.management.api import router as management_router
 from app.modules.menu.api import availability_router as menu_availability_router
 from app.modules.menu.api import manage_router as menu_manage_router
 from app.modules.menu.api import public_router as menu_public_router
@@ -56,6 +57,7 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(menu_availability_router)
     app.include_router(delivery_router)
     app.include_router(delivery_manage_router)
+    app.include_router(management_router)
     return app
 
 
