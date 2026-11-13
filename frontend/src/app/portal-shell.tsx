@@ -173,7 +173,7 @@ export function PortalShell({ config }: { config: PortalConfig }) {
         <main
           id="main"
           tabIndex={-1}
-          className={cn("min-w-0 flex-1 p-4 md:p-6", bottomItems.length && "pb-24 lg:pb-6")}
+          className={cn("min-w-0 flex-1 p-4 md:p-6", bottomItems.length && "pb-24 md:pb-24 lg:pb-6")}
         >
           <Outlet />
         </main>

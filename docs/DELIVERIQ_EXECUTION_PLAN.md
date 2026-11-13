@@ -325,7 +325,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 6 — Customer menu, cart and checkout
 
-- **Status:** delivered as 6A (backend, branch `task-06a-checkout-api`, built and verified, in review) and 6B (UI); decisions DDR-110.
+- **Status:** delivered as 6A (backend; PR #11 merged) and 6B (customer UI: location, menu, dish, cart, checkout, orders; branch `task-06b-customer-ui`, built and verified, in review; E2E on desktop, two phones and a 768 × 1024 tablet); decisions DDR-110.
 - **Depends on:** Tasks 5, 7 (payment simulation for the place-order step); DDR-48 fixtures for end-to-end tests.
 - **Gated features:** food-card Add interaction (B, DDR-06). Placeholders: synthetic kitchen location (DDR-39), "image unavailable" (DDR-47).
 - **Acceptance criteria:**
@@ -342,7 +342,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 7 — Payments, order state machines and outbox
 
-- **Status:** Built before Task 6 (owner choice, 2026-11-12); branch `task-07-orders-payments`, built and verified, in review; decisions DDR-109. Outbox relay remains Task 12.
+- **Status:** Built before Task 6 (owner choice, 2026-11-12); PR #10 merged; decisions DDR-109. Outbox relay remains Task 12.
 - **Depends on:** Task 3.
 - **Acceptance criteria:**
   - Simulated UPI/card (`SUCCESS`, `FAILED`, `TIMEOUT`) and COD (`COLLECTION_PENDING`, `COLLECTED`, `MISMATCH`) behave per #15 §9; payments on fixture orders carry `is_test_fixture`.

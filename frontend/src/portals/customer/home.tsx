@@ -10,8 +10,11 @@ export function CustomerHome() {
     <section className="mx-auto max-w-3xl">
       <h1 className="text-2xl font-semibold">{name ? `Welcome, ${name}` : "Welcome to DeliverIQ"}</h1>
       <p className="mt-2 text-text-muted">
-        One cloud kitchen in Chennai. Choosing a location, browsing the menu and ordering arrive in Task 6.
+        One cloud kitchen in Chennai. Choose your location to see what we can deliver to you.
       </p>
+      <Button asChild className="mt-4">
+        <Link to="/customer/menu">Browse the menu</Link>
+      </Button>
       {me.data === null ? (
         <div className="mt-6 rounded-panel border border-border bg-muted p-4">
           <p className="font-medium">Sign in with your mobile number to order.</p>
