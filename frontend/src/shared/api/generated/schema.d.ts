@@ -72,6 +72,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Cart
+         * @description The cart with a live quote: protected prices, the bill, serviceability and checkout blockers.
+         */
+        get: operations["get_cart_api_v1_cart_get"];
+        put?: never;
+        post?: never;
+        /** Clear */
+        delete: operations["clear_api_v1_cart_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/items/{menu_item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Quantity */
+        put: operations["set_quantity_api_v1_cart_items__menu_item_id__put"];
+        post?: never;
+        /** Remove Item */
+        delete: operations["remove_item_api_v1_cart_items__menu_item_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/items/{menu_item_id}/accept-price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Price
+         * @description Explicit confirmation of a revised price (CU-13).
+         */
+        post: operations["accept_price_api_v1_cart_items__menu_item_id__accept_price_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/remove-unavailable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remove Unavailable
+         * @description The customer confirms removal of dishes that became unavailable (CU-14).
+         */
+        post: operations["remove_unavailable_api_v1_cart_remove_unavailable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -83,6 +162,58 @@ export interface paths {
         get: operations["me_api_v1_me_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Addresses */
+        get: operations["list_addresses_api_v1_me_addresses_get"];
+        put?: never;
+        /** Add Address */
+        post: operations["add_address_api_v1_me_addresses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/addresses/{address_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Address */
+        delete: operations["delete_address_api_v1_me_addresses__address_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/addresses/{address_id}/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make Default */
+        post: operations["make_default_api_v1_me_addresses__address_id__default_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -123,6 +254,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/menu/filters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Menu Filters */
+        get: operations["menu_filters_api_v1_menu_filters_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/menu/items": {
         parameters: {
             query?: never;
@@ -130,8 +278,28 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Customer Menu */
+        /**
+         * Customer Menu
+         * @description PUBLISHED dishes only (DDR-11); fixtures excluded in production (leak control 4); CU-06 filters.
+         */
         get: operations["customer_menu_api_v1_menu_items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/menu/items/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dish Detail */
+        get: operations["dish_detail_api_v1_menu_items__item_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -452,6 +620,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/serviceability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check
+         * @description For visitors too (CU-01): no location is stored on the server (DDR-110).
+         */
+        get: operations["check_api_v1_serviceability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health/live": {
         parameters: {
             query?: never;
@@ -495,6 +683,66 @@ export interface components {
             /** Note */
             note: string;
         };
+        /** AddressIn */
+        AddressIn: {
+            /** Address Line */
+            address_line: string;
+            /**
+             * Label
+             * @example Home
+             */
+            label: string;
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
+            /**
+             * Make Default
+             * @default false
+             */
+            make_default: boolean;
+        };
+        /** AddressOut */
+        AddressOut: {
+            /** Address Line */
+            address_line: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Default */
+            is_default: boolean;
+            /** Label */
+            label: string;
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
+            serviceability: components["schemas"]["ServiceabilityOut"];
+        };
+        /** BillOut */
+        BillOut: {
+            /** Delivery Fee Paise */
+            delivery_fee_paise: number;
+            /** Discount Paise */
+            discount_paise: number;
+            /** Food Subtotal Paise */
+            food_subtotal_paise: number;
+            /** Minimum Food Subtotal Paise */
+            minimum_food_subtotal_paise: number;
+            /** Minimum Met */
+            minimum_met: boolean;
+            /** Payable Paise */
+            payable_paise: number;
+            /** Tax Note */
+            tax_note: string;
+        };
         /** CancelIn */
         CancelIn: {
             /** Reason */
@@ -507,6 +755,53 @@ export interface components {
              * @enum {string}
              */
             outcome: "cancelled" | "cancel_requested";
+        };
+        /** CartLineOut */
+        CartLineOut: {
+            /** Available */
+            available: boolean;
+            /** Cart Price Paise */
+            cart_price_paise: number;
+            /** Charge Price Paise */
+            charge_price_paise: number | null;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /**
+             * Menu Item Id
+             * Format: uuid
+             */
+            menu_item_id: string;
+            /** Name */
+            name: string;
+            /** Price Changed */
+            price_changed: boolean;
+            /**
+             * Protected Until
+             * Format: date-time
+             */
+            protected_until: string;
+            /** Quantity */
+            quantity: number;
+        };
+        /** CartOut */
+        CartOut: {
+            /** Address Error */
+            address_error: string | null;
+            bill: components["schemas"]["BillOut"];
+            /** Blockers */
+            blockers: string[];
+            /** Coupon Code */
+            coupon_code: string | null;
+            /** Coupon Error */
+            coupon_error: string | null;
+            /** Lines */
+            lines: components["schemas"]["CartLineOut"][];
+            serviceability: components["schemas"]["ServiceabilityOut"] | null;
+        };
+        /** CartQuantityIn */
+        CartQuantityIn: {
+            /** Quantity */
+            quantity: number;
         };
         /** CustomerMenuItemOut */
         CustomerMenuItemOut: {
@@ -523,6 +818,8 @@ export interface components {
             image_is_placeholder: boolean;
             /** Image Url */
             image_url: string | null;
+            /** Is Bestseller */
+            is_bestseller: boolean;
             /** Is Test Fixture */
             is_test_fixture: boolean;
             /** Is Veg */
@@ -555,6 +852,40 @@ export interface components {
             id: string;
             /** Label */
             label: string | null;
+        };
+        /** DishDetailOut */
+        DishDetailOut: {
+            /** Category */
+            category: string | null;
+            /** Customizations */
+            customizations: string[];
+            /** Description */
+            description: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Image Is Placeholder */
+            image_is_placeholder: boolean;
+            /** Image Url */
+            image_url: string | null;
+            /** Ingredients */
+            ingredients: string[];
+            /** Is Bestseller */
+            is_bestseller: boolean;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Is Veg */
+            is_veg: boolean | null;
+            /** Name */
+            name: string;
+            /** Prep Time Minutes */
+            prep_time_minutes: number | null;
+            /** Price Paise */
+            price_paise: number | null;
+            /** Spice Level */
+            spice_level: string | null;
         };
         /** DqResultOut */
         DqResultOut: {
@@ -660,6 +991,8 @@ export interface components {
             image_is_placeholder: boolean;
             /** Image Url */
             image_url: string | null;
+            /** Is Bestseller */
+            is_bestseller: boolean;
             /** Is Test Fixture */
             is_test_fixture: boolean;
             /** Is Veg */
@@ -712,6 +1045,23 @@ export interface components {
              */
             user_id: string;
         };
+        /** MenuFiltersOut */
+        MenuFiltersOut: {
+            /** Categories */
+            categories: string[];
+            /** Has Bestsellers */
+            has_bestsellers: boolean;
+            /** Has Non Veg */
+            has_non_veg: boolean;
+            /** Has Veg */
+            has_veg: boolean;
+            /** Max Price Paise */
+            max_price_paise: number | null;
+            /** Min Price Paise */
+            min_price_paise: number | null;
+            /** Spice Levels */
+            spice_levels: string[];
+        };
         /** MenuTransitionIn */
         MenuTransitionIn: {
             /**
@@ -724,6 +1074,13 @@ export interface components {
         };
         /** OrderCreateIn */
         OrderCreateIn: {
+            /**
+             * Address Id
+             * Format: uuid
+             */
+            address_id: string;
+            /** Coupon Code */
+            coupon_code?: string | null;
             /** Lines */
             lines: components["schemas"]["OrderLineIn"][];
             payment_method: components["schemas"]["PaymentMethod"];
@@ -755,13 +1112,19 @@ export interface components {
             menu_item_id: string;
             /** Quantity */
             quantity: number;
+            /** Unit Price Paise */
+            unit_price_paise: number;
         };
         /** OrderOut */
         OrderOut: {
             /** Agent Assigned */
             agent_assigned: boolean;
+            /** Delivery Address */
+            delivery_address: string | null;
             /** Delivery Fee Paise */
             delivery_fee_paise: number | null;
+            /** Discount Paise */
+            discount_paise: number;
             /** Food Subtotal Paise */
             food_subtotal_paise: number | null;
             fulfilment_status: components["schemas"]["Fulfilment"];
@@ -782,6 +1145,8 @@ export interface components {
              * Format: date-time
              */
             placed_at: string;
+            /** Road Km Estimated */
+            road_km_estimated: boolean | null;
             /** Special Instructions */
             special_instructions: string | null;
             /** Status Label */
@@ -1108,6 +1473,29 @@ export interface components {
             /** Trigger */
             trigger: string;
         };
+        /** ServiceabilityOut */
+        ServiceabilityOut: {
+            /** Kitchen Location Is Synthetic */
+            kitchen_location_is_synthetic: boolean;
+            /** Kitchen Name */
+            kitchen_name: string;
+            /** Road Km */
+            road_km: string;
+            /** Road Km Estimated */
+            road_km_estimated: boolean;
+            /** Road Max Km */
+            road_max_km: string;
+            /** Road Ok */
+            road_ok: boolean;
+            /** Serviceable */
+            serviceable: boolean;
+            /** Straight Line Km */
+            straight_line_km: string;
+            /** Straight Line Max Km */
+            straight_line_max_km: string;
+            /** Straight Line Ok */
+            straight_line_ok: boolean;
+        };
         /** SignoffIn */
         SignoffIn: {
             /** Note */
@@ -1322,6 +1710,169 @@ export interface operations {
             };
         };
     };
+    get_cart_api_v1_cart_get: {
+        parameters: {
+            query?: {
+                address_id?: string | null;
+                coupon_code?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_api_v1_cart_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    set_quantity_api_v1_cart_items__menu_item_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                menu_item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CartQuantityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartOut"];
+                };
+            };
+            /** @description A checkout rule refused the order; `code` names the rule */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    remove_item_api_v1_cart_items__menu_item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                menu_item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_price_api_v1_cart_items__menu_item_id__accept_price_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                menu_item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartOut"];
+                };
+            };
+            /** @description A checkout rule refused the order; `code` names the rule */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    remove_unavailable_api_v1_cart_remove_unavailable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartOut"];
+                };
+            };
+        };
+    };
     me_api_v1_me_get: {
         parameters: {
             query?: never;
@@ -1338,6 +1889,119 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeOut"];
+                };
+            };
+        };
+    };
+    list_addresses_api_v1_me_addresses_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressOut"][];
+                };
+            };
+        };
+    };
+    add_address_api_v1_me_addresses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddressIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_address_api_v1_me_addresses__address_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                address_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    make_default_api_v1_me_addresses__address_id__default_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                address_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1391,7 +2055,7 @@ export interface operations {
             };
         };
     };
-    customer_menu_api_v1_menu_items_get: {
+    menu_filters_api_v1_menu_filters_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1406,7 +2070,75 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": components["schemas"]["MenuFiltersOut"];
+                };
+            };
+        };
+    };
+    customer_menu_api_v1_menu_items_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                category?: string | null;
+                veg?: boolean | null;
+                spice?: string | null;
+                min_price_paise?: number | null;
+                max_price_paise?: number | null;
+                bestseller?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "application/json": components["schemas"]["CustomerMenuItemOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dish_detail_api_v1_menu_items__item_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DishDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1518,14 +2250,19 @@ export interface operations {
                     "application/json": components["schemas"]["OrderOut"];
                 };
             };
-            /** @description Validation Error */
+            /** @description A price changed (`price_changes`), a wrong step, or a reused Idempotency-Key */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A checkout rule refused the order; `code` names the rule */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
+                content?: never;
             };
         };
     };
@@ -2023,6 +2760,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RecipeVersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_api_v1_serviceability_get: {
+        parameters: {
+            query: {
+                lat: number;
+                lng: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceabilityOut"];
                 };
             };
             /** @description Validation Error */

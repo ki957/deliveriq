@@ -13,11 +13,14 @@ from app.core.db import get_engine
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.request_context import RequestContextMiddleware
+from app.modules.customers.api import addresses_router
+from app.modules.customers.api import public_router as serviceability_router
 from app.modules.health.api import router as health_router
 from app.modules.identity.api import auth_router, me_router
 from app.modules.identity.dependencies import CSRF_HEADER
 from app.modules.menu.api import manage_router as menu_manage_router
 from app.modules.menu.api import public_router as menu_public_router
+from app.modules.orders.api import cart_router
 from app.modules.orders.api import router as orders_router
 from app.modules.pipelines.api import router as pipelines_router
 from app.modules.recipes.api import router as recipes_router
@@ -38,6 +41,9 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(menu_public_router)
     app.include_router(menu_manage_router)
     app.include_router(orders_router)
+    app.include_router(cart_router)
+    app.include_router(serviceability_router)
+    app.include_router(addresses_router)
     return app
 
 

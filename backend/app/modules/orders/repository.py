@@ -15,7 +15,7 @@ from sqlalchemy import Connection, Row, text
 _ORDER_COLUMNS = """
     o.id, o.customer_user_id, o.kitchen_id, o.region_id, o.fulfilment_status, o.special_instructions,
     o.is_test_fixture, o.idempotency_key, o.request_hash, o.food_subtotal_paise, o.delivery_fee_paise,
-    o.payable_paise, o.placed_at, o.updated_at,
+    o.discount_paise, o.payable_paise, o.delivery_address, o.road_km_estimated, o.placed_at, o.updated_at,
     EXISTS (SELECT 1 FROM app.delivery_assignments a WHERE a.order_id = o.id AND a.status = 'ACCEPTED')
         AS assignment_accepted
 """
@@ -34,7 +34,10 @@ class OrderRow:
     request_hash: str | None
     food_subtotal_paise: int | None
     delivery_fee_paise: int | None
+    discount_paise: int
     payable_paise: int | None
+    delivery_address: str | None
+    road_km_estimated: bool | None
     placed_at: datetime
     updated_at: datetime
     assignment_accepted: bool
@@ -118,10 +121,11 @@ def create(
     special_instructions: str | None,
     food_subtotal_paise: int,
     delivery_fee_paise: int,
+    discount_paise: int,
 ) -> uuid.UUID:
     """Controlled creation (migration 0008): the database derives kitchen, region and fixture flag."""
     order_id: uuid.UUID = conn.execute(
-        text("SELECT app.create_order(:c, :items, :key, :hash, :si, :sub, :fee)"),
+        text("SELECT app.create_order(:c, :items, :key, :hash, :si, :sub, :fee, :disc)"),
         {
             "c": customer,
             "items": menu_item_ids,
@@ -129,6 +133,7 @@ def create(
             "hash": request_hash,
             "si": special_instructions,
             "sub": food_subtotal_paise,
+            "disc": discount_paise,
             "fee": delivery_fee_paise,
         },
     ).scalar_one()
@@ -178,3 +183,103 @@ def live_assignment(conn: Connection, order_id: uuid.UUID) -> AssignmentRow | No
         {"o": order_id},
     ).first()
     return AssignmentRow(*row) if row else None
+
+
+# ---------------------------------------------------------------- cart (CU-11, CU-13, CU-14; DDR-110)
+@dataclass(frozen=True)
+class CartRow:
+    menu_item_id: uuid.UUID
+    quantity: int
+    unit_price_paise: int
+    added_at: datetime
+    name: str
+    current_price_paise: int | None
+    publication_status: str
+    is_test_fixture: bool
+    kitchen_id: uuid.UUID
+
+
+def cart(conn: Connection, customer: uuid.UUID) -> list[CartRow]:
+    rows = conn.execute(
+        text(
+            "SELECT c.menu_item_id, c.quantity, c.unit_price_paise, c.added_at, m.name, m.price_paise, "
+            "m.publication_status, m.is_test_fixture, m.kitchen_id FROM app.cart_items c "
+            "JOIN app.menu_items m ON m.id = c.menu_item_id WHERE c.customer_user_id = :c "
+            "ORDER BY c.added_at, m.name"
+        ),
+        {"c": customer},
+    ).all()
+    return [CartRow(*r) for r in rows]
+
+
+def cart_line(conn: Connection, customer: uuid.UUID, menu_item_id: uuid.UUID) -> CartRow | None:
+    return next((line for line in cart(conn, customer) if line.menu_item_id == menu_item_id), None)
+
+
+def upsert_cart_line(
+    conn: Connection, customer: uuid.UUID, menu_item_id: uuid.UUID, quantity: int, price_paise: int
+) -> None:
+    """New line: today's price and time. Existing line: quantity only, keeping its protection window."""
+    conn.execute(
+        text(
+            "INSERT INTO app.cart_items (customer_user_id, menu_item_id, quantity, unit_price_paise) "
+            "VALUES (:c, :m, :q, :p) ON CONFLICT (customer_user_id, menu_item_id) DO UPDATE SET quantity = :q"
+        ),
+        {"c": customer, "m": menu_item_id, "q": quantity, "p": price_paise},
+    )
+
+
+def accept_cart_price(
+    conn: Connection, customer: uuid.UUID, menu_item_id: uuid.UUID, price_paise: int
+) -> None:
+    """Explicit confirmation of a revised price starts a new protection window (CU-13)."""
+    conn.execute(
+        text(
+            "UPDATE app.cart_items SET unit_price_paise = :p, added_at = now() "
+            "WHERE customer_user_id = :c AND menu_item_id = :m"
+        ),
+        {"c": customer, "m": menu_item_id, "p": price_paise},
+    )
+
+
+def delete_cart_lines(conn: Connection, customer: uuid.UUID, menu_item_ids: list[uuid.UUID] | None) -> int:
+    """None = the whole cart."""
+    deleted: int = conn.execute(
+        text(
+            "DELETE FROM app.cart_items WHERE customer_user_id = :c "
+            "AND (CAST(:all_items AS boolean) OR menu_item_id = ANY(:ids))"
+        ),
+        {"c": customer, "all_items": menu_item_ids is None, "ids": list(menu_item_ids or [])},
+    ).rowcount
+    return deleted
+
+
+def set_delivery_snapshot(
+    conn: Connection,
+    order_id: uuid.UUID,
+    *,
+    address_line: str,
+    lat: float,
+    lng: float,
+    straight_line_km: object,
+    road_km: object,
+    road_estimated: bool,
+    coupon_id: uuid.UUID | None,
+) -> None:
+    conn.execute(
+        text(
+            "UPDATE app.orders SET delivery_address = :a, "
+            "delivery_location = ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, "
+            "straight_line_km = :s, road_km = :r, road_km_estimated = :e, coupon_id = :cp WHERE id = :id"
+        ),
+        {
+            "a": address_line,
+            "lat": lat,
+            "lng": lng,
+            "s": straight_line_km,
+            "r": road_km,
+            "e": road_estimated,
+            "cp": coupon_id,
+            "id": order_id,
+        },
+    )

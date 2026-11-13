@@ -41,9 +41,46 @@ class Conflict(Exception):
     pass
 
 
-def customer_menu() -> list[repo.MenuItemRow]:
+def _include_fixtures() -> bool:
+    # Leak control 4: production menus never show fixture rows (defence in depth).
+    return get_settings().app_env != "production"
+
+
+def customer_menu(
+    *,
+    q: str | None = None,
+    category: str | None = None,
+    veg: bool | None = None,
+    spice: str | None = None,
+    min_price_paise: int | None = None,
+    max_price_paise: int | None = None,
+    bestseller: bool | None = None,
+) -> list[repo.MenuItemRow]:
     with get_engine().connect() as conn:
-        return repo.published(conn, include_fixtures=get_settings().app_env != "production")
+        return repo.published_filtered(
+            conn,
+            include_fixtures=_include_fixtures(),
+            q=q,
+            category=category,
+            veg=veg,
+            spice=spice,
+            min_price_paise=min_price_paise,
+            max_price_paise=max_price_paise,
+            bestseller=bestseller,
+        )
+
+
+def menu_filters() -> dict[str, object]:
+    with get_engine().connect() as conn:
+        return repo.filter_options(conn, include_fixtures=_include_fixtures())
+
+
+def dish(item_id: uuid.UUID) -> tuple[repo.MenuItemRow, list[str]]:
+    with get_engine().connect() as conn:
+        item = repo.published_item(conn, item_id, include_fixtures=_include_fixtures())
+        if item is None:
+            raise NotFound
+        return item, repo.active_ingredient_names(conn, item.recipe_id)
 
 
 def _scope(principal: Principal) -> frozenset[uuid.UUID] | None:

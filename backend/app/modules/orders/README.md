@@ -1,11 +1,11 @@
 # Orders module (placement, fulfilment rules, display mapping)
 
-**Purpose and scope:** order placement with checkout idempotency, the simulated-payment outcome, customer cancellation before acceptance, the canonical display mapping, and the fulfilment rules later tasks call (Matrix §7; DDR-16, DDR-17, DDR-38, DDR-109). Cart, ₹500 minimum, coupons, price protection, serviceability and the checkout UI are Task 6; kitchen accept/reject Task 8; delivery endpoints Task 9; the outbox relay Task 12.
+**Purpose and scope:** the persisted cart with a live quote, order placement with the full checkout sequence and idempotency, the simulated-payment outcome, customer cancellation before acceptance, the canonical display mapping, and the fulfilment rules later tasks call (Matrix §7; DDR-16, DDR-17, DDR-38, DDR-109). The checkout UI is Task 6B; kitchen accept/reject Task 8; delivery endpoints Task 9; the outbox relay Task 12.
 
 | Item | Value |
 | --- | --- |
 | UI screens | Customer checkout and order tracking (Task 6) |
-| API endpoints | `POST /api/v1/orders` (`Idempotency-Key` header; 201 new, 200 repeat, 409 key reused for a different request) · `GET /api/v1/orders` · `GET /api/v1/orders/{id}` · `POST /api/v1/orders/{id}/payment/simulate` (SUCCESS, FAILED, TIMEOUT) · `POST /api/v1/orders/{id}/cancel` |
+| API endpoints | `GET /api/v1/cart?address_id=&coupon_code=` (lines, protected prices, bill, serviceability, blockers) · `PUT/DELETE /api/v1/cart/items/{id}` · `POST /api/v1/cart/items/{id}/accept-price` · `POST /api/v1/cart/remove-unavailable` · `DELETE /api/v1/cart` · `POST /api/v1/orders` (`Idempotency-Key` header; 422 with `code` for checkout rules, 409 `price_changed` with `price_changes`; 201 new, 200 repeat, 409 key reused for a different request) · `GET /api/v1/orders` · `GET /api/v1/orders/{id}` · `POST /api/v1/orders/{id}/payment/simulate` (SUCCESS, FAILED, TIMEOUT) · `POST /api/v1/orders/{id}/cancel` |
 | Service functions | `place`, `get`, `list_mine`, `simulate_payment`, `cancel`; for Tasks 8–9: `record_pickup`, `record_cod_collection` (payments: `refund_routine` for rejection) |
 | Tables | `app.orders`, `app.order_items`, `app.payments`, `app.delivery_assignments` (read), `app.outbox`, `app.status_history`; function `app.create_order()` (migration 0008) |
 | Permissions | `customer.orders.read`, `customer.orders.place`, `customer.orders.cancel` (CUSTOMER, own orders; others' orders are 404). Pickup and COD: a delivery agent of the order's region holding its accepted assignment |
@@ -14,6 +14,7 @@
 
 ## Rules implemented
 
+- **Checkout sequence (#1 §9, CU-17):** dishes available → stated prices match what is charged (protected cart price or current price; else 409) → own saved address, serviceable (revalidated) → ₹500 food minimum before coupon → coupon → ₹30 fee → place → payment step. The order stores the accepted prices, the discount and a delivery snapshot (address, straight-line and road distance, estimated flag); ordered dishes leave the cart.
 - **Placement:** one transaction writes the order (via `app.create_order()`), its items with name and price snapshots, one payment and `order.placed`. Payable = food subtotal + ₹30 (DDR-38). Only published, priced dishes from one kitchen; in production, fixture dishes are refused.
 - **Fixture flag (DDR-109):** derived in the database from the dishes (all TEST or all real); items and payments inherit it. The API never sends it.
 - **COD** goes straight to `PENDING_KITCHEN`. **Prepaid** stays `PLACED` until the simulator: SUCCESS → `PENDING_KITCHEN` (`payment.succeeded`); FAILED or TIMEOUT → `CANCELLED` (`payment.failed`, `order.cancelled`), never the kitchen. Repeating the same outcome is idempotent.

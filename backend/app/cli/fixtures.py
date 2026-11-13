@@ -31,6 +31,10 @@ SEED_USERS: tuple[tuple[str, str, str, str | None, str | None], ...] = (
 )
 
 
+# #15 §5 ADR-CUS-001 (address line, latitude, longitude): synthetic test values.
+SEED_ADDRESS = ("Synthetic Test Address, Chennai, Tamil Nadu, India", 13.0835, 80.2710)
+
+
 def load_users() -> int:
     created = 0
     with get_engine().begin() as conn:
@@ -54,6 +58,18 @@ def load_users() -> int:
                 {"u": user_id, "role": role, "rc": region_code, "kc": kitchen_code},
             )
             created += result.rowcount
+        # #15 §5: ADR-CUS-001, the seed customer's default address (synthetic coordinates).
+        conn.execute(
+            text(
+                "INSERT INTO app.customer_addresses "
+                "(customer_user_id, label, address_line, location, is_default) "
+                "SELECT u.id, 'Home', :a, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, true "
+                "FROM app.users u WHERE u.mobile_e164 = :m AND NOT EXISTS "
+                "(SELECT 1 FROM app.customer_addresses x "
+                "WHERE x.customer_user_id = u.id AND x.deleted_at IS NULL)"
+            ),
+            {"a": SEED_ADDRESS[0], "lat": SEED_ADDRESS[1], "lng": SEED_ADDRESS[2], "m": SEED_USERS[0][1]},
+        )
     return created
 
 

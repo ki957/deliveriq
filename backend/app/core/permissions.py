@@ -43,6 +43,8 @@ class Permission(StrEnum):
     # Own orders only (DDR-109)
     CUSTOMER_ORDERS_PLACE = "customer.orders.place"
     CUSTOMER_ORDERS_CANCEL = "customer.orders.cancel"
+    # Saved delivery addresses (CU-02)
+    CUSTOMER_ADDRESSES_MANAGE = "customer.addresses.manage"
     # Kitchen (Matrix §3.1)
     KITCHEN_ORDERS_VIEW = "kitchen.orders.view"
     KITCHEN_ORDERS_PROCESS = "kitchen.orders.process"
@@ -111,7 +113,13 @@ _MGMT_SHARED = frozenset(
 
 ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
     Role.CUSTOMER: frozenset(
-        {P.CUSTOMER_PROFILE_READ, P.CUSTOMER_ORDERS_READ, P.CUSTOMER_ORDERS_PLACE, P.CUSTOMER_ORDERS_CANCEL}
+        {
+            P.CUSTOMER_PROFILE_READ,
+            P.CUSTOMER_ORDERS_READ,
+            P.CUSTOMER_ORDERS_PLACE,
+            P.CUSTOMER_ORDERS_CANCEL,
+            P.CUSTOMER_ADDRESSES_MANAGE,
+        }
     ),
     Role.DELIVERY_AGENT: frozenset({P.DELIVERY_ASSIGNMENTS_VIEW}),
     Role.KITCHEN_STAFF: _KITCHEN_SHARED,

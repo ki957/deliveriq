@@ -325,13 +325,14 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 6 — Customer menu, cart and checkout
 
+- **Status:** delivered as 6A (backend, branch `task-06a-checkout-api`, built and verified, in review) and 6B (UI); decisions DDR-110.
 - **Depends on:** Tasks 5, 7 (payment simulation for the place-order step); DDR-48 fixtures for end-to-end tests.
 - **Gated features:** food-card Add interaction (B, DDR-06). Placeholders: synthetic kitchen location (DDR-39), "image unavailable" (DDR-47).
 - **Acceptance criteria:**
   - Public menu shows only `PUBLISHED` items; filters (price, veg, spice, popularity) work.
   - End-to-end checkout runs on `TEST –` items in the test environment; test orders and simulated payments are flagged and labelled "Test".
   - In a production-profile test database, the customer menu returns no fixture rows and the ordering API rejects fixture item IDs.
-  - Serviceability requires both ≤ 4 km straight-line and ≤ 6 km road distance. Road distance goes through the adapter: labelled stub by default; road-rule tests run with the `osrm` profile (DDR-55).
+  - Serviceability requires both ≤ 4 km straight-line and ≤ 6 km road distance. Road distance goes through the adapter: labelled stub by default; road-rule tests run with the `osrm` profile (DDR-55). The `osrm` profile is built in Task 9; Task 6 proves the road rule through the adapter with fixed stub values (DDR-110).
   - ₹499 rejected, ₹500 accepted; ₹500 check runs on food subtotal before coupon; a coupon may bring the payable total below ₹500 (DDR-53).
   - Delivery fee is ₹30 at every subtotal; no waiver path exists.
   - Special instructions: 250 accepted, 251 rejected by the backend even if the UI is bypassed.
