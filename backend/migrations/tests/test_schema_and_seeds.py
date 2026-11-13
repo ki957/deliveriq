@@ -36,6 +36,7 @@ EXPECTED_CONFIG = {
     # DDR-42 open: labelled test defaults (DDR-111 (1)).
     "MAX_CONCURRENT_ORDERS_BUSY": ("5", "orders"),
     "KITCHEN_ACCEPTANCE_TIMEOUT": ("5", "minutes"),
+    "GPS_STALE_SECONDS": ("120", "seconds"),  # DDR-113 (8) test default
 }
 
 
@@ -45,7 +46,7 @@ def test_all_approved_schemas_exist(api: Conn) -> None:
 
 
 def test_migrations_at_head(migrator: Conn) -> None:
-    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0010"
+    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0011"
 
 
 def test_is_test_fixture_on_all_five_tables(api: Conn) -> None:
@@ -82,6 +83,7 @@ def test_config_seeds_match_sources(api: Conn) -> None:
         "MAX_CONCURRENT_ORDERS",
         "MAX_CONCURRENT_ORDERS_BUSY",
         "KITCHEN_ACCEPTANCE_TIMEOUT",
+        "GPS_STALE_SECONDS",
     }
 
 

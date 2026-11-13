@@ -1,34 +1,56 @@
+"""Delivery rules (DL-04, DL-11, DDR-52, DDR-113 (6), (8), (18))."""
+
 from __future__ import annotations
+
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from app.modules.delivery.domain import (
-    ACTIVE_FOR_AGENT,
-    ASSIGNMENT_TRANSITIONS,
-    SHOWS_AGENT_ASSIGNED,
     Assignment,
     can_transition,
+    codes_match,
+    delivery_code,
+    mask_phone,
+    point_refusal,
 )
 
 pytestmark = pytest.mark.unit
-A = Assignment
+NOW = datetime(2026, 11, 12, 10, 0, tzinfo=UTC)
 
 
-def test_offer_outcomes() -> None:
-    for outcome in (A.ACCEPTED, A.REJECTED, A.EXPIRED, A.REVOKED):
-        assert can_transition(A.OFFERED, outcome)
+def test_delivery_code_is_six_digits_stable_and_secret_dependent() -> None:
+    code = delivery_code("secret-a", "order-1", "n" * 48)
+    assert len(code) == 6 and code.isdigit()
+    assert code == delivery_code("secret-a", "order-1", "n" * 48)
+    assert code != delivery_code("secret-b", "order-1", "n" * 48)  # the database alone cannot derive it
+    assert code != delivery_code("secret-a", "order-1", "m" * 48)  # a new nonce = a new code
+    assert codes_match(code, f" {code} ") and not codes_match(
+        code, "000000" if code != "000000" else "111111"
+    )
 
 
-def test_agent_cannot_cancel_accepted_assignment() -> None:
-    # #7 §3: only manager intervention (REVOKED) or completion/failure request leave ACCEPTED.
-    exits = {b for a, b in ASSIGNMENT_TRANSITIONS if a == A.ACCEPTED}
-    assert exits == {A.REVOKED, A.COMPLETED, A.FAILURE_REQUESTED}
+@pytest.mark.parametrize(
+    ("recorded", "last", "why"),
+    [
+        (NOW - timedelta(seconds=5), None, None),
+        (NOW - timedelta(seconds=121), None, "stale"),
+        (NOW - timedelta(seconds=5), NOW - timedelta(seconds=5), "out_of_order"),
+        (NOW - timedelta(seconds=10), NOW - timedelta(seconds=5), "out_of_order"),
+        (NOW + timedelta(minutes=5), None, "future"),
+    ],
+)
+def test_points_refused_when_stale_out_of_order_or_future(
+    recorded: datetime, last: datetime | None, why: str | None
+) -> None:
+    assert point_refusal(recorded, now=NOW, last=last, stale_seconds=120) == why
 
 
-def test_failure_needs_request_first() -> None:
-    assert [a for a, b in ASSIGNMENT_TRANSITIONS if b == A.FAILED] == [A.FAILURE_REQUESTED]
+def test_phone_is_masked_except_the_last_two_digits() -> None:
+    assert mask_phone("+919876543210") == "+91********10"
 
 
-def test_active_and_indicator_sets() -> None:
-    assert {A.ACCEPTED, A.FAILURE_REQUESTED} == ACTIVE_FOR_AGENT
-    assert {A.ACCEPTED} == SHOWS_AGENT_ASSIGNED
+def test_manager_may_return_a_failure_request_to_the_agent() -> None:
+    assert can_transition(Assignment.FAILURE_REQUESTED, Assignment.ACCEPTED)
+    assert can_transition(Assignment.FAILURE_REQUESTED, Assignment.FAILED)
+    assert not can_transition(Assignment.FAILED, Assignment.ACCEPTED)

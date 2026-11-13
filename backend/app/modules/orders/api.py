@@ -26,6 +26,7 @@ from app.modules.orders.schemas import (
     KitchenOrderOut,
     KitchenQueueOut,
     KitchenRejectIn,
+    LiveLocationOut,
     OrderCreateIn,
     OrderItemOut,
     OrderOut,
@@ -96,7 +97,8 @@ def _respond[T](fn: Callable[[], T]) -> T | JSONResponse:
         return refusal.response
 
 
-def _out(view: service.OrderView) -> OrderOut:
+def order_out(view: service.OrderView) -> OrderOut:
+    """Shared with the delivery routes. Tracking fields are filled only on the customer's own view."""
     o = view.order
     return OrderOut(
         id=o.id,
@@ -114,6 +116,15 @@ def _out(view: service.OrderView) -> OrderOut:
         placed_at=o.placed_at,
         items=[OrderItemOut.model_validate(i, from_attributes=True) for i in view.items],
         payment=PaymentOut.model_validate(view.payment, from_attributes=True) if view.payment else None,
+        delivery_code=view.delivery_code,
+        live_location=LiveLocationOut(
+            lat=view.location.lat,
+            lng=view.location.lng,
+            recorded_at=view.location.recorded_at,
+            simulated=view.location.source == "SIMULATED",
+        )
+        if view.location
+        else None,
     )
 
 
@@ -168,29 +179,29 @@ def place_order(
     view, created = result
     if not created:
         response.status_code = 200
-    return _out(view)
+    return order_out(view)
 
 
 @router.get("", response_model=list[OrderOut])
 def my_orders(principal: CurrentPrincipal) -> list[OrderOut]:
-    return [_out(v) for v in _call(lambda: service.list_mine(principal))]
+    return [order_out(v) for v in _call(lambda: service.list_mine(principal))]
 
 
 @router.get("/{order_id}", response_model=OrderOut)
 def order_detail(order_id: uuid.UUID, principal: CurrentPrincipal) -> OrderOut:
-    return _out(_call(lambda: service.get(principal, order_id)))
+    return order_out(_call(lambda: service.get(principal, order_id)))
 
 
 @router.post("/{order_id}/payment/simulate", response_model=OrderOut)
 def simulate_payment(order_id: uuid.UUID, body: SimulateIn, principal: CurrentPrincipal) -> OrderOut:
     """Payment simulator: no real money moves. SUCCESS sends the order to the kitchen; FAILED or
     TIMEOUT cancels it (DDR-109)."""
-    return _out(_call(lambda: service.simulate_payment(principal, order_id, body.outcome)))
+    return order_out(_call(lambda: service.simulate_payment(principal, order_id, body.outcome)))
 
 
 @router.post("/{order_id}/cancel", response_model=OrderOut)
 def cancel_order(order_id: uuid.UUID, principal: CurrentPrincipal, body: CancelIn | None = None) -> OrderOut:
-    return _out(_call(lambda: service.cancel(principal, order_id, body.reason if body else None)))
+    return order_out(_call(lambda: service.cancel(principal, order_id, body.reason if body else None)))
 
 
 # ---------------------------------------------------------------- cart (persisted for customers, CU-11)

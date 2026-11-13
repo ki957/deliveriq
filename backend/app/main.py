@@ -15,6 +15,8 @@ from app.core.logging import configure_logging
 from app.core.request_context import RequestContextMiddleware
 from app.modules.customers.api import addresses_router
 from app.modules.customers.api import public_router as serviceability_router
+from app.modules.delivery.api import manage_router as delivery_manage_router
+from app.modules.delivery.api import router as delivery_router
 from app.modules.health.api import router as health_router
 from app.modules.identity.api import auth_router, me_router
 from app.modules.identity.dependencies import CSRF_HEADER
@@ -52,6 +54,8 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(kitchen_settings_router)
     app.include_router(inventory_router)
     app.include_router(menu_availability_router)
+    app.include_router(delivery_router)
+    app.include_router(delivery_manage_router)
     return app
 
 

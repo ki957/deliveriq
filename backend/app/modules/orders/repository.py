@@ -176,6 +176,25 @@ def items(conn: Connection, order_id: uuid.UUID) -> list[ItemRow]:
     return [ItemRow(*r) for r in rows]
 
 
+def set_exception(conn: Connection, order_id: uuid.UUID, is_open: bool) -> None:
+    """`delivery_exception_open` is a flag, not a status: the main status never regresses (Matrix §7.1)."""
+    conn.execute(
+        text("UPDATE app.orders SET delivery_exception_open = :v WHERE id = :id"),
+        {"v": is_open, "id": order_id},
+    )
+
+
+def mark_customer_unavailable(conn: Connection, order_id: uuid.UUID) -> datetime:
+    since: datetime = conn.execute(
+        text(
+            "UPDATE app.orders SET customer_unavailable_since = coalesce(customer_unavailable_since, now()) "
+            "WHERE id = :id RETURNING customer_unavailable_since"
+        ),
+        {"id": order_id},
+    ).scalar_one()
+    return since
+
+
 def set_status(conn: Connection, order_id: uuid.UUID, status: str) -> None:
     conn.execute(
         text("UPDATE app.orders SET fulfilment_status = :s WHERE id = :id"), {"s": status, "id": order_id}

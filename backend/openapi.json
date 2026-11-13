@@ -138,6 +138,130 @@
         "title": "AdjustIn",
         "type": "object"
       },
+      "AgentOut": {
+        "properties": {
+          "availability": {
+            "enum": [
+              "ONLINE",
+              "OFFLINE"
+            ],
+            "title": "Availability",
+            "type": "string"
+          },
+          "availability_changed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability Changed At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "live_order_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Order Id"
+          },
+          "live_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Status"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "availability",
+          "availability_changed_at",
+          "live_status",
+          "live_order_id"
+        ],
+        "title": "AgentOut",
+        "type": "object"
+      },
+      "AssignIn": {
+        "properties": {
+          "agent_user_id": {
+            "format": "uuid",
+            "title": "Agent User Id",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "agent_user_id",
+          "reason"
+        ],
+        "title": "AssignIn",
+        "type": "object"
+      },
+      "AssignmentOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "offer_seconds_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offer Seconds Left"
+          },
+          "offered_at": {
+            "format": "date-time",
+            "title": "Offered At",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "offered_at",
+          "offer_seconds_left"
+        ],
+        "title": "AssignmentOut",
+        "type": "object"
+      },
       "AvailabilityDecisionIn": {
         "properties": {
           "approve": {
@@ -161,6 +285,19 @@
           "approve"
         ],
         "title": "AvailabilityDecisionIn",
+        "type": "object"
+      },
+      "AvailabilityIn": {
+        "properties": {
+          "online": {
+            "title": "Online",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "online"
+        ],
+        "title": "AvailabilityIn",
         "type": "object"
       },
       "AvailabilityRequestIn": {
@@ -558,6 +695,45 @@
         "title": "CartQuantityIn",
         "type": "object"
       },
+      "CodIn": {
+        "properties": {
+          "collected": {
+            "title": "Collected",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "collected"
+        ],
+        "title": "CodIn",
+        "type": "object"
+      },
+      "CodeIn": {
+        "properties": {
+          "code": {
+            "pattern": "^\\s*\\d{6}\\s*$",
+            "title": "Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "CodeIn",
+        "type": "object"
+      },
       "ConfiguredValueOut": {
         "properties": {
           "is_test_default": {
@@ -692,6 +868,26 @@
           "is_bestseller"
         ],
         "title": "CustomerMenuItemOut",
+        "type": "object"
+      },
+      "DecisionIn": {
+        "properties": {
+          "approve": {
+            "title": "Approve",
+            "type": "boolean"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "approve",
+          "reason"
+        ],
+        "title": "DecisionIn",
         "type": "object"
       },
       "DeviceOut": {
@@ -900,6 +1096,26 @@
         "title": "DqResultOut",
         "type": "object"
       },
+      "FailureIn": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "refused": {
+            "title": "Refused",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "refused",
+          "reason"
+        ],
+        "title": "FailureIn",
+        "type": "object"
+      },
       "Fulfilment": {
         "enum": [
           "PLACED",
@@ -966,6 +1182,100 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HistoryOut": {
+        "properties": {
+          "assignment_status": {
+            "title": "Assignment Status",
+            "type": "string"
+          },
+          "delivered_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivered At"
+          },
+          "duration_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Minutes"
+          },
+          "fulfilment_status": {
+            "title": "Fulfilment Status",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "offered_at": {
+            "format": "date-time",
+            "title": "Offered At",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "picked_up_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Picked Up At"
+          }
+        },
+        "required": [
+          "order_id",
+          "assignment_status",
+          "fulfilment_status",
+          "is_test_fixture",
+          "offered_at",
+          "picked_up_at",
+          "delivered_at",
+          "duration_minutes"
+        ],
+        "title": "HistoryOut",
+        "type": "object"
+      },
+      "IngestOut": {
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "integer"
+          },
+          "refused": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Refused",
+            "type": "object"
+          }
+        },
+        "required": [
+          "accepted",
+          "refused"
+        ],
+        "title": "IngestOut",
         "type": "object"
       },
       "IngestionErrorOut": {
@@ -1649,6 +1959,65 @@
         "title": "LineageOut",
         "type": "object"
       },
+      "LiveAssignmentOut": {
+        "properties": {
+          "agent_name": {
+            "title": "Agent Name",
+            "type": "string"
+          },
+          "assignment_id": {
+            "format": "uuid",
+            "title": "Assignment Id",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "assignment_id",
+          "status",
+          "agent_name"
+        ],
+        "title": "LiveAssignmentOut",
+        "type": "object"
+      },
+      "LiveLocationOut": {
+        "properties": {
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "simulated": {
+            "title": "Simulated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "lat",
+          "lng",
+          "recorded_at",
+          "simulated"
+        ],
+        "title": "LiveLocationOut",
+        "type": "object"
+      },
       "LiveResponse": {
         "properties": {
           "status": {
@@ -1961,6 +2330,135 @@
         "title": "MenuTransitionIn",
         "type": "object"
       },
+      "MyWorkOut": {
+        "properties": {
+          "assignment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssignmentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "availability": {
+            "enum": [
+              "ONLINE",
+              "OFFLINE"
+            ],
+            "title": "Availability",
+            "type": "string"
+          },
+          "availability_changed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability Changed At"
+          },
+          "customer_unavailable_wait_minutes": {
+            "title": "Customer Unavailable Wait Minutes",
+            "type": "integer"
+          },
+          "gps_interval_seconds": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Gps Interval Seconds",
+            "type": "array"
+          },
+          "gps_stale_seconds": {
+            "title": "Gps Stale Seconds",
+            "type": "integer"
+          },
+          "order": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorkOrderOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "route_is_estimated": {
+            "const": true,
+            "default": true,
+            "title": "Route Is Estimated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "availability",
+          "availability_changed_at",
+          "assignment",
+          "order",
+          "customer_unavailable_wait_minutes",
+          "gps_interval_seconds",
+          "gps_stale_seconds"
+        ],
+        "title": "MyWorkOut",
+        "type": "object"
+      },
+      "NameIn": {
+        "properties": {
+          "display_name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "display_name"
+        ],
+        "title": "NameIn",
+        "type": "object"
+      },
+      "NameOut": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "display_name"
+        ],
+        "title": "NameOut",
+        "type": "object"
+      },
+      "OptionalReasonIn": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "OptionalReasonIn",
+        "type": "object"
+      },
       "OrderCreateIn": {
         "properties": {
           "address_id": {
@@ -2105,6 +2603,17 @@
             ],
             "title": "Delivery Address"
           },
+          "delivery_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Code"
+          },
           "delivery_fee_paise": {
             "anyOf": [
               {
@@ -2149,6 +2658,16 @@
             },
             "title": "Items",
             "type": "array"
+          },
+          "live_location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LiveLocationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "payable_paise": {
             "anyOf": [
@@ -2391,6 +2910,19 @@
         "title": "PaymentStatus",
         "type": "string"
       },
+      "PhoneOut": {
+        "properties": {
+          "phone": {
+            "title": "Phone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "title": "PhoneOut",
+        "type": "object"
+      },
       "PipelineOut": {
         "properties": {
           "display_name": {
@@ -2443,6 +2975,95 @@
         "title": "PipelineOut",
         "type": "object"
       },
+      "Place": {
+        "properties": {
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "title": "Place",
+        "type": "object"
+      },
+      "PointIn": {
+        "properties": {
+          "accuracy_m": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accuracy M"
+          },
+          "lat": {
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lng",
+            "type": "number"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "REAL",
+              "SIMULATED"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lat",
+          "lng",
+          "recorded_at",
+          "source"
+        ],
+        "title": "PointIn",
+        "type": "object"
+      },
+      "PointsIn": {
+        "properties": {
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/PointIn"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Points",
+            "type": "array"
+          }
+        },
+        "required": [
+          "points"
+        ],
+        "title": "PointsIn",
+        "type": "object"
+      },
       "Portal": {
         "enum": [
           "customer",
@@ -2491,6 +3112,21 @@
           "checks"
         ],
         "title": "ReadyResponse",
+        "type": "object"
+      },
+      "ReasonIn": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "ReasonIn",
         "type": "object"
       },
       "RecipeStatus": {
@@ -2797,6 +3433,31 @@
           "updated_at"
         ],
         "title": "RecipeVersionOut",
+        "type": "object"
+      },
+      "RespondIn": {
+        "properties": {
+          "accept": {
+            "title": "Accept",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "accept"
+        ],
+        "title": "RespondIn",
         "type": "object"
       },
       "ReviewItemOut": {
@@ -3543,6 +4204,25 @@
         "title": "TrustedLoginIn",
         "type": "object"
       },
+      "UnavailableOut": {
+        "properties": {
+          "since": {
+            "format": "date-time",
+            "title": "Since",
+            "type": "string"
+          },
+          "wait_minutes": {
+            "title": "Wait Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "since",
+          "wait_minutes"
+        ],
+        "title": "UnavailableOut",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -3581,6 +4261,155 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "WorkOrderOut": {
+        "properties": {
+          "code_attempts_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Attempts Left"
+          },
+          "customer_phone_masked": {
+            "title": "Customer Phone Masked",
+            "type": "string"
+          },
+          "customer_unavailable_since": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Unavailable Since"
+          },
+          "delivery_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Address"
+          },
+          "delivery_exception_open": {
+            "title": "Delivery Exception Open",
+            "type": "boolean"
+          },
+          "destination": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Place"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fulfilment_status": {
+            "title": "Fulfilment Status",
+            "type": "string"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "kitchen": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "kitchen_location_is_synthetic": {
+            "title": "Kitchen Location Is Synthetic",
+            "type": "boolean"
+          },
+          "kitchen_name": {
+            "title": "Kitchen Name",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "payable_paise": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payable Paise"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method"
+          },
+          "payment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Status"
+          },
+          "special_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Special Instructions"
+          },
+          "status_label": {
+            "title": "Status Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "fulfilment_status",
+          "status_label",
+          "is_test_fixture",
+          "special_instructions",
+          "delivery_address",
+          "destination",
+          "kitchen_name",
+          "kitchen",
+          "kitchen_location_is_synthetic",
+          "customer_phone_masked",
+          "payment_method",
+          "payment_status",
+          "payable_paise",
+          "customer_unavailable_since",
+          "delivery_exception_open",
+          "code_attempts_left"
+        ],
+        "title": "WorkOrderOut",
         "type": "object"
       }
     }
@@ -3951,6 +4780,809 @@
         "summary": "Remove Unavailable",
         "tags": [
           "cart"
+        ]
+      }
+    },
+    "/api/v1/delivery/assignments/{assignment_id}/respond": {
+      "post": {
+        "description": "Accept within 60 s, or reject with a reason (DL-04).",
+        "operationId": "respond_api_v1_delivery_assignments__assignment_id__respond_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assignment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assignment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RespondIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyWorkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Respond",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/history": {
+      "get": {
+        "description": "The agent's own deliveries of the last 30 days (#7 \u00a79).",
+        "operationId": "history_api_v1_delivery_history_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/HistoryOut"
+                  },
+                  "title": "Response History Api V1 Delivery History Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "History",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/locations": {
+      "post": {
+        "description": "GPS points while holding an accepted delivery (DDR-52): stale, future or out-of-order points are\nrefused and counted, never stored. REAL or SIMULATED is recorded per point.",
+        "operationId": "locations_api_v1_delivery_locations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PointsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Locations",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/manage/agents": {
+      "get": {
+        "operationId": "agents_api_v1_delivery_manage_agents_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AgentOut"
+                  },
+                  "title": "Response Agents Api V1 Delivery Manage Agents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Agents",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/manage/agents/{agent_id}/force-offline": {
+      "post": {
+        "description": "Only when the agent holds no accepted delivery (DL-06).",
+        "operationId": "force_offline_api_v1_delivery_manage_agents__agent_id__force_offline_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Agent Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Force Offline",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/manage/orders/{order_id}/assign": {
+      "post": {
+        "description": "Offer the order to a chosen online agent; any current offer or assignment is revoked (DL-02, DL-07).",
+        "operationId": "assign_api_v1_delivery_manage_orders__order_id__assign_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveAssignmentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/manage/orders/{order_id}/code": {
+      "post": {
+        "description": "Issue a new delivery code after escalation (DDR-113 (6)).",
+        "operationId": "reissue_code_api_v1_delivery_manage_orders__order_id__code_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reissue Code",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/manage/orders/{order_id}/failure-decision": {
+      "post": {
+        "description": "Approve (Delivery failed) or reject (back to the agent) a failure request, with a reason (DA-18).",
+        "operationId": "failure_decision_api_v1_delivery_manage_orders__order_id__failure_decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Failure Decision",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/me": {
+      "get": {
+        "description": "Availability and the current offer or delivery (DL-01, DL-08).",
+        "operationId": "my_work_api_v1_delivery_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyWorkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "My Work",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/me/availability": {
+      "put": {
+        "description": "Go online (receive offers) or offline (an open offer expires; not with an accepted delivery).",
+        "operationId": "set_availability_api_v1_delivery_me_availability_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyWorkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Availability",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/me/name": {
+      "put": {
+        "description": "The agent edits the display name (#7 \u00a79); the mobile number changes only through recovery.",
+        "operationId": "rename_api_v1_delivery_me_name_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NameIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rename",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/orders/{order_id}/cod": {
+      "post": {
+        "description": "Simulated cash on delivery: collected, or a mismatch with a reason (DL-15).",
+        "operationId": "cod_api_v1_delivery_orders__order_id__cod_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cod",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/orders/{order_id}/contact-manager": {
+      "post": {
+        "description": "After the customer-unavailable wait, or at any time with a reason (emergency, #7 \u00a77).",
+        "operationId": "contact_manager_api_v1_delivery_orders__order_id__contact_manager_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OptionalReasonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Contact Manager",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/orders/{order_id}/customer-phone": {
+      "get": {
+        "description": "The full number for the agent's own accepted delivery only; every reveal is audited (DL-08).",
+        "operationId": "customer_phone_api_v1_delivery_orders__order_id__customer_phone_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Customer Phone",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/orders/{order_id}/customer-unavailable": {
+      "post": {
+        "description": "Start the wait (DDR-14); afterwards the agent may contact the manager without a reason.",
+        "operationId": "customer_unavailable_api_v1_delivery_orders__order_id__customer_unavailable_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnavailableOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Customer Unavailable",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/orders/{order_id}/deliver": {
+      "post": {
+        "description": "The customer's six-digit code, verified by the backend; three wrong codes escalate (DL-11).",
+        "operationId": "deliver_api_v1_delivery_orders__order_id__deliver_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Wrong code"
+          }
+        },
+        "summary": "Deliver",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/orders/{order_id}/failure-request": {
+      "post": {
+        "description": "Customer refused, or delivery failed: a reason is required; the manager decides (DA-18).",
+        "operationId": "failure_request_api_v1_delivery_orders__order_id__failure_request_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FailureIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Failure Request",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/orders/{order_id}/pickup": {
+      "post": {
+        "description": "Validated pickup (DL-09): blocked until Ready; then Out for delivery and the customer's code.",
+        "operationId": "pickup_api_v1_delivery_orders__order_id__pickup_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pickup",
+        "tags": [
+          "delivery"
         ]
       }
     },

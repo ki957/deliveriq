@@ -8,10 +8,11 @@ import signal
 import socket
 import sys
 import threading
+import time
 import uuid
 from types import FrameType
 
-from sqlalchemy import Connection
+from sqlalchemy import Connection, text
 
 from app.core.config import get_settings
 from app.core.db import get_engine
@@ -21,6 +22,9 @@ from app.pipelines.framework.context import TransientError
 
 POLL_SECONDS = 2
 HEARTBEAT_SECONDS = 10
+# Delivery jobs (DDR-113 (2), (11), (17)): narrow database functions, the worker role holds EXECUTE only.
+OFFER_SWEEP_SECONDS = 10
+RETENTION_SECONDS = 24 * 60 * 60
 
 _log = logging.getLogger("app.worker")
 
@@ -42,6 +46,23 @@ class Worker:
             except Exception:
                 _log.warning("heartbeat failed", exc_info=True)
 
+    def _delivery_jobs(self) -> None:
+        next_retention = 0.0
+        while not self.stopping.wait(OFFER_SWEEP_SECONDS):
+            try:
+                with get_engine().begin() as conn:
+                    expired = conn.execute(text("SELECT app.expire_and_reoffer()")).scalar_one()
+                if expired:
+                    _log.info("offers expired", extra={"count": expired})
+                if time.monotonic() >= next_retention:
+                    # NULL = the configured GPS_RETENTION_DAYS (30, DDR-43).
+                    with get_engine().begin() as conn:
+                        deleted = conn.execute(text("SELECT app.purge_delivery_locations(NULL)")).scalar_one()
+                    _log.info("gps retention", extra={"deleted": deleted})
+                    next_retention = time.monotonic() + RETENTION_SECONDS
+            except Exception:
+                _log.warning("delivery job failed", exc_info=True)
+
     def stop(self, signum: int, _frame: FrameType | None) -> None:
         _log.info("stopping after the current job", extra={"signal": signum})
         self.stopping.set()
@@ -50,6 +71,7 @@ class Worker:
         with self._autocommit() as conn:
             queue.register_worker(conn, self.worker_id)
         threading.Thread(target=self._heartbeats, name="heartbeat", daemon=True).start()
+        threading.Thread(target=self._delivery_jobs, name="delivery-jobs", daemon=True).start()
         _log.info("worker started", extra={"worker_id": self.worker_id})
         while not self.stopping.is_set():
             try:

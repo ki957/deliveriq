@@ -33,6 +33,8 @@ from app.modules.payments.domain import OUTCOME_STATUS, PaymentMethod, PaymentSt
 from app.modules.pricing import domain as pricing_domain
 from app.modules.pricing import service as pricing
 from app.shared.actor import set_actor
+from app.shared.audit import write_event
+from app.shared.config_values import value as config_value
 from app.shared.events import emit
 
 P = Permission
@@ -58,14 +60,20 @@ class OrderView:
     items: list[repo.ItemRow]
     payment: payments.PaymentRow | None
     labels: d.DisplayLabels
+    # Customer only, after pickup (DDR-113 (6), (8)): the code to give the agent and the latest position.
+    delivery_code: str | None = None
+    location: delivery.PointRow | None = None
 
 
-def _view(conn: Connection, order: repo.OrderRow) -> OrderView:
+def _view(conn: Connection, order: repo.OrderRow, *, customer_tracking: bool = False) -> OrderView:
+    tracking = customer_tracking and order.fulfilment_status == F.OUT_FOR_DELIVERY
     return OrderView(
         order=order,
         items=repo.items(conn, order.id),
         payment=payments.for_order(conn, order.id),
         labels=d.display(F(order.fulfilment_status), order.assignment_accepted),
+        delivery_code=delivery.code_for_customer(conn, order.id) if tracking else None,
+        location=delivery.latest_point(conn, order.id) if tracking else None,
     )
 
 
@@ -110,7 +118,7 @@ def _reread(conn: Connection, order_id: uuid.UUID) -> repo.OrderRow:
 def get(principal: Principal, order_id: uuid.UUID) -> OrderView:
     _require(principal, P.CUSTOMER_ORDERS_READ)
     with get_engine().connect() as conn:
-        return _view(conn, _own(conn, principal, order_id))
+        return _view(conn, _own(conn, principal, order_id), customer_tracking=True)
 
 
 def list_mine(principal: Principal) -> list[OrderView]:
@@ -462,6 +470,8 @@ def record_pickup(agent: Principal, order_id: uuid.UUID) -> OrderView:
         repo.set_status(conn, order_id, F.OUT_FOR_DELIVERY.value)
         # Reserved stock is deducted at the validated handover, once (KI-22; DDR-111).
         inventory.consume(conn, _ref(order), actor_user_id=agent.user_id, actor_role="DELIVERY_AGENT")
+        # The customer's delivery code, shown only on their own order page (DDR-113 (6)).
+        delivery.issue_otp(conn, order_id, agent.user_id)
         emit(
             conn,
             event_type="delivery.picked_up",
@@ -757,6 +767,187 @@ def kitchen_start(principal: Principal, order_id: uuid.UUID) -> KitchenOrderView
             repo.set_item_status(conn, item.id, d.ItemPrep.PREPARING.value)
         _advance(conn, order)
         return _kitchen_view(conn, order_id)
+
+
+# ---------------------------------------------------- delivery outcome (Task 9; DL-11–DL-14, DDR-113)
+class WrongCode(Exception):
+    """The delivery code did not match (422). `attempts_left` reaches 0 at the third wrong code."""
+
+    def __init__(self, attempts_left: int) -> None:
+        super().__init__(
+            "Wrong delivery code. "
+            + (f"{attempts_left} attempt(s) left." if attempts_left else "The manager has been alerted.")
+        )
+        self.attempts_left = attempts_left
+
+
+def _delivering(
+    conn: Connection, agent: Principal, order_id: uuid.UUID
+) -> tuple[repo.OrderRow, delivery.AssignmentRow]:
+    order = repo.find(conn, order_id, lock=True)
+    if order is None:
+        raise NotFound
+    try:
+        assignment = delivery.held_by(conn, agent, order_id)
+    except delivery.NotFound:
+        raise NotFound from None
+    if order.fulfilment_status != F.OUT_FOR_DELIVERY:
+        raise Conflict(f"Order is {order.fulfilment_status}; this step happens on the way to the customer")
+    return order, assignment
+
+
+def _agent_actor(conn: Connection, agent: Principal, reason: str | None) -> None:
+    set_actor(
+        conn, role="DELIVERY_AGENT", user_id=agent.user_id, reason=reason, correlation_id=current_request_id()
+    )
+
+
+def _text(reason: str | None) -> str:
+    cleaned = (reason or "").strip()
+    if not cleaned or len(cleaned) > d.REJECT_REASON_MAX:
+        raise InvalidInput(f"A reason of 1 to {d.REJECT_REASON_MAX} characters is required")
+    return cleaned
+
+
+def deliver(agent: Principal, order_id: uuid.UUID, code: str) -> OrderView:
+    """DL-11, DA-16: only the backend-verified code sets DELIVERED; three wrong codes escalate."""
+    wrong: WrongCode | None = None
+    with get_engine().begin() as conn:
+        _order, assignment = _delivering(conn, agent, order_id)
+        if assignment.status != "ACCEPTED":
+            raise Conflict("A failure request is open for this delivery")
+        try:
+            check = delivery.check_otp(conn, order_id, code)
+        except delivery.Conflict as exc:
+            raise Conflict(str(exc)) from None
+        if not check.ok:
+            if check.attempts_left == 0:
+                repo.set_exception(conn, order_id, True)
+            wrong = WrongCode(check.attempts_left)  # the attempt is committed, then refused
+        else:
+            _agent_actor(conn, agent, None)
+            repo.set_status(conn, order_id, F.DELIVERED.value)
+            delivery.move(conn, assignment, delivery.A.COMPLETED)
+            repo.set_exception(conn, order_id, False)
+            delivery.emit_for(
+                conn, assignment, "delivery.completed", {"gps": delivery.gps_summary(conn, assignment.id)}
+            )
+            return _view(conn, _reread(conn, order_id))
+    raise wrong
+
+
+def customer_unavailable(agent: Principal, order_id: uuid.UUID) -> datetime:
+    """DDR-14: start the wait (5 minutes by default); repeating keeps the first start time."""
+    with get_engine().begin() as conn:
+        _delivering(conn, agent, order_id)
+        return repo.mark_customer_unavailable(conn, order_id)
+
+
+def contact_manager(agent: Principal, order_id: uuid.UUID, reason: str | None) -> OrderView:
+    """#7 §7: after the customer-unavailable wait, or at any time with a reason (emergency)."""
+    with get_engine().begin() as conn:
+        order, assignment = _delivering(conn, agent, order_id)
+        text_reason = (reason or "").strip() or None
+        if text_reason is None:
+            since = delivery.customer_unavailable_since(conn, order_id)
+            wait = int(config_value(conn, "CUSTOMER_UNAVAILABLE_WAIT", region_id=order.region_id))
+            if since is None or (pricing.now(conn) - since).total_seconds() < wait * 60:
+                raise Conflict(
+                    f"Wait {wait} minutes after marking the customer unavailable, or give a reason"
+                )
+            text_reason = f"Customer unavailable for {wait} minutes"
+        elif len(text_reason) > d.REJECT_REASON_MAX:
+            raise InvalidInput(f"The reason can be at most {d.REJECT_REASON_MAX} characters")
+        repo.set_exception(conn, order_id, True)
+        write_event(
+            conn,
+            action="delivery.manager_contacted",
+            actor_user_id=agent.user_id,
+            actor_role="DELIVERY_AGENT",
+            target_type="order",
+            target_id=str(order_id),
+            region_id=order.region_id,
+            kitchen_id=order.kitchen_id,
+            reason=text_reason,
+            correlation_id=current_request_id(),
+            after={"assignment_id": str(assignment.id)},
+        )
+        return _view(conn, _reread(conn, order_id))
+
+
+def request_failure(agent: Principal, order_id: uuid.UUID, *, refused: bool, reason: str) -> OrderView:
+    """DA-18: refusal or failure needs a reason; the manager decides. The order status does not change."""
+    text_reason = _text(reason)
+    with get_engine().begin() as conn:
+        _order, assignment = _delivering(conn, agent, order_id)
+        if assignment.status != "ACCEPTED":
+            raise Conflict("A failure request is already open")
+        _agent_actor(conn, agent, ("Customer refused: " if refused else "Delivery failed: ") + text_reason)
+        delivery.move(conn, assignment, delivery.A.FAILURE_REQUESTED)
+        repo.set_exception(conn, order_id, True)
+        return _view(conn, _reread(conn, order_id))
+
+
+def _managed(conn: Connection, principal: Principal, order_id: uuid.UUID) -> tuple[repo.OrderRow, str]:
+    order = repo.find(conn, order_id, lock=True)
+    if order is None:
+        raise NotFound
+    try:
+        return order, delivery.manager_role_for(principal, order.region_id)
+    except delivery.NotFound:
+        raise NotFound from None
+
+
+def decide_failure(principal: Principal, order_id: uuid.UUID, *, approve: bool, reason: str) -> OrderView:
+    """DA-18, DDR-113 (7), (18): approval sets DELIVERY_FAILED; rejection returns the delivery to the agent.
+    No automatic refund (DDR-44 open; Task 10)."""
+    text_reason = _text(reason)
+    with get_engine().begin() as conn:
+        _order, role = _managed(conn, principal, order_id)
+        assignment = delivery.live_assignment(conn, order_id)
+        if assignment is None or assignment.status != "FAILURE_REQUESTED":
+            raise Conflict("There is no open failure request for this order")
+        set_actor(
+            conn,
+            role=role,
+            user_id=principal.user_id,
+            reason=text_reason,
+            correlation_id=current_request_id(),
+        )
+        if approve:
+            repo.set_status(conn, order_id, F.DELIVERY_FAILED.value)
+            delivery.move(conn, assignment, delivery.A.FAILED)
+            delivery.emit_for(
+                conn, assignment, "delivery.failed", {"gps": delivery.gps_summary(conn, assignment.id)}
+            )
+        else:
+            delivery.move(conn, assignment, delivery.A.ACCEPTED)
+        repo.set_exception(conn, order_id, False)
+        return _view(conn, _reread(conn, order_id))
+
+
+def reissue_code(principal: Principal, order_id: uuid.UUID, reason: str) -> OrderView:
+    """DL-11, DDR-113 (6): after escalation the manager issues a new code (the old one stops working)."""
+    text_reason = _text(reason)
+    with get_engine().begin() as conn:
+        order, role = _managed(conn, principal, order_id)
+        if order.fulfilment_status != F.OUT_FOR_DELIVERY:
+            raise Conflict("A new code is issued only for an order on its way to the customer")
+        delivery.issue_otp(conn, order_id, principal.user_id)
+        repo.set_exception(conn, order_id, False)
+        write_event(
+            conn,
+            action="delivery.code.reissued",
+            actor_user_id=principal.user_id,
+            actor_role=role,
+            target_type="order",
+            target_id=str(order_id),
+            region_id=order.region_id,
+            kitchen_id=order.kitchen_id,
+            reason=text_reason,
+            correlation_id=current_request_id(),
+        )
+        return _view(conn, _reread(conn, order_id))
 
 
 def record_cod_collection(
