@@ -38,7 +38,8 @@ test("Kitchen Staff can read recipes and the review queue but has no workflow co
   await page.getByRole("link", { name: "Recipes" }).first().click();
   await expect(page.getByRole("heading", { level: 1, name: "Recipes" })).toBeVisible();
   await expectNoAxeViolations(page);
-  // Viewport only: E2E recipes accumulate, so the list height changes between runs.
+  // Viewport only: `make e2e` imports the 104 SOP recipes first, so the list always fills the
+  // viewport; E2E recipes accumulate below it.
   const main = page.locator("main");
   await expect(page).toHaveScreenshot("recipes-list.png", {
     mask: [main.getByRole("table"), main.getByRole("status")],
@@ -101,7 +102,8 @@ test("a TEST recipe goes from draft to published: KM, CA product owner, KM activ
   await row.getByRole("button", { name: "Publish" }).click();
   await expect(row.getByText("Published", { exact: true })).toBeVisible();
   await expectNoAxeViolations(rm);
-  await expect(rm).toHaveScreenshot("menu-publication.png", { mask: [rm.locator("main").getByRole("list")] });
+  // The published row only (badge, status, price, recipe state): the list length grows with every run.
+  await expect(row).toHaveScreenshot("menu-publication.png", { mask: [row.getByTestId("menu-item-name")] });
 
   const menu = await rm.request.get("/api/v1/menu/items");
   const published = ((await menu.json()) as { name: string; is_test_fixture: boolean }[]).find((i) => i.name === name);

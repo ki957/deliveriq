@@ -54,7 +54,7 @@ function RunControls({ pipeline }: { pipeline: Pipeline }) {
   }
 
   return (
-    <div className="mt-4 rounded-panel border border-border bg-surface p-4">
+    <div className="mt-4 rounded-panel border border-border bg-surface p-4" data-testid="run-controls">
       <h2 className="text-lg font-semibold">Run</h2>
       <div className="mt-2 flex flex-wrap items-end gap-3">
         <div>

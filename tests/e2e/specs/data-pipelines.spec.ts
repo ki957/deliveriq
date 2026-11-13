@@ -27,10 +27,8 @@ test("Central Administrator runs the SOP import from the UI and sees the persist
   await signIn(page, "management", SEED.centralAdmin);
   await openP1(page);
   await expectNoAxeViolations(page);
-  // Viewport only: run history grows with every run, so a full-page height would never be stable.
-  await expect(page).toHaveScreenshot("pipeline-p1.png", {
-    mask: [page.getByRole("region", { name: "Run history" })],
-  });
+  // The Run panel only: run history depends on how many runs the database holds.
+  await expect(page.getByTestId("run-controls")).toHaveScreenshot("pipeline-p1.png");
 
   await runP1(page, "sop");
   await expect(page.getByTestId("run-status")).toHaveText("Succeeded", { timeout: RUN_DONE });
