@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). **9B (Delivery PWA UI) is built and verified on `task-09b-delivery-pwa`, waiting for approval/merge.** After it merges, **M2 is complete**; the next task is **10 (Unified management portal)**.
+`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is in progress on `task-10a-management-api`.**
 
 | Task | Scope | State |
 |---|---|---|
@@ -47,8 +47,9 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | tooling | `CLAUDE.md`, `.claude/` commands + hook, `make reset-fixtures`, this guide | ✅ merged (PR #14) |
 | 8B | Kitchen + Management UI for Task 8, tablet + KDS E2E (DDR-112) | ✅ merged (PR #15) |
 | 9A | Delivery backend (migration 0011, DDR-113) | ✅ merged (PR #16) |
-| **9B** | Delivery PWA UI | 🟡 **built and verified on `task-09b-delivery-pwa`; waiting for approval/merge** |
-| **10** | Unified management portal | ⏭️ **next task** (needs `/start-task 10`: plan + decision sheet) |
+| 9B | Delivery PWA UI | ✅ merged (PR #17) |
+| **10A** | Management backend (DDR-114) | 🟡 **in progress on `task-10a-management-api`; plan approved** |
+| **10B** | Management UI | ⬜ after 10A |
 | 9 – 22 | See §6 | ⬜ not started |
 
 **Milestones** (plan §4.1):
@@ -56,7 +57,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 - **M2 Core order flow (5–9): only Task 9 (9A, 9B) remains.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** ask the owner whether the 9B PR is merged; then `/start-task 10`.
+**First thing to do:** Task 10 is approved (DDR-114, 14 points): `git checkout task-10a-management-api`, check `git log --oneline main..` and `git status`, then build 10A per DDR-114 (no new plan or sheet).
 
 ---
 
@@ -127,7 +128,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 1. Inspect the task (plan §7), the DDRs and the code it touches.
 2. Present a **plan + a decision sheet** in the §9 template: every value or behaviour the sources leave undefined, each with options and a ✔ recommendation. **Never invent** prices, thresholds, rules or formulas. Undefined values go on the sheet.
 3. Wait for the owner. Typical replies are "go + approve all" or "will do as u recommend".
-4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-113**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
+4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-114**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
 5. Build one task at a time on branch `task-NN-short-name`. Large tasks split into **A (backend)** and **B (UI)**.
 6. Verify (below), self-review against `CODE_STRUCTURE_DESIGN.md` §13 plus security, scope and leak controls, and grade findings Blocker/High/Medium/Low. Blocker and High must be fixed; Medium and Low are fixed or logged.
 7. Commit (stage **files by name**, never `git add .`; check no `.env` is staged) and report.
@@ -272,7 +273,7 @@ Rules:
 - One sheet per task, at the plan step.
 - Mark exactly one ✔ per item.
 - Name the class when it applies (B = don't build, A = build behind a disabled flag or labelled test default, P = label, G = gate; plan §5).
-- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-113**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
+- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-114**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
 
 ---
 
@@ -287,6 +288,7 @@ Rules:
 | 2026-11-12 | 8A / #13 | DDR-111 | Migration 0010; kitchen accept/reject/prep, stock, availability; migrate image must be rebuilt after migration edits |
 | 2026-11-12 | tooling / #14 | rules v1.1 | `CLAUDE.md`, `.claude/` commands + guard hook, `make reset-fixtures`, this guide |
 | 2026-11-12 | 9 plan | DDR-113 | Approved |
+| 2026-11-12 | 10 plan | DDR-114 | Approved; 10A started |
 | 2026-11-12 | 9B / #17 | DDR-113 (19)–(20) | Delivery PWA; Leaflet pinned (lazy chunk); E2E agent fixture `load-e2e-agent`; full flow on phone-390, screens `@devices`. M2 complete |
 | 2026-11-12 | 9A / #16 | DDR-113 | Migration 0011; delivery lifecycle, code, GPS, retention; worker uses 2 SECURITY DEFINER functions only |
 | 2026-11-12 | 8B / #15 | DDR-112 | Kitchen screens + Management Dish Availability; `kds` 1920×1080 project (`@kitchen` on tablet + kds only); `e2e-setup` runs `reset-shared`; mask live counts in screenshots |
