@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is merged (PR #18, `main` at `8e297cb`); 10B is in progress on `task-10b-management-ui`.**
+`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is merged (PR #18, `main` at `8e297cb`); 10B is built and verified on `task-10b-management-ui`, report in review.**
 
 | Task | Scope | State |
 |---|---|---|
@@ -49,7 +49,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | 9A | Delivery backend (migration 0011, DDR-113) | ✅ merged (PR #16) |
 | 9B | Delivery PWA UI | ✅ merged (PR #17) |
 | **10A** | Management backend (DDR-114) | ✅ merged (PR #18) |
-| **10B** | Management UI | 🟡 **in progress on `task-10b-management-ui`** |
+| **10B** | Management UI | 🟡 **built and verified on `task-10b-management-ui`; report in review** |
 | 9 – 22 | See §6 | ⬜ not started |
 
 **Milestones** (plan §4.1):
@@ -57,7 +57,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 - **M2 Core order flow (5–9): only Task 9 (9A, 9B) remains.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** `git checkout task-10b-management-ui`, check `git log --oneline main..` and `git status`, then build 10B per §5 and DDR-114 (no new plan or sheet).
+**First thing to do:** if 10B is not merged yet, check `git log --oneline main..task-10b-management-ui` and wait for the owner. Once merged, sync `main`, check CI, and plan Task 11 per §5 (plan + decision sheet first).
 
 ---
 
@@ -146,26 +146,20 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Next task: 10B (Management UI)
+## 5. Next task: 11 (Realtime and notifications)
 
-Task 10 is approved as DDR-114; 10A (backend) is built. Read plan "### Task 10", DDR-114, Matrix §5 (MG-*) and `backend/app/modules/management/README.md`.
+Run `/start-task 11` and write a plan with a decision sheet first (first task of M3 after Task 10; rules §2.2). Read plan "### Task 11", DDR-105 (pipeline polling), DDR-112 (5) / DDR-113 (8) (10 s polling until Task 11), DDR-114 (13) (WebSocket scope tests moved here), DATA_PIPELINE §6.3 and Matrix §10.
 
-**10A backend for 10B to use (`/api/v1/management`, do not rebuild):** `overview`, `regions`, `kitchens`, `orders` (+ `.csv`, `/{id}` timeline), `deliveries`, `refunds` (read-only), `kitchens/{id}/inventory`, `audit` (+ `.csv`), `staff` (GET/POST), `staff/roles/{id}/remove`, `PUT staff/{user_id}/status`. Lists page at 50; date ranges ≤ 31 days; exports ≤ 5,000 rows. No migration was needed (DDR-114 (1) updated).
+**What Task 11 replaces or must cover:**
+- 10 s polling in kitchen (`features/kitchen/api.ts`), management (`features/management/api.ts`, `POLL_MS`), delivery and the customer tracker; 2 s pipeline polling (`features/data-pipelines/api.ts`). `PollNote` (`shared/ui/poll-note.tsx`) labels every polled page.
+- Scope on sockets: same rules as REST (RM own regions, CA all, agent own delivery, customer own order); backend tests for API and WebSocket (plan Task 10 criterion, DDR-114 (13)).
+- Revocation stops events: management staff changes already end sessions (`management.service.remove_role` / `set_active` → `repo.revoke_access`); sockets must drop on that.
+- Reconnect refetches REST state; payloads carry the minimum (no phone or address beyond what REST shows).
+- The OTP/session purge job and its retention period were deferred to Task 11 (DDR-107 (8)): ask the owner for the period.
 
-**10B scope (DDR-114 (2), (6)–(14)):** screens Overview, Kitchen Ops (existing kitchen settings API), Delivery Ops (lazy Leaflet, Simulated labelled), Orders & Exceptions (filters, timelines, actions via existing routes with a reason), read-only Menu & Inventory, Staff & Access (RM) / Global Staff (CA), Audit logs, Payments refund view ("Disabled: no threshold configured (DDR-44)"), Data Pipelines gaps (run-history filters; RM without trigger/cancel/retry). Labelled placeholders with reasons: Customers & Support, Promotions, Regional/Global settings, Integrations, YAML, Reports (Task 13), AI (Task 15). E2E desktop-first plus tablet and phone-390 navigation; scope tests use a second-region RM fixture. WebSocket scope tests are Task 11.
+**Expect decision-sheet items for:** socket library and auth handshake (cookie + CSRF), channel names and payloads, fallback to polling, notification channels (none defined: in-app only?), purge retention, Redis pub/sub sizing on 16 GB.
 
-The notes below were written before 10A and still apply.
-
-**APIs already built that Task 10 puts a UI on (do not rebuild):**
-- Kitchen settings for RM/CA: `GET/PUT /api/v1/kitchen/settings?kitchen_id=` (mode, capacities, reason).
-- Kitchen queue for RM/CA: `GET /api/v1/kitchen/orders?kitchen_id=`; "cannot fulfil": `POST /api/v1/kitchen/orders/{id}/reject` (KM/RM/CA).
-- Delivery oversight: `GET /api/v1/delivery/manage/agents`, `POST …/orders/{id}/assign`, `POST …/agents/{id}/force-offline`, `POST …/orders/{id}/failure-decision`, `POST …/orders/{id}/code`.
-- Dish availability decisions (already has a UI: `/management/dish-availability`); menu publication and recipe sign-off (UI exists); pipelines (UI exists, Task 10 completes it per DDR-63/64).
-- Open from 9A: no automatic refund on an approved delivery failure (DDR-113 (7)); Task 10's refund workflow decides it (DDR-44 classes).
-
-**Expect decision-sheet items for:** staff management fields and deactivation rules (MG-01), what "active work" blocks deactivation, refund workflow without thresholds, report/CSV scope (Task 13 builds marts), the audit log viewer filters.
-
-**Known leftovers:** stale TEST orders from customer E2E (D16, Task 21); kitchen and delivery screens poll (Task 11 adds WebSockets).
+**Known leftovers:** stale TEST orders from customer E2E (D16, Task 21); E2E-created staff use `TEST – E2E Agent …` names and are removed by the spec.
 
 ---
 
@@ -295,6 +289,7 @@ Rules:
 | 2026-11-12 | tooling / #14 | rules v1.1 | `CLAUDE.md`, `.claude/` commands + guard hook, `make reset-fixtures`, this guide |
 | 2026-11-12 | 9 plan | DDR-113 | Approved |
 | 2026-11-12 | 10 plan | DDR-114 | Approved; 10A started |
+| 2026-11-12 | 10B / branch | DDR-114 | Management UI (`features/management`); placeholders say why; `KitchenSettingsPanel` reused by `kitchen_id`; `PollNote` moved to `shared/ui`; 4xx never retried (`shouldRetry`); E2E `load-e2e-region` (REG-ETE-001 + RM `+91-00000-00008`); integration world picks a free REG-TST code |
 | 2026-11-12 | 10A / #18 | DDR-114 (1) updated | Management API (`/api/v1/management`); no migration; new code-only permission `management.inventory.view`; staff changes revoke sessions and devices at once |
 | 2026-11-12 | 9B / #17 | DDR-113 (19)–(20) | Delivery PWA; Leaflet pinned (lazy chunk); E2E agent fixture `load-e2e-agent`; full flow on phone-390, screens `@devices`. M2 complete |
 | 2026-11-12 | 9A / #16 | DDR-113 | Migration 0011; delivery lifecycle, code, GPS, retention; worker uses 2 SECURITY DEFINER functions only |

@@ -6,8 +6,11 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 
 import { router } from "@/app/router";
+import { shouldRetry } from "@/shared/api/errors";
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } });
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false, retry: shouldRetry } },
+});
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Missing #root element");

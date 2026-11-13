@@ -11,6 +11,8 @@ export const SEED = {
   centralAdmin: "+91-00000-00006",
   // Loaded by `make e2e-setup` only (fixtures load-e2e-agent).
   e2eAgent: "+91-00000-00007",
+  // Loaded by `make e2e-setup` only (fixtures load-e2e-region): RM of TEST region REG-ETE-001.
+  otherRegionalManager: "+91-00000-00008",
 } as const;
 
 export const MOCK_OTP = "123456"; // MOCK_OTP fixed test code, local/test only (#15 §4.2)

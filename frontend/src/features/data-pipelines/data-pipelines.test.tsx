@@ -211,6 +211,22 @@ describe("pipeline page", () => {
     renderAt("/management/data-pipelines/p1_sop");
     expect(await screen.findByText("No runs yet")).toBeInTheDocument();
   });
+
+  it("filters the run history by status and test/real (DDR-114 (13))", async () => {
+    const real = run({ id: "22222222-2222-3333-4444-555555555555", status: "failed", is_test: false });
+    mockApi({
+      "GET /api/v1/me": () => json(RM),
+      "GET /api/v1/pipelines": () => json(PIPELINES),
+      "GET /api/v1/pipelines/runs": () => json([run(), real]),
+    });
+    renderAt("/management/data-pipelines/p1_sop");
+    expect(await screen.findAllByRole("link", { name: "View run" })).toHaveLength(2);
+    await userEvent.selectOptions(screen.getByLabelText("Runs"), "real");
+    expect(screen.getAllByRole("link", { name: "View run" })).toHaveLength(1);
+    expect(screen.getByTestId("run-filters")).toHaveTextContent("Filters the latest 2 runs · showing 1");
+    await userEvent.selectOptions(screen.getByLabelText("Status"), "completed_with_quarantine");
+    expect(await screen.findByText("No runs match these filters")).toBeInTheDocument();
+  });
 });
 
 describe("run detail", () => {

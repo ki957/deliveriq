@@ -19,7 +19,7 @@ export const POLL_MS = 10_000;
 
 const keys = {
   queue: ["kitchen", "queue"] as const,
-  settings: ["kitchen", "settings"] as const,
+  settings: (kitchenId?: string) => ["kitchen", "settings", kitchenId ?? "own"] as const,
   stock: ["kitchen", "stock"] as const,
   lowStock: ["kitchen", "low-stock"] as const,
   dishes: (kitchenId: string) => ["kitchen", "dishes", kitchenId] as const,
@@ -97,18 +97,29 @@ export function useKitchenAction() {
   });
 }
 
-// ---------------------------------------------------------------- settings (KM)
-export function useKitchenSettings() {
+// ---------------------------------------------------------------- settings (KM own kitchen; RM/CA by id)
+export function useKitchenSettings(kitchenId?: string) {
   return useQuery({
-    queryKey: keys.settings,
-    queryFn: async () => unwrap(await api.GET("/api/v1/kitchen/settings")),
+    queryKey: keys.settings(kitchenId),
+    queryFn: async () =>
+      unwrap(
+        await api.GET("/api/v1/kitchen/settings", {
+          params: { query: kitchenId ? { kitchen_id: kitchenId } : {} },
+        }),
+      ),
   });
 }
 
-export function useUpdateSettings() {
+export function useUpdateSettings(kitchenId?: string) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (body: S["KitchenSettingsIn"]) => call(api.PUT("/api/v1/kitchen/settings", { body })),
+    mutationFn: async (body: S["KitchenSettingsIn"]) =>
+      call(
+        api.PUT("/api/v1/kitchen/settings", {
+          params: { query: kitchenId ? { kitchen_id: kitchenId } : {} },
+          body,
+        }),
+      ),
     onSuccess: () => client.invalidateQueries({ queryKey: ["kitchen"] }),
   });
 }

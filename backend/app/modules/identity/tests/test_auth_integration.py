@@ -84,7 +84,17 @@ class World:
 @pytest.fixture(scope="module")
 def world() -> Iterator[World]:
     db = _db()
-    prefix = f"{random.randint(100, 999)}"  # noqa: S311 - test data, not security
+    # A free code: an interrupted earlier run may have left its REG-TST/KIT-TST rows behind.
+    used = {
+        str(row[0])[-3:]
+        for row in db.execute(
+            "SELECT code FROM app.regions WHERE code LIKE 'REG-TST-%' "
+            "UNION SELECT code FROM app.kitchens WHERE code LIKE 'KIT-TST-%'"
+        )
+    }
+    free = [f"{n}" for n in range(100, 1000) if f"{n}" not in used]
+    assert free, "every REG-TST code is taken; delete stale integration regions"
+    prefix = random.choice(free)  # noqa: S311 - test data, not security
     a = db.execute("SELECT id, region_id FROM app.kitchens WHERE code = 'KIT-CHN-001'").fetchone()
     assert a is not None
     region_b = db.execute(

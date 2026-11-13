@@ -2,7 +2,8 @@ import { Link } from "react-router";
 
 import { useKitchenQueue, useLowStock } from "../api";
 import { formatQty } from "../format";
-import { OrderCard, PollNote } from "./order-card";
+import { OrderCard } from "./order-card";
+import { PollNote } from "@/shared/ui/poll-note";
 import { queryState } from "@/shared/ui/query-state";
 import { EmptyState } from "@/shared/ui/states";
 import { TestBadge } from "@/shared/ui/test-badge";

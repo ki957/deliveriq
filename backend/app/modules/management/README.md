@@ -4,7 +4,7 @@
 
 | Item | Value |
 | --- | --- |
-| UI screens | Management portal (Task 10B) |
+| UI screens | Management portal (Task 10B; `frontend/src/features/management/README.md`) |
 | API endpoints | `/api/v1/management`: `GET /overview` · `GET /regions` · `GET /kitchens` · `GET /orders` (filters, 50 per page) · `GET /orders.csv` · `GET /orders/{id}` (items and timeline) · `GET /deliveries` · `GET /refunds` (read-only) · `GET /kitchens/{id}/inventory` · `GET /audit` (50 per page) · `GET /audit.csv` · `GET /staff` · `POST /staff` · `POST /staff/roles/{assignment_id}/remove` · `PUT /staff/{user_id}/status` |
 | Service functions | `overview`, `kitchen_list`, `region_list`, `order_list`, `order_detail`, `orders_csv`, `delivery_board`, `refund_list`, `inventory`, `audit_list`, `audit_csv`, `staff_list`, `add_staff`, `remove_role`, `set_active` |
 | Tables | Reads orders, status history, assignments, payments/refunds, stock and ledger, `app.audit_events`. Writes only `app.users`, `app.role_assignments`, `app.sessions` (and device revocation) plus audit events. No migration: sessions already require `u.status = 'ACTIVE'` and grants are read per request, so a removed role or a deactivation takes effect on the next request |
