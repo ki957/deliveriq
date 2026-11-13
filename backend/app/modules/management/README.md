@@ -26,4 +26,4 @@
 
 - The 31-day range and 50-row page are UI bounds (#10 §14), not business values.
 - WebSocket channel scope checks are deferred to Task 11 (DDR-114 (13)).
-- DDR-114 (1) planned migration 0012; it turned out not to be needed (see Tables). The register wording is raised with the owner in the 10A report.
+- No migration was needed for 10A (see Tables); DDR-114 (1) was updated to say so (2026-11-12).
