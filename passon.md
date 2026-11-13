@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). **9B (Delivery PWA UI) is in progress on `task-09b-delivery-pwa`**; its plan and D19–D20 are approved (DDR-113 (19), (20)).
+`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). **9B (Delivery PWA UI) is built and verified on `task-09b-delivery-pwa`, waiting for approval/merge.** After it merges, **M2 is complete**; the next task is **10 (Unified management portal)**.
 
 | Task | Scope | State |
 |---|---|---|
@@ -47,7 +47,8 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | tooling | `CLAUDE.md`, `.claude/` commands + hook, `make reset-fixtures`, this guide | ✅ merged (PR #14) |
 | 8B | Kitchen + Management UI for Task 8, tablet + KDS E2E (DDR-112) | ✅ merged (PR #15) |
 | 9A | Delivery backend (migration 0011, DDR-113) | ✅ merged (PR #16) |
-| **9B** | Delivery PWA UI | 🟡 **in progress on `task-09b-delivery-pwa`; plan approved** |
+| **9B** | Delivery PWA UI | 🟡 **built and verified on `task-09b-delivery-pwa`; waiting for approval/merge** |
+| **10** | Unified management portal | ⏭️ **next task** (needs `/start-task 10`: plan + decision sheet) |
 | 9 – 22 | See §6 | ⬜ not started |
 
 **Milestones** (plan §4.1):
@@ -55,7 +56,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 - **M2 Core order flow (5–9): only Task 9 (9A, 9B) remains.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** 9B is approved: `git checkout task-09b-delivery-pwa`, check `git log --oneline main..` and `git status`, and continue building from §5 (no new plan or decision sheet).
+**First thing to do:** ask the owner whether the 9B PR is merged; then `/start-task 10`.
 
 ---
 
@@ -144,27 +145,27 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Current task: 9A (delivery backend), approved as DDR-113
+## 5. Next task: 10 (Unified management portal)
 
-Read DDR-113 in full (16 points; `grep -n "DDR-113" docs/DESIGN_DECISION_REGISTER.md`), plan "### Task 9", Matrix §4 (DL-*), and the README cards of `delivery`, `orders`, `kitchen_ops`.
+Run `/start-task 10`. Read plan "### Task 10", Matrix §5 (MG-*, capability rows) and DDR-44 (YAML editor B: not built; exceptional-refund threshold A: disabled).
 
-**Already built (reuse):** `app.delivery_assignments` + machine + unique "one live per agent"; `delivery.service.offer_on_acceptance` / `revoke` (called by kitchen accept/reject); `orders.service.record_pickup` (deducts stock, OUT_FOR_DELIVERY) and `record_cod_collection` (no routes yet); config keys `AGENT_ASSIGNMENT_RESPONSE_TIMEOUT` 60, `CUSTOMER_UNAVAILABLE_WAIT` 5, `GPS_UPDATE_INTERVAL_MIN/MAX` 3/5, `GPS_RETENTION_DAYS` 30; worker in `backend/app/worker/` (pipeline queue loop: add a periodic sweep there).
+**APIs already built that Task 10 puts a UI on (do not rebuild):**
+- Kitchen settings for RM/CA: `GET/PUT /api/v1/kitchen/settings?kitchen_id=` (mode, capacities, reason).
+- Kitchen queue for RM/CA: `GET /api/v1/kitchen/orders?kitchen_id=`; "cannot fulfil": `POST /api/v1/kitchen/orders/{id}/reject` (KM/RM/CA).
+- Delivery oversight: `GET /api/v1/delivery/manage/agents`, `POST …/orders/{id}/assign`, `POST …/agents/{id}/force-offline`, `POST …/orders/{id}/failure-decision`, `POST …/orders/{id}/code`.
+- Dish availability decisions (already has a UI: `/management/dish-availability`); menu publication and recipe sign-off (UI exists); pipelines (UI exists, Task 10 completes it per DDR-63/64).
+- Open from 9A: no automatic refund on an approved delivery failure (DDR-113 (7)); Task 10's refund workflow decides it (DDR-44 classes).
 
-**9A is done** (all items built and tested; see `backend/app/modules/delivery/README.md`). Learned in 9A:
-- The `worker` DB role has no table grants; delivery jobs are SECURITY DEFINER functions (DDR-113 (17)).
-- Fixtures and migrations run in the baked migrate image: rebuild it after editing either (`docker compose --project-directory . -f infra/compose.yaml --profile core build migrate`).
-- Test teardowns must release reserved stock (reject held orders through the API) before deleting orders; `make reset-fixtures` now also repairs `reserved` from the open reservations.
-- Test-world mobiles skip numbers already in use (old runs left users behind).
+**Expect decision-sheet items for:** staff management fields and deactivation rules (MG-01), what "active work" blocks deactivation, refund workflow without thresholds, report/CSV scope (Task 13 builds marts), the audit log viewer filters.
 
-**9B after 9A merges:** Delivery PWA (manifest + app-shell SW, D12), screens per DL-U6 in `frontend/src/portals/delivery/config.ts` (Notifications stays Task 11), Leaflet map with configurable tiles (D10; pin `leaflet` + `react-leaflet`, record the reason), real + simulated GPS with a 300-point buffer (D8, D9), offline/GPS-denied states, phone-first E2E (`@phone`/`@devices`), customer tracking view + OTP display on the customer order page.
+**Known leftovers:** stale TEST orders from customer E2E (D16, Task 21); kitchen and delivery screens poll (Task 11 adds WebSockets).
 
 ---
 
-## 6. Remaining tasks after 9 (full criteria in plan §7)
+## 6. Remaining tasks after 10 (full criteria in plan §7)
 
 | Task | Summary | Key gates / notes |
 |---|---|---|
-| 10 Unified management | RM/CA portal: scope everywhere, staff, menu publication, full Data Pipelines UI, mode/capacity UI for RM/CA (API exists), refunds | DDR-44: YAML editor B (not built), exceptional refunds A (disabled) |
 | 11 Realtime | Authenticated WebSockets, server-side subscriptions; replaces 10 s polling | — |
 | 12 ELT P2 | Outbox relay to `raw`, dbt staging→core→marts on demand | Events only from DATA_PIPELINE §6.3; leak control 6 |
 | 13 Marts & analytics | Management analytics | DDR-44 KPIs labelled, not business truth |
@@ -286,7 +287,7 @@ Rules:
 | 2026-11-12 | 8A / #13 | DDR-111 | Migration 0010; kitchen accept/reject/prep, stock, availability; migrate image must be rebuilt after migration edits |
 | 2026-11-12 | tooling / #14 | rules v1.1 | `CLAUDE.md`, `.claude/` commands + guard hook, `make reset-fixtures`, this guide |
 | 2026-11-12 | 9 plan | DDR-113 | Approved |
-| 2026-11-12 | 9B plan | DDR-113 (19)–(20) | Approved; 9B started on `task-09b-delivery-pwa` |
+| 2026-11-12 | 9B / #17 | DDR-113 (19)–(20) | Delivery PWA; Leaflet pinned (lazy chunk); E2E agent fixture `load-e2e-agent`; full flow on phone-390, screens `@devices`. M2 complete |
 | 2026-11-12 | 9A / #16 | DDR-113 | Migration 0011; delivery lifecycle, code, GPS, retention; worker uses 2 SECURITY DEFINER functions only |
 | 2026-11-12 | 8B / #15 | DDR-112 | Kitchen screens + Management Dish Availability; `kds` 1920×1080 project (`@kitchen` on tablet + kds only); `e2e-setup` runs `reset-shared`; mask live counts in screenshots |
 

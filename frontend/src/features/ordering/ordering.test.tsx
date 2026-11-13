@@ -525,6 +525,31 @@ describe("orders (CU-19–CU-21)", () => {
     expect(await post?.json()).toEqual({ outcome: "FAILED" });
   });
 
+  it("shows the delivery code and the labelled position while on the way (DDR-113 (6), (8))", async () => {
+    mockApi({
+      "GET /api/v1/me": () => json(CUSTOMER),
+      [`GET /api/v1/orders/${ORDER}`]: () =>
+        json(
+          order({
+            fulfilment_status: "OUT_FOR_DELIVERY",
+            status_label: "Out for delivery",
+            delivery_code: "482913",
+            live_location: {
+              lat: 13.0831,
+              lng: 80.2709,
+              recorded_at: "2026-11-12T10:30:00Z",
+              simulated: true,
+            },
+          }),
+        ),
+    });
+    renderAt(`/customer/orders/${ORDER}`);
+    expect(await screen.findByTestId("delivery-code")).toHaveTextContent("482913");
+    const tracking = screen.getByRole("region", { name: "On the way" });
+    expect(within(tracking).getByText("Simulated GPS")).toBeInTheDocument();
+    expect(within(tracking).getByText(/13\.0831, 80\.2709/)).toBeInTheDocument();
+  });
+
   it("has no simulator for Cash on Delivery", async () => {
     mockApi({
       "GET /api/v1/me": () => json(CUSTOMER),
