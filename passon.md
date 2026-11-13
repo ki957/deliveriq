@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #13 (8A merged, commit `bbac132`). The handover tooling (this file's §9–§10, `CLAUDE.md`, `.claude/`, `make reset-fixtures`) is on branch `task-handover-tooling` (PR #14).
+`main` CI is green at PR #14 (tooling merged, commit `89e545e`). Task 8B is on branch `task-08b-kitchen-ui`, built and verified, waiting for the owner's approval and merge (expected PR #15).
 
 | Task | Scope | State |
 |---|---|---|
@@ -44,16 +44,17 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | 7 | Payments (simulated), order state machines, outbox (built before 6, owner choice) | ✅ merged (PR #10) |
 | 6A / 6B | Customer serviceability, cart, pricing, checkout API / customer UI | ✅ merged (PR #11, #12) |
 | **8A** | Kitchen operations and inventory **backend** (migration 0010, DDR-111) | ✅ merged (PR #13) |
-| tooling | `CLAUDE.md`, `.claude/` commands + hook, `make reset-fixtures`, this guide | 🟡 PR #14, waiting for the owner |
-| **8B** | Kitchen + Management **UI** for Task 8, tablet + KDS E2E | ⏭️ **next task** |
+| tooling | `CLAUDE.md`, `.claude/` commands + hook, `make reset-fixtures`, this guide | ✅ merged (PR #14) |
+| **8B** | Kitchen + Management **UI** for Task 8, tablet + KDS E2E (DDR-112) | 🟡 **branch `task-08b-kitchen-ui`, waiting for approval/merge** |
+| **9** | Delivery and tracking | ⏭️ **next task** |
 | 9 – 22 | See §6 | ⬜ not started |
 
 **Milestones** (plan §4.1):
 - M1 Foundation (0–4): done.
-- **M2 Core order flow (5–9): 8B and 9 remain.**
+- **M2 Core order flow (5–9): only Task 9 remains after 8B merges.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** ask the owner whether PR #14 (tooling) is merged; then `/start-task 8B` (it syncs `main` and checks CI first).
+**First thing to do:** ask the owner whether the 8B PR (expected #15) is merged; then `/start-task 9` (it syncs `main` and checks CI first).
 
 ---
 
@@ -124,7 +125,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 1. Inspect the task (plan §7), the DDRs and the code it touches.
 2. Present a **plan + a decision sheet** in the §9 template: every value or behaviour the sources leave undefined, each with options and a ✔ recommendation. **Never invent** prices, thresholds, rules or formulas. Undefined values go on the sheet.
 3. Wait for the owner. Typical replies are "go + approve all" or "will do as u recommend".
-4. Record the approved sheet as a new **DDR row** (next is **DDR-112**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
+4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-112**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
 5. Build one task at a time on branch `task-NN-short-name`. Large tasks split into **A (backend)** and **B (UI)**.
 6. Verify (below), self-review against `CODE_STRUCTURE_DESIGN.md` §13 plus security, scope and leak controls, and grade findings Blocker/High/Medium/Low. Blocker and High must be fixed; Medium and Low are fixed or logged.
 7. Commit (stage **files by name**, never `git add .`; check no `.env` is staged) and report.
@@ -142,55 +143,34 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Next task: 8B (Kitchen and Management UI for Task 8)
+## 5. Next task: 9 (Delivery and tracking)
 
-**Backend is ready (8A).** All decisions are in **DDR-111** (read it in full). The endpoints, from `backend/openapi.json`, are typed in `frontend/src/shared/api/generated/schema.d.ts`:
+Read plan "### Task 9" in full, DDR-14, 15, 16, 43, 51, 52, 55, 78, 111 (6), and Matrix §4 (DL-*, DL-G*, DL-U*). This is the last task of M2; it is large, so split it: **9A backend**, **9B Delivery PWA UI**.
 
-| Area | Endpoints |
-|---|---|
-| Queue and prep | `GET /api/v1/kitchen/orders?kitchen_id=` → `{intake, acceptance_timeout_minutes, incoming[], held[] (FIFO), can_process, can_reject_accepted}` · `POST …/{id}/accept` (409 `code`: `kitchen_paused`, `kitchen_at_capacity`, `recipe_not_active`, `stock_short` + `shortages[]`) · `POST …/{id}/reject {reason}` · `POST …/{id}/start` · `POST …/{id}/items/{item_id}/status {status: PREPARING\|PREPARED}` |
-| Settings | `GET/PUT /api/v1/kitchen/settings` (mode, normal and Busy capacity with `is_test_default` labels, reason required; KM only for PUT) |
-| Inventory | `GET /api/v1/kitchen/inventory` (KM) · `GET …/low-stock` (KS + KM) · `POST …/{ingredient_id}/adjust {delta, reason}` · `PUT …/{ingredient_id}/threshold {low_stock_threshold\|null, reason}`. Every row has `is_test_fixture` → show a **"Test stock"** badge |
-| Dish availability | `GET /api/v1/menu/availability/dishes?kitchen_id=` · `GET/POST /api/v1/menu/availability/requests` · `POST …/requests/{id}/decision {approve, reason}` (RM own region / CA) |
+**Already built (do not rebuild):**
+- `app.delivery_assignments` with the full machine (OFFERED → ACCEPTED / REJECTED / EXPIRED / REVOKED → COMPLETED / FAILURE_REQUESTED → FAILED) and the DB rule "one open offer or live delivery per agent".
+- `delivery.service.offer_on_acceptance` (called inside kitchen acceptance; picks an active agent of the region, least recently offered) and `revoke` (called on kitchen reject).
+- `orders.service.record_pickup` (validated pickup: READY_FOR_PICKUP → PICKED_UP → OUT_FOR_DELIVERY in one transaction, deducts stock once, emits `delivery.picked_up`). **It has no route yet**: Task 9 adds it.
+- `orders.service.record_cod_collection` (COD collected / mismatch with reason). No route yet.
+- Config: `AGENT_ASSIGNMENT_RESPONSE_TIMEOUT` 60 s, `CUSTOMER_UNAVAILABLE_WAIT` 5 min, `GPS_UPDATE_INTERVAL_MIN/MAX` 3–5 s, `GPS_RETENTION_DAYS` 30.
+- Customer order page already shows "Agent Assigned" from `agent_assigned` (DDR-16). Kitchen cards show offer / assigned / awaiting.
+- Delivery portal shell exists (`frontend/src/portals/delivery/config.tsx`, placeholders); `phone-360`/`phone-390` E2E projects exist (`@phone`, `@devices`).
 
-**8B scope (plan Task 8 criteria plus DDR-111):**
-- **Kitchen portal** (`frontend/src/portals/kitchen/config.tsx`; placeholders already exist with `task: 8`). Build these as new features under `frontend/src/features/` (e.g. `kitchen-queue`, `inventory`, `kitchen-settings`, `dish-availability`):
-  - **Overview:** intake, mode, active/capacity, low stock count.
-  - **Live Orders:** Incoming with Accept/Reject and the "Overdue" warning; Held in FIFO order; agent offer shown on the card, or "Awaiting agent".
-  - **Preparation Board:** per-item Preparing/Prepared; "Start order".
-  - **Inventory:** KM sees full stock with adjust and threshold, a "Test stock" badge, and "used in" dishes; KS sees low-stock alerts only.
-  - **Exceptions:** overdue Incoming plus low stock only.
-  - **Settings:** KM; mode and capacities with the "test default" label; reason form.
-  - Plus a dish availability request form.
-- **Management portal:** a Dish Availability approval screen (RM/CA) in `frontend/src/portals/management/config.tsx`.
-- **Shared rules:**
-  - Poll every 10 s, labelled "Updates every 10 s" (DDR-111 (13)).
-  - Reasons use the inline `shared/ui/reason-form`.
-  - TEST badges use `shared/ui/test-badge`.
-  - States use `shared/ui/query-state`.
-  - Statuses use the Matrix §7.3 kitchen labels (the API returns `status_label`).
-  - Touch targets ≥ 44 px.
-  - Kitchen palette from DDR-04.
-- **E2E:**
-  - Add a **`kds` Playwright project at 1920×1080** in `tests/e2e/playwright.config.ts`. A `tablet` project (768×1024) already exists and matches `@tablet|@devices`.
-  - Write `tests/e2e/specs/kitchen-ops.spec.ts`, running on tablet and KDS, covering: customer places a TEST order (COD) → KS accepts → start → prepared → Ready; reject with reason; Paused refusal; KM adjust stock and see the badge; KS request unavailability → RM approves → dish leaves the menu → restore.
-  - axe on each screen; screenshots of stable elements only (lists grow between runs, so mask or crop).
-  - **E2E must leave shared state as it found it**, as the integration test does: kitchen mode NORMAL, stock 10,000 g, dishes PUBLISHED.
-- Unit tests with `mockApi`/`renderAt`/`me` from `frontend/src/test/render.tsx` (pattern: `features/ordering/ordering.test.tsx`).
-- Update the plan Task 8 status line and add README cards for the new features.
+**To build (9A):** agent online/offline (DL-01; replace "every active agent is available", DDR-111 (6)); offer accept/reject with reason; 60 s expiry back to the pool and re-offer (worker timer or on-read; decide on the sheet); manager reassign/revoke (MG); pickup and COD routes; delivery OTP (6 digits, backend-verified, 3 failures escalate; DL-11); customer unavailable wait (DDR-14); failure request + manager approval (DA-18); GPS points (PostGIS, simulated vs real labelled, stale/out-of-order rejected, DDR-52), 30-day retention job (idempotent, audited); `delivery.assigned/completed/failed` events (only §6.3 types; no per-point events, DDR-78); routing adapter with a labelled stub, optional `osrm` profile (DDR-55).
+**To build (9B):** Delivery PWA (manifest + app-shell service worker only; installable, DDR-15), screens per DL-U6, offline / GPS-denied states, phone-first E2E.
 
-**Logged Lows from 8A to keep in mind:**
-- RM/CA get 404 on inventory (intended).
-- N+1 queries in the kitchen queue (fine at POC scale).
-- A real recipe with a TEST ingredient would 500 (not reachable).
+**Gates:** DDR-15 background GPS is **not built** (B). DDR-43 interval is A (configurable 3–5 s, labelled). Expect decision-sheet items for: offer re-offer policy after expiry/rejection, who may set agents offline, OTP generation/delivery channel in POC (MOCK, like login), GPS simulation controls, map tiles source.
+
+**Known leftovers to keep in mind:**
+- Customer E2E leaves paid UPI orders in PENDING_KITCHEN (the kitchen Incoming list grows across runs; specs find cards by order id and the kitchen-shell screenshot masks the counts). A cleanup or a reset of stale TEST Incoming orders could be a Task 9/21 item.
+- Kitchen screens poll every 10 s; Task 11 replaces this with WebSockets.
 
 ---
 
-## 6. Remaining tasks after 8B (full criteria in plan §7)
+## 6. Remaining tasks after 9 (full criteria in plan §7)
 
 | Task | Summary | Key gates / notes |
 |---|---|---|
-| 9 Delivery & tracking | Agent offers: accept/reject (60 s timeout, `AGENT_ASSIGNMENT_RESPONSE_TIMEOUT`); pool; online/offline; pickup endpoint (call existing `orders.service.record_pickup`, which already deducts stock); OTP delivery (3 failures escalate); COD (`record_cod_collection` exists); GPS simulated/real labelled; buffering (DDR-52); 30-day retention job; PWA; OSRM `osrm` profile (DDR-55); phone-first E2E | DDR-15 background GPS **not built**; DDR-43 interval A-class (3–5 s config). Replace "every active agent is available" (DDR-111 (6)) with real online status |
 | 10 Unified management | RM/CA portal: scope everywhere, staff, menu publication, full Data Pipelines UI, mode/capacity UI for RM/CA (API exists), refunds | DDR-44: YAML editor B (not built), exceptional refunds A (disabled) |
 | 11 Realtime | Authenticated WebSockets, server-side subscriptions; replaces 10 s polling | — |
 | 12 ELT P2 | Outbox relay to `raw`, dbt staging→core→marts on demand | Events only from DATA_PIPELINE §6.3; leak control 6 |
@@ -298,7 +278,7 @@ Rules:
 - One sheet per task, at the plan step.
 - Mark exactly one ✔ per item.
 - Name the class when it applies (B = don't build, A = build behind a disabled flag or labelled test default, P = label, G = gate; plan §5).
-- After approval, add one register row `DDR-<next>` (next is **DDR-112**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-112 (3)`.
+- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-112**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
 
 ---
 
@@ -312,5 +292,6 @@ Rules:
 | 2026-11-12 | 6A–6B / #11–#12 | DDR-110 | Cart, pricing, checkout; per-test E2E customers; tablet project; bottom-bar clearance fix |
 | 2026-11-12 | 8A / #13 | DDR-111 | Migration 0010; kitchen accept/reject/prep, stock, availability; migrate image must be rebuilt after migration edits |
 | 2026-11-12 | tooling / #14 | rules v1.1 | `CLAUDE.md`, `.claude/` commands + guard hook, `make reset-fixtures`, this guide |
+| 2026-11-12 | 8B / #15 | DDR-112 | Kitchen screens + Management Dish Availability; `kds` 1920×1080 project (`@kitchen` on tablet + kds only); `e2e-setup` runs `reset-shared`; mask live counts in screenshots |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

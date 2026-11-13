@@ -24,10 +24,12 @@ export default defineConfig({
     timezoneId: "Asia/Kolkata",
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } }, grepInvert: /@phone/ },
+    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } }, grepInvert: /@phone|@kitchen/ },
     // `@devices` tests run on every project: desktop, both phones and the tablet (Task 6 acceptance).
     { name: "phone-360", use: { ...devices["Desktop Chrome"], viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true }, grep: /@phone|@devices/ },
     { name: "phone-390", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }, grep: /@phone|@devices/ },
-    { name: "tablet", use: { ...devices["Desktop Chrome"], viewport: { width: 768, height: 1024 }, hasTouch: true }, grep: /@tablet|@devices/ },
+    { name: "tablet", use: { ...devices["Desktop Chrome"], viewport: { width: 768, height: 1024 }, hasTouch: true }, grep: /@tablet|@devices|@kitchen/ },
+    // Kitchen display system (KI-U1, DDR-21, DDR-112 (8)): the primary kitchen device.
+    { name: "kds", use: { ...devices["Desktop Chrome"], viewport: { width: 1920, height: 1080 } }, grep: /@kitchen/ },
   ],
 });

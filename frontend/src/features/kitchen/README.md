@@ -1,0 +1,21 @@
+# Kitchen feature (Kitchen portal + Management dish availability)
+
+**Purpose and scope:** the Kitchen portal screens for Task 8 and the Management Dish Availability approval screen (KI-01–KI-24, KI-U1–KI-U6; DDR-111, DDR-112). Backend: `orders` (kitchen routes), `kitchen_ops`, `inventory`, `menu` (availability) modules. Delay/ETA records, substitution and notifications are not part of Task 8 (DDR-111 (12)).
+
+| Item          | Value                                                                                                                                                                                                                                                                                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| UI screens    | Kitchen: `/kitchen` Overview, `/kitchen/live-orders`, `/kitchen/preparation`, `/kitchen/inventory` (with Dish availability), `/kitchen/exceptions`, `/kitchen/settings` · Management: `/management/dish-availability`                                                                                                                                        |
+| API endpoints | `GET /api/v1/kitchen/orders` · `POST …/{id}/accept`, `/reject`, `/start`, `/items/{item_id}/status` · `GET/PUT /api/v1/kitchen/settings` · `GET /api/v1/kitchen/inventory`, `/low-stock` · `POST …/{id}/adjust` · `PUT …/{id}/threshold` · `GET /api/v1/menu/availability/dishes`, `GET/POST …/requests`, `POST …/requests/{id}/decision` (generated client) |
+| Permissions   | Screens: `kitchen.orders.view` (Overview, Live Orders, Board, Exceptions), `kitchen.low_stock.view` (Inventory), `kitchen.mode.change` (Settings), `management.unavailability.approve` (Dish Availability). Controls follow `can_process`, `can_reject_accepted`, `kitchen.inventory.view`; the backend enforces all of them                                 |
+| States        | Loading, empty, error, denied; kitchen refusals worded in `format.ts` (`kitchen_paused`, `kitchen_at_capacity`, `recipe_not_active`, `stock_short` with the short ingredients)                                                                                                                                                                               |
+| Tests         | `kitchen.test.tsx`; `tests/e2e/specs/kitchen-ops.spec.ts` (`@kitchen`: tablet 768×1024 and KDS 1920×1080)                                                                                                                                                                                                                                                    |
+
+## Behaviour
+
+- **Live Orders** is intake: Incoming with one-tap Accept and Reject (reason form); held orders read-only, first accepted first. "Overdue" is a red badge with the waiting time (5-minute test default, DDR-42 open) and never reorders.
+- **Preparation Board** is the work: Accepted, Preparing and Ready columns (side by side at KDS widths); "Start order" and per-item Preparing / Prepared; "Cannot fulfil" (KM) with a reason.
+- **Cards** show items with the pinned recipe version, instructions, payment method, and "Offered to …", "Agent assigned: …" or "Awaiting agent" (agents simulated until Task 9). No customer name, phone or address.
+- **Inventory:** the KM sees on hand, reserved, available, threshold and the dishes using each ingredient; adjusts and sets thresholds with a reason. Kitchen Staff see low-stock alerts only. All opening stock carries a "Test stock" badge (DDR-37).
+- **Dish availability:** the kitchen requests "unavailable" or "available again" with a reason; the RM (own region) or CA approves or rejects with a reason. Only an approval changes the customer menu.
+- **Settings (KM):** mode and capacities; the DDR-42 test defaults are labelled; a reason is required and audited.
+- Every page polls every 10 s while visible, refreshes after each action and shows "Updates every 10 s · last updated …" (Task 11 replaces polling).

@@ -37,17 +37,23 @@ for (const shell of SHELLS) {
       await expect(page.getByText("Placeholder logo").first()).toBeVisible();
       await expect(page.getByTestId("account-roles")).toHaveText(shell.role);
       await expectNoAxeViolations(page);
-      await expect(page).toHaveScreenshot(`${shell.portal}-shell.png`, { fullPage: true });
+      // The kitchen Overview shows live counts and the poll time, which change between runs.
+      const live =
+        shell.portal === "kitchen"
+          ? [page.getByRole("list", { name: "Kitchen summary" }), page.getByTestId("poll-note"), page.getByTestId("intake")]
+          : [];
+      await expect(page).toHaveScreenshot(`${shell.portal}-shell.png`, { fullPage: true, mask: live });
     });
   });
 }
 
 test("unbuilt screens say so honestly", async ({ page }) => {
-  await signIn(page, "kitchen", SEED.kitchenManager);
-  await page.getByRole("link", { name: "Inventory" }).first().click();
-  const section = page.locator("section", { has: page.getByRole("heading", { name: "Inventory" }) });
+  // Every Kitchen screen is built (Task 8B); Management Kitchen Operations is still Task 10.
+  await signIn(page, "management", SEED.centralAdmin);
+  await page.getByRole("link", { name: "Kitchen Operations" }).first().click();
+  const section = page.locator("section", { has: page.getByRole("heading", { name: "Kitchen Operations" }) });
   await expect(section).toContainText("Not built yet");
-  await expect(section).toContainText("Task 8");
+  await expect(section).toContainText("Task 10");
   await expectNoAxeViolations(page);
 });
 

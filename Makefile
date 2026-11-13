@@ -119,6 +119,7 @@ reset-fixtures: env-check
 # independent of earlier runs: the real SOP import (idempotent, through the worker) and one fresh
 # `TEST – E2E <n>` DRAFT recipe for the workflow spec (DDR-108).
 e2e-setup: env-check
+	$(COMPOSE) run --rm migrate python -m app.cli.fixtures reset-shared
 	$(COMPOSE) exec -T api python -m app.cli.pipelines run p1_sop --wait
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-recipe
 e2e: e2e-setup
