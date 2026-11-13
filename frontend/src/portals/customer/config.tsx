@@ -2,6 +2,8 @@ import { Home, LifeBuoy, Settings, ShoppingCart, User, UtensilsCrossed, Receipt 
 
 import type { PortalConfig } from "@/app/portal-config";
 
+import { CartPage, DishPage, MenuPage, OrderPage, OrdersPage } from "@/features/ordering";
+import { RequirePortal } from "@/shared/auth/require-portal";
 import { CustomerHome } from "./home";
 
 // CU-N1 navigation. Browsing is public (CU-01); account pages need a session (CU-05).
@@ -11,9 +13,41 @@ export const customerConfig: PortalConfig = {
   publicByDefault: true,
   nav: [
     { to: "/customer", label: "Home", Icon: Home, end: true, element: <CustomerHome /> },
-    { to: "/customer/menu", label: "Menu", Icon: UtensilsCrossed, task: 6 },
-    { to: "/customer/cart", label: "Cart", Icon: ShoppingCart, task: 6 },
-    { to: "/customer/orders", label: "My Orders", Icon: Receipt, task: 6, requiresLogin: true },
+    {
+      to: "/customer/menu",
+      label: "Menu",
+      Icon: UtensilsCrossed,
+      task: 6,
+      element: <MenuPage />,
+      routes: [{ path: "menu/:dishId", element: <DishPage /> }],
+    },
+    // The cart is persisted for signed-in customers (CU-11); checkout needs a session (DDR-110 (8)).
+    {
+      to: "/customer/cart",
+      label: "Cart",
+      Icon: ShoppingCart,
+      task: 6,
+      requiresLogin: true,
+      element: <CartPage />,
+    },
+    {
+      to: "/customer/orders",
+      label: "My Orders",
+      Icon: Receipt,
+      task: 6,
+      requiresLogin: true,
+      element: <OrdersPage />,
+      routes: [
+        {
+          path: "orders/:orderId",
+          element: (
+            <RequirePortal portal="customer">
+              <OrderPage />
+            </RequirePortal>
+          ),
+        },
+      ],
+    },
     { to: "/customer/support", label: "Support", Icon: LifeBuoy, requiresLogin: true },
     { to: "/customer/profile", label: "Profile", Icon: User, requiresLogin: true },
     { to: "/customer/settings", label: "Settings", Icon: Settings, requiresLogin: true },
