@@ -44,13 +44,20 @@ describe("route guards", () => {
 
 describe("portal shell", () => {
   it("renders a labelled placeholder, the placeholder logo and the user's role", async () => {
-    mockApi({ "GET /api/v1/me": () => json(KITCHEN_MANAGER) });
-    renderAt("/kitchen/inventory");
-    const page = await screen.findByRole("heading", { name: "Inventory" });
+    // Task 8B built every Kitchen screen; Management → Kitchen Operations is still Task 10.
+    const admin = me({
+      display_name: "Demo Central Administrator",
+      roles: [{ role: "CENTRAL_ADMIN", region_id: null, kitchen_id: null }],
+      permissions: ["management.operations.view"],
+      portals: ["management"],
+    });
+    mockApi({ "GET /api/v1/me": () => json(admin) });
+    renderAt("/management/kitchen");
+    const page = await screen.findByRole("heading", { name: "Kitchen Operations" });
     expect(page.closest("section")).toHaveTextContent("Not built yet");
-    expect(page.closest("section")).toHaveTextContent("Task 8");
+    expect(page.closest("section")).toHaveTextContent("Task 10");
     expect(screen.getAllByText("Placeholder logo").length).toBeGreaterThan(0);
-    expect(screen.getByTestId("account-roles")).toHaveTextContent("Kitchen Manager");
+    expect(screen.getByTestId("account-roles")).toHaveTextContent("Central Administrator");
   });
 
   it("shows Kitchen Settings only to roles with the permission", async () => {

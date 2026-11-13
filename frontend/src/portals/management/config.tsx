@@ -17,11 +17,13 @@ import {
   Users,
   UtensilsCrossed,
   Headset,
+  ToggleLeft,
 } from "lucide-react";
 
 import type { PortalConfig } from "@/app/portal-config";
 import { MenuPublicationPage, RecipeSignoffDetailPage, RecipeSignoffPage } from "@/features/approvals";
 import { PipelinePage, PipelinesOverview, RunPage } from "@/features/data-pipelines";
+import { AvailabilityDecisionsPage } from "@/features/kitchen";
 import { RequirePermission } from "@/shared/auth/require-permission";
 
 const gate = (permission: string, page: React.ReactNode) => (
@@ -51,6 +53,15 @@ export const managementConfig: PortalConfig = {
       task: 5,
       permission: "menu.publish",
       element: gate("menu.publish", <MenuPublicationPage />),
+    },
+    // Task 8B (KI-24; DDR-111 (7)): RM own regions, CA all regions.
+    {
+      to: "/management/dish-availability",
+      label: "Dish Availability",
+      Icon: ToggleLeft,
+      task: 8,
+      permission: "management.unavailability.approve",
+      element: gate("management.unavailability.approve", <AvailabilityDecisionsPage />),
     },
     {
       to: "/management/recipe-signoff",
