@@ -37,6 +37,7 @@ INGREDIENTS = tuple(f"TEST – Ingredient {n}" for n in range(1, 7))
 KM_MOBILE = "+910000000004"
 CA_MOBILE = "+910000000006"
 REASON = "TEST fixture loader (DDR-106)"
+E2E_PREFIX = "TEST – E2E "
 
 
 def dish_name(letter: str) -> str:
@@ -68,6 +69,76 @@ def _principal(conn: Connection, mobile: str) -> Principal:
     return principal
 
 
+def _insert_dish(
+    conn: Connection,
+    letter: str,
+    name: str,
+    price: int,
+    numbers: tuple[int, int],
+    kitchen: uuid.UUID,
+    category: uuid.UUID,
+) -> tuple[int, int]:
+    """One TEST recipe (version 1, DRAFT), its ingredient lines and a DRAFT menu item; insert-if-absent."""
+    recipe, version = _id("recipe", letter), _id("recipe_version", letter, "1")
+    recipes_added = conn.execute(
+        text(
+            "INSERT INTO app.recipes (id, kitchen_id, name) SELECT :id, :k, :n "
+            "WHERE NOT EXISTS (SELECT 1 FROM app.recipes WHERE id = :id)"
+        ),
+        {"id": recipe, "k": kitchen, "n": name},
+    ).rowcount
+    conn.execute(
+        text(
+            "INSERT INTO app.recipe_versions (id, recipe_id, version, status, prep_type, portion, "
+            "method, "
+            "quality, inventory_rule, validation_text, is_test_fixture) "
+            "SELECT :id, :r, 1, 'DRAFT', :t, :t, :t, :t, :t, :t, true "
+            "WHERE NOT EXISTS (SELECT 1 FROM app.recipe_versions WHERE id = :id)"
+        ),
+        {"id": version, "r": recipe, "t": TEXT},
+    )
+    for line_no, number in enumerate(numbers, start=1):
+        ingredient = conn.execute(
+            text("SELECT id FROM app.ingredients WHERE lower(name) = lower(:n)"),
+            {"n": INGREDIENTS[number - 1]},
+        ).scalar_one()
+        conn.execute(
+            text(
+                "INSERT INTO app.recipe_ingredients (id, recipe_version_id, line_no, ingredient_id, "
+                "quantity, unit) "
+                "SELECT :id, :v, :l, :i, :q, 'g' WHERE NOT EXISTS "
+                "(SELECT 1 FROM app.recipe_ingredients WHERE recipe_version_id = :v AND line_no = :l)"
+            ),
+            {
+                "id": _id("recipe_ingredient", letter, str(line_no)),
+                "v": version,
+                "l": line_no,
+                "i": ingredient,
+                "q": LINE_GRAMS,
+            },
+        )
+    items_added = conn.execute(
+        text(
+            "INSERT INTO app.menu_items (id, kitchen_id, recipe_id, category_id, name, description, "
+            "is_veg, "
+            "spice_level, price_paise, tax_classification, prep_time_minutes, image_is_placeholder, "
+            "publication_status, is_test_fixture) "
+            "SELECT :id, :k, :r, :c, :n, :d, true, 'TEST', :p, 'TEST', 10, "
+            "true, 'DRAFT', true WHERE NOT EXISTS (SELECT 1 FROM app.menu_items WHERE id = :id)"
+        ),
+        {
+            "id": _id("menu_item", letter),
+            "k": kitchen,
+            "r": recipe,
+            "c": category,
+            "n": name,
+            "d": DESCRIPTION,
+            "p": price,
+        },
+    ).rowcount
+    return recipes_added, items_added
+
+
 def _insert_rows(conn: Connection) -> dict[str, int]:
     added = {"ingredients": 0, "recipes": 0, "menu_items": 0}
     _system(conn)
@@ -90,64 +161,41 @@ def _insert_rows(conn: Connection) -> dict[str, int]:
             {"id": _id("ingredient", name), "n": name},
         ).rowcount
     for letter, price, numbers, _published in DISHES:
-        recipe, version = _id("recipe", letter), _id("recipe_version", letter, "1")
-        added["recipes"] += conn.execute(
-            text(
-                "INSERT INTO app.recipes (id, kitchen_id, name) SELECT :id, :k, :n "
-                "WHERE NOT EXISTS (SELECT 1 FROM app.recipes WHERE id = :id)"
-            ),
-            {"id": recipe, "k": kitchen, "n": dish_name(letter)},
-        ).rowcount
-        conn.execute(
-            text(
-                "INSERT INTO app.recipe_versions (id, recipe_id, version, status, prep_type, portion, "
-                "method, "
-                "quality, inventory_rule, validation_text, is_test_fixture) "
-                "SELECT :id, :r, 1, 'DRAFT', :t, :t, :t, :t, :t, :t, true "
-                "WHERE NOT EXISTS (SELECT 1 FROM app.recipe_versions WHERE id = :id)"
-            ),
-            {"id": version, "r": recipe, "t": TEXT},
+        recipes_added, items_added = _insert_dish(
+            conn, letter, dish_name(letter), price, numbers, kitchen, category
         )
-        for line_no, number in enumerate(numbers, start=1):
-            ingredient = conn.execute(
-                text("SELECT id FROM app.ingredients WHERE lower(name) = lower(:n)"),
-                {"n": INGREDIENTS[number - 1]},
-            ).scalar_one()
-            conn.execute(
-                text(
-                    "INSERT INTO app.recipe_ingredients (id, recipe_version_id, line_no, ingredient_id, "
-                    "quantity, unit) "
-                    "SELECT :id, :v, :l, :i, :q, 'g' WHERE NOT EXISTS "
-                    "(SELECT 1 FROM app.recipe_ingredients WHERE recipe_version_id = :v AND line_no = :l)"
-                ),
-                {
-                    "id": _id("recipe_ingredient", letter, str(line_no)),
-                    "v": version,
-                    "l": line_no,
-                    "i": ingredient,
-                    "q": LINE_GRAMS,
-                },
-            )
-        added["menu_items"] += conn.execute(
-            text(
-                "INSERT INTO app.menu_items (id, kitchen_id, recipe_id, category_id, name, description, "
-                "is_veg, "
-                "spice_level, price_paise, tax_classification, prep_time_minutes, image_is_placeholder, "
-                "publication_status, is_test_fixture) "
-                "SELECT :id, :k, :r, :c, :n, :d, true, 'TEST', :p, 'TEST', 10, "
-                "true, 'DRAFT', true WHERE NOT EXISTS (SELECT 1 FROM app.menu_items WHERE id = :id)"
-            ),
-            {
-                "id": _id("menu_item", letter),
-                "k": kitchen,
-                "r": recipe,
-                "c": category,
-                "n": dish_name(letter),
-                "d": DESCRIPTION,
-                "p": price,
-            },
-        ).rowcount
+        added["recipes"] += recipes_added
+        added["menu_items"] += items_added
     return added
+
+
+def load_e2e_recipe() -> str:
+    """A fresh DRAFT TEST recipe and menu item for one E2E workflow run (DDR-108).
+
+    Uses Dish D's approved definition (Ingredients 1 + 6, ₹444) under the name `TEST – E2E <n>`.
+    """
+    _letter, price, numbers, _live = DISHES[3]
+    with get_engine().begin() as conn:
+        _system(conn)
+        if not conn.execute(
+            text("SELECT count(*) FROM app.ingredients WHERE origin = 'TEST_FIXTURE'")
+        ).scalar_one():
+            raise RuntimeError("TEST menu missing: run `load-menu` first")
+        number = (
+            1
+            + conn.execute(
+                text("SELECT count(*) FROM app.recipes WHERE name LIKE :p"), {"p": E2E_PREFIX + "%"}
+            ).scalar_one()
+        )
+        name = f"{E2E_PREFIX}{number}"
+        kitchen = conn.execute(
+            text("SELECT id FROM app.kitchens WHERE code = :c"), {"c": KITCHEN_CODE}
+        ).scalar_one()
+        category = conn.execute(
+            text("SELECT id FROM app.menu_categories WHERE name = :n"), {"n": CATEGORY}
+        ).scalar_one()
+        _insert_dish(conn, f"e2e-{number}", name, price, numbers, kitchen, category)
+    return name
 
 
 def _activate(version: uuid.UUID, km: Principal, ca: Principal) -> bool:

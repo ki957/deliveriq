@@ -59,7 +59,7 @@ def load_users() -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Load local/test fixtures")
-    parser.add_argument("command", choices=["load-users", "load-menu", "load-all"])
+    parser.add_argument("command", choices=["load-users", "load-menu", "load-all", "load-e2e-recipe"])
     args = parser.parse_args(argv)
     settings = get_settings()
     if not settings.is_local_or_test:
@@ -68,6 +68,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command in ("load-users", "load-all"):
         created = load_users()
         print(f"seed users ready ({len(SEED_USERS)}); role grants created: {created}")
+    if args.command == "load-e2e-recipe":
+        from app.cli.fixtures_menu import load_e2e_recipe
+
+        print(f"E2E recipe ready: {load_e2e_recipe()}")
+        return 0
     if args.command in ("load-menu", "load-all"):
         from app.cli.fixtures_menu import load_menu
 

@@ -794,6 +794,13 @@
             "title": "Implemented",
             "type": "boolean"
           },
+          "inputs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
           "is_heavy": {
             "title": "Is Heavy",
             "type": "boolean"
@@ -823,6 +830,7 @@
           "pipeline_group",
           "is_heavy",
           "implemented",
+          "inputs",
           "last_run"
         ],
         "title": "PipelineOut",

@@ -4,7 +4,7 @@
 
 .PHONY: help install lint format typecheck imports test test-integration verify-sources openapi \
         openapi-check check env-check build up down restart ps logs migrate stats fixtures \
-        e2e e2e-update frontend-check db-roles worker worker-down pipeline
+        e2e e2e-setup e2e-update frontend-check db-roles worker worker-down pipeline
 
 UV := env -u VIRTUAL_ENV uv
 PY_PATH := PYTHONPATH=backend
@@ -111,11 +111,17 @@ fixtures: env-check
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-all
 
 # Playwright in the pinned container against the running core stack (needs `make up` + `make fixtures`).
-e2e: env-check
+# Needs the core stack, the worker and fixtures (`make up worker fixtures`). Setup makes the data
+# independent of earlier runs: the real SOP import (idempotent, through the worker) and one fresh
+# `TEST – E2E <n>` DRAFT recipe for the workflow spec (DDR-108).
+e2e-setup: env-check
+	$(COMPOSE) exec -T api python -m app.cli.pipelines run p1_sop --wait
+	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-recipe
+e2e: e2e-setup
 	$(COMPOSE) --profile e2e run --rm e2e
 
 # Regenerate screenshot baselines after an intended UI change; review the diff before committing.
-e2e-update: env-check
+e2e-update: e2e-setup
 	PLAYWRIGHT_ARGS="--update-snapshots" $(COMPOSE) --profile e2e run --rm e2e
 
 frontend-check:

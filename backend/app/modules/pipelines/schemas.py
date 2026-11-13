@@ -37,6 +37,8 @@ class PipelineOut(BaseModel):
     is_heavy: bool
     # False until the task that builds the pipeline lands; the backend refuses to queue it.
     implemented: bool
+    # Inputs accepted in this environment, default first (fault inputs only in local/test).
+    inputs: list[str]
     last_run: RunSummaryOut | None
 
 

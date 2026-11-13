@@ -20,7 +20,7 @@ from app.core.request_context import current_request_id
 from app.modules.pipelines import repository as repo
 
 # Pipelines that can be queued now, with the inputs each accepts. Later tasks add their pipelines
-# here when their code lands (P2 Task 7, P3 Task 8, K1–K3 Task 12).
+# here when their code lands (P2 Task 12, P3 Task 14, K3 Task 15, K2 Task 16, K1 Task 17).
 TRIGGERABLE: dict[str, frozenset[str]] = {"p1_sop": frozenset({"sop", "fault:records", "fault:structural"})}
 DEFAULT_INPUT: dict[str, str] = {"p1_sop": "sop"}
 # TEST fault-injection inputs (DDR-65, DDR-104): local/test only, always flagged as test runs.
@@ -61,6 +61,7 @@ class RunDetail:
 class PipelineSummary:
     pipeline: repo.PipelineRow
     implemented: bool
+    inputs: list[str]
     last_run: repo.RunRow | None
 
 
@@ -94,12 +95,22 @@ def _visible(conn: Connection, principal: Principal, run_id: uuid.UUID) -> repo.
 
 
 # ---------------------------------------------------------------- reads
+def available_inputs(pipeline: str) -> list[str]:
+    """Inputs this environment accepts, default first; fault inputs only in local/test (DDR-108)."""
+    allowed = TRIGGERABLE.get(pipeline, frozenset())
+    if not get_settings().is_local_or_test:
+        allowed = allowed - FAULT_INPUTS
+    default = DEFAULT_INPUT.get(pipeline)
+    return sorted(allowed, key=lambda ref: (ref != default, ref))
+
+
 def list_pipelines(principal: Principal) -> list[PipelineSummary]:
     regions = view_scope(principal)
     with get_engine().connect() as conn:
         last = repo.last_runs(conn, regions)
         return [
-            PipelineSummary(p, p.name in TRIGGERABLE, last.get(p.name)) for p in repo.list_pipelines(conn)
+            PipelineSummary(p, p.name in TRIGGERABLE, available_inputs(p.name), last.get(p.name))
+            for p in repo.list_pipelines(conn)
         ]
 
 

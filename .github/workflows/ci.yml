@@ -121,11 +121,20 @@ jobs:
           "
           sed -i "s/^APP_UID=.*/APP_UID=$(id -u)/; s/^APP_GID=.*/APP_GID=$(id -g)/; s/^APP_ENV=.*/APP_ENV=test/" .env
       - name: Start core stack and load seed users
-        run: make up && make fixtures
+        run: make up && make worker && make fixtures
       - name: Playwright (axe, screenshots, phone viewports)
-        run: make e2e
+        run: |
+          set -o pipefail
+          make e2e 2>&1 | tee e2e.log
         env:
           CI: "1"
+      - name: Playwright failures as annotations
+        if: failure()
+        run: |
+          # Failing tests and their first error lines, readable without signing in.
+          msg=$(grep -E "✘|Error:|Expected|Received|Locator|toHaveScreenshot|refused|Traceback" e2e.log | head -60 \
+                | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=e2e failures::${msg}"
       - name: Upload failure artefacts
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -135,7 +144,7 @@ jobs:
           retention-days: 7
       - name: Container logs on failure
         if: failure()
-        run: docker compose --project-directory . -f infra/compose.yaml --profile core logs --no-color --tail=200
+        run: docker compose --project-directory . -f infra/compose.yaml --profile core --profile worker logs --no-color --tail=200
       - name: Stop stack
         if: always()
-        run: docker compose --project-directory . -f infra/compose.yaml --profile core --profile e2e down -v
+        run: docker compose --project-directory . -f infra/compose.yaml --profile core --profile worker --profile e2e down -v

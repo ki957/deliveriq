@@ -53,6 +53,7 @@ def list_pipelines(principal: CurrentPrincipal) -> list[PipelineOut]:
             pipeline_group=s.pipeline.pipeline_group,
             is_heavy=s.pipeline.is_heavy,
             implemented=s.implemented,
+            inputs=s.inputs,
             last_run=_summary(s.last_run) if s.last_run else None,
         )
         for s in _call(lambda: service.list_pipelines(principal))

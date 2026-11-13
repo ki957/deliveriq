@@ -21,10 +21,12 @@ export const PORTAL_CONFIGS: PortalConfig[] = [
 
 function portalRoutes(config: PortalConfig): RouteObject {
   const base = `/${config.portal}`;
-  const children: RouteObject[] = config.nav.map((item) => {
+  const children: RouteObject[] = config.nav.flatMap((item) => {
     const page = item.element ?? <NotBuilt title={item.label} task={item.task} />;
     const element = item.requiresLogin ? <RequirePortal portal={config.portal}>{page}</RequirePortal> : page;
-    return item.to === base ? { index: true, element } : { path: item.to.slice(base.length + 1), element };
+    const own: RouteObject =
+      item.to === base ? { index: true, element } : { path: item.to.slice(base.length + 1), element };
+    return [own, ...(item.routes ?? []).map((r) => ({ path: r.path, element: r.element }))];
   });
   children.push({ path: "*", element: <NotFound /> });
   const shell = <PortalShell config={config} />;
