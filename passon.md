@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #14 (tooling merged, commit `89e545e`). Task 8B is on branch `task-08b-kitchen-ui`, built and verified, waiting for the owner's approval and merge (expected PR #15).
+`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is built and verified on `task-09a-delivery-api`, waiting for the owner's approval and merge; 9B (Delivery PWA UI) is next.
 
 | Task | Scope | State |
 |---|---|---|
@@ -45,16 +45,17 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | 6A / 6B | Customer serviceability, cart, pricing, checkout API / customer UI | ✅ merged (PR #11, #12) |
 | **8A** | Kitchen operations and inventory **backend** (migration 0010, DDR-111) | ✅ merged (PR #13) |
 | tooling | `CLAUDE.md`, `.claude/` commands + hook, `make reset-fixtures`, this guide | ✅ merged (PR #14) |
-| **8B** | Kitchen + Management **UI** for Task 8, tablet + KDS E2E (DDR-112) | 🟡 **branch `task-08b-kitchen-ui`, waiting for approval/merge** |
-| **9** | Delivery and tracking | ⏭️ **next task** |
+| 8B | Kitchen + Management UI for Task 8, tablet + KDS E2E (DDR-112) | ✅ merged (PR #15) |
+| **9A** | Delivery backend (migration 0011, DDR-113) | 🟡 **built and verified on `task-09a-delivery-api`; waiting for approval/merge** |
+| **9B** | Delivery PWA UI | ⏭️ **next task** (decisions already approved in DDR-113) |
 | 9 – 22 | See §6 | ⬜ not started |
 
 **Milestones** (plan §4.1):
 - M1 Foundation (0–4): done.
-- **M2 Core order flow (5–9): only Task 9 remains after 8B merges.**
+- **M2 Core order flow (5–9): only Task 9 (9A, 9B) remains.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** ask the owner whether the 8B PR (expected #15) is merged; then `/start-task 9` (it syncs `main` and checks CI first).
+**First thing to do:** ask the owner whether the 9A PR is merged. Then build **9B** from §5: its decisions are already approved in DDR-113, so present only a short plan (no new decision sheet unless something is undefined).
 
 ---
 
@@ -125,7 +126,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 1. Inspect the task (plan §7), the DDRs and the code it touches.
 2. Present a **plan + a decision sheet** in the §9 template: every value or behaviour the sources leave undefined, each with options and a ✔ recommendation. **Never invent** prices, thresholds, rules or formulas. Undefined values go on the sheet.
 3. Wait for the owner. Typical replies are "go + approve all" or "will do as u recommend".
-4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-112**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
+4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-113**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
 5. Build one task at a time on branch `task-NN-short-name`. Large tasks split into **A (backend)** and **B (UI)**.
 6. Verify (below), self-review against `CODE_STRUCTURE_DESIGN.md` §13 plus security, scope and leak controls, and grade findings Blocker/High/Medium/Low. Blocker and High must be fixed; Medium and Low are fixed or logged.
 7. Commit (stage **files by name**, never `git add .`; check no `.env` is staged) and report.
@@ -143,27 +144,19 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Next task: 9 (Delivery and tracking)
+## 5. Current task: 9A (delivery backend), approved as DDR-113
 
-Read plan "### Task 9" in full, DDR-14, 15, 16, 43, 51, 52, 55, 78, 111 (6), and Matrix §4 (DL-*, DL-G*, DL-U*). This is the last task of M2; it is large, so split it: **9A backend**, **9B Delivery PWA UI**.
+Read DDR-113 in full (16 points; `grep -n "DDR-113" docs/DESIGN_DECISION_REGISTER.md`), plan "### Task 9", Matrix §4 (DL-*), and the README cards of `delivery`, `orders`, `kitchen_ops`.
 
-**Already built (do not rebuild):**
-- `app.delivery_assignments` with the full machine (OFFERED → ACCEPTED / REJECTED / EXPIRED / REVOKED → COMPLETED / FAILURE_REQUESTED → FAILED) and the DB rule "one open offer or live delivery per agent".
-- `delivery.service.offer_on_acceptance` (called inside kitchen acceptance; picks an active agent of the region, least recently offered) and `revoke` (called on kitchen reject).
-- `orders.service.record_pickup` (validated pickup: READY_FOR_PICKUP → PICKED_UP → OUT_FOR_DELIVERY in one transaction, deducts stock once, emits `delivery.picked_up`). **It has no route yet**: Task 9 adds it.
-- `orders.service.record_cod_collection` (COD collected / mismatch with reason). No route yet.
-- Config: `AGENT_ASSIGNMENT_RESPONSE_TIMEOUT` 60 s, `CUSTOMER_UNAVAILABLE_WAIT` 5 min, `GPS_UPDATE_INTERVAL_MIN/MAX` 3–5 s, `GPS_RETENTION_DAYS` 30.
-- Customer order page already shows "Agent Assigned" from `agent_assigned` (DDR-16). Kitchen cards show offer / assigned / awaiting.
-- Delivery portal shell exists (`frontend/src/portals/delivery/config.tsx`, placeholders); `phone-360`/`phone-390` E2E projects exist (`@phone`, `@devices`).
+**Already built (reuse):** `app.delivery_assignments` + machine + unique "one live per agent"; `delivery.service.offer_on_acceptance` / `revoke` (called by kitchen accept/reject); `orders.service.record_pickup` (deducts stock, OUT_FOR_DELIVERY) and `record_cod_collection` (no routes yet); config keys `AGENT_ASSIGNMENT_RESPONSE_TIMEOUT` 60, `CUSTOMER_UNAVAILABLE_WAIT` 5, `GPS_UPDATE_INTERVAL_MIN/MAX` 3/5, `GPS_RETENTION_DAYS` 30; worker in `backend/app/worker/` (pipeline queue loop: add a periodic sweep there).
 
-**To build (9A):** agent online/offline (DL-01; replace "every active agent is available", DDR-111 (6)); offer accept/reject with reason; 60 s expiry back to the pool and re-offer (worker timer or on-read; decide on the sheet); manager reassign/revoke (MG); pickup and COD routes; delivery OTP (6 digits, backend-verified, 3 failures escalate; DL-11); customer unavailable wait (DDR-14); failure request + manager approval (DA-18); GPS points (PostGIS, simulated vs real labelled, stale/out-of-order rejected, DDR-52), 30-day retention job (idempotent, audited); `delivery.assigned/completed/failed` events (only §6.3 types; no per-point events, DDR-78); routing adapter with a labelled stub, optional `osrm` profile (DDR-55).
-**To build (9B):** Delivery PWA (manifest + app-shell service worker only; installable, DDR-15), screens per DL-U6, offline / GPS-denied states, phone-first E2E.
+**9A is done** (all items built and tested; see `backend/app/modules/delivery/README.md`). Learned in 9A:
+- The `worker` DB role has no table grants; delivery jobs are SECURITY DEFINER functions (DDR-113 (17)).
+- Fixtures and migrations run in the baked migrate image: rebuild it after editing either (`docker compose --project-directory . -f infra/compose.yaml --profile core build migrate`).
+- Test teardowns must release reserved stock (reject held orders through the API) before deleting orders; `make reset-fixtures` now also repairs `reserved` from the open reservations.
+- Test-world mobiles skip numbers already in use (old runs left users behind).
 
-**Gates:** DDR-15 background GPS is **not built** (B). DDR-43 interval is A (configurable 3–5 s, labelled). Expect decision-sheet items for: offer re-offer policy after expiry/rejection, who may set agents offline, OTP generation/delivery channel in POC (MOCK, like login), GPS simulation controls, map tiles source.
-
-**Known leftovers to keep in mind:**
-- Customer E2E leaves paid UPI orders in PENDING_KITCHEN (the kitchen Incoming list grows across runs; specs find cards by order id and the kitchen-shell screenshot masks the counts). A cleanup or a reset of stale TEST Incoming orders could be a Task 9/21 item.
-- Kitchen screens poll every 10 s; Task 11 replaces this with WebSockets.
+**9B after 9A merges:** Delivery PWA (manifest + app-shell SW, D12), screens per DL-U6 in `frontend/src/portals/delivery/config.ts` (Notifications stays Task 11), Leaflet map with configurable tiles (D10; pin `leaflet` + `react-leaflet`, record the reason), real + simulated GPS with a 300-point buffer (D8, D9), offline/GPS-denied states, phone-first E2E (`@phone`/`@devices`), customer tracking view + OTP display on the customer order page.
 
 ---
 
@@ -278,7 +271,7 @@ Rules:
 - One sheet per task, at the plan step.
 - Mark exactly one ✔ per item.
 - Name the class when it applies (B = don't build, A = build behind a disabled flag or labelled test default, P = label, G = gate; plan §5).
-- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-112**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
+- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-113**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
 
 ---
 
@@ -292,6 +285,8 @@ Rules:
 | 2026-11-12 | 6A–6B / #11–#12 | DDR-110 | Cart, pricing, checkout; per-test E2E customers; tablet project; bottom-bar clearance fix |
 | 2026-11-12 | 8A / #13 | DDR-111 | Migration 0010; kitchen accept/reject/prep, stock, availability; migrate image must be rebuilt after migration edits |
 | 2026-11-12 | tooling / #14 | rules v1.1 | `CLAUDE.md`, `.claude/` commands + guard hook, `make reset-fixtures`, this guide |
+| 2026-11-12 | 9 plan | DDR-113 | Approved |
+| 2026-11-12 | 9A / #16 | DDR-113 | Migration 0011; delivery lifecycle, code, GPS, retention; worker uses 2 SECURITY DEFINER functions only |
 | 2026-11-12 | 8B / #15 | DDR-112 | Kitchen screens + Management Dish Availability; `kds` 1920×1080 project (`@kitchen` on tablet + kds only); `e2e-setup` runs `reset-shared`; mask live counts in screenshots |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

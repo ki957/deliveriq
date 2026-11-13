@@ -246,7 +246,13 @@ def reset_shared() -> dict[str, int]:
     still reserved by a held order is left alone (reported), never forced. Every stock change is a
     reasoned ledger entry.
     """
-    result = {"dishes_restored": 0, "stock_reset": 0, "stock_skipped_reserved": 0, "live_assignments": 0}
+    result = {
+        "reserved_repaired": 0,
+        "dishes_restored": 0,
+        "stock_reset": 0,
+        "stock_skipped_reserved": 0,
+        "live_assignments": 0,
+    }
     with get_engine().begin() as conn:
         _system(conn)
         kitchen = conn.execute(
@@ -280,6 +286,19 @@ def reset_shared() -> dict[str, int]:
                 {"id": _id("menu_item", letter)},
             ).rowcount
         _system(conn)
+        # Reserved must equal the open reservations; repair a leak left by an interrupted test cleanup.
+        result["reserved_repaired"] = conn.execute(
+            text(
+                "UPDATE app.ingredient_stock s SET reserved = coalesce((SELECT sum(r.quantity) "
+                "FROM app.stock_reservations r WHERE r.kitchen_id = s.kitchen_id "
+                "AND r.ingredient_id = s.ingredient_id AND r.status = 'RESERVED'), 0) "
+                "WHERE s.kitchen_id = :k AND s.is_test_fixture "
+                "AND s.reserved <> coalesce((SELECT sum(r.quantity) "
+                "FROM app.stock_reservations r WHERE r.kitchen_id = s.kitchen_id "
+                "AND r.ingredient_id = s.ingredient_id AND r.status = 'RESERVED'), 0)"
+            ),
+            {"k": kitchen},
+        ).rowcount
         rows = conn.execute(
             text(
                 "SELECT s.ingredient_id, s.on_hand, s.reserved FROM app.ingredient_stock s "

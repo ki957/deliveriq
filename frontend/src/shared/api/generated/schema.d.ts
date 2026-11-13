@@ -151,6 +151,364 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/delivery/assignments/{assignment_id}/respond": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Respond
+         * @description Accept within 60 s, or reject with a reason (DL-04).
+         */
+        post: operations["respond_api_v1_delivery_assignments__assignment_id__respond_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * History
+         * @description The agent's own deliveries of the last 30 days (#7 §9).
+         */
+        get: operations["history_api_v1_delivery_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Locations
+         * @description GPS points while holding an accepted delivery (DDR-52): stale, future or out-of-order points are
+         *     refused and counted, never stored. REAL or SIMULATED is recorded per point.
+         */
+        post: operations["locations_api_v1_delivery_locations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/manage/agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agents */
+        get: operations["agents_api_v1_delivery_manage_agents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/manage/agents/{agent_id}/force-offline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Force Offline
+         * @description Only when the agent holds no accepted delivery (DL-06).
+         */
+        post: operations["force_offline_api_v1_delivery_manage_agents__agent_id__force_offline_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/manage/orders/{order_id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign
+         * @description Offer the order to a chosen online agent; any current offer or assignment is revoked (DL-02, DL-07).
+         */
+        post: operations["assign_api_v1_delivery_manage_orders__order_id__assign_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/manage/orders/{order_id}/code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reissue Code
+         * @description Issue a new delivery code after escalation (DDR-113 (6)).
+         */
+        post: operations["reissue_code_api_v1_delivery_manage_orders__order_id__code_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/manage/orders/{order_id}/failure-decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Failure Decision
+         * @description Approve (Delivery failed) or reject (back to the agent) a failure request, with a reason (DA-18).
+         */
+        post: operations["failure_decision_api_v1_delivery_manage_orders__order_id__failure_decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Work
+         * @description Availability and the current offer or delivery (DL-01, DL-08).
+         */
+        get: operations["my_work_api_v1_delivery_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/me/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Availability
+         * @description Go online (receive offers) or offline (an open offer expires; not with an accepted delivery).
+         */
+        put: operations["set_availability_api_v1_delivery_me_availability_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/me/name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Rename
+         * @description The agent edits the display name (#7 §9); the mobile number changes only through recovery.
+         */
+        put: operations["rename_api_v1_delivery_me_name_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/orders/{order_id}/cod": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cod
+         * @description Simulated cash on delivery: collected, or a mismatch with a reason (DL-15).
+         */
+        post: operations["cod_api_v1_delivery_orders__order_id__cod_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/orders/{order_id}/contact-manager": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Contact Manager
+         * @description After the customer-unavailable wait, or at any time with a reason (emergency, #7 §7).
+         */
+        post: operations["contact_manager_api_v1_delivery_orders__order_id__contact_manager_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/orders/{order_id}/customer-phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Customer Phone
+         * @description The full number for the agent's own accepted delivery only; every reveal is audited (DL-08).
+         */
+        get: operations["customer_phone_api_v1_delivery_orders__order_id__customer_phone_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/orders/{order_id}/customer-unavailable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Customer Unavailable
+         * @description Start the wait (DDR-14); afterwards the agent may contact the manager without a reason.
+         */
+        post: operations["customer_unavailable_api_v1_delivery_orders__order_id__customer_unavailable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/orders/{order_id}/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deliver
+         * @description The customer's six-digit code, verified by the backend; three wrong codes escalate (DL-11).
+         */
+        post: operations["deliver_api_v1_delivery_orders__order_id__deliver_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/orders/{order_id}/failure-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Failure Request
+         * @description Customer refused, or delivery failed: a reason is required; the manager decides (DA-18).
+         */
+        post: operations["failure_request_api_v1_delivery_orders__order_id__failure_request_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/orders/{order_id}/pickup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pickup
+         * @description Validated pickup (DL-09): blocked until Ready; then Out for delivery and the customer's code.
+         */
+        post: operations["pickup_api_v1_delivery_orders__order_id__pickup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/kitchen/inventory": {
         parameters: {
             query?: never;
@@ -1001,12 +1359,65 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** AgentOut */
+        AgentOut: {
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "ONLINE" | "OFFLINE";
+            /** Availability Changed At */
+            availability_changed_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Live Order Id */
+            live_order_id: string | null;
+            /** Live Status */
+            live_status: string | null;
+            /** Name */
+            name: string;
+        };
+        /** AssignIn */
+        AssignIn: {
+            /**
+             * Agent User Id
+             * Format: uuid
+             */
+            agent_user_id: string;
+            /** Reason */
+            reason: string;
+        };
+        /** AssignmentOut */
+        AssignmentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Offer Seconds Left */
+            offer_seconds_left: number | null;
+            /**
+             * Offered At
+             * Format: date-time
+             */
+            offered_at: string;
+            /** Status */
+            status: string;
+        };
         /** AvailabilityDecisionIn */
         AvailabilityDecisionIn: {
             /** Approve */
             approve: boolean;
             /** Reason */
             reason?: string | null;
+        };
+        /** AvailabilityIn */
+        AvailabilityIn: {
+            /** Online */
+            online: boolean;
         };
         /** AvailabilityRequestIn */
         AvailabilityRequestIn: {
@@ -1157,6 +1568,18 @@ export interface components {
             /** Quantity */
             quantity: number;
         };
+        /** CodIn */
+        CodIn: {
+            /** Collected */
+            collected: boolean;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** CodeIn */
+        CodeIn: {
+            /** Code */
+            code: string;
+        };
         /** ConfiguredValueOut */
         ConfiguredValueOut: {
             /** Is Test Default */
@@ -1193,6 +1616,13 @@ export interface components {
             price_paise: number | null;
             /** Spice Level */
             spice_level: string | null;
+        };
+        /** DecisionIn */
+        DecisionIn: {
+            /** Approve */
+            approve: boolean;
+            /** Reason */
+            reason: string;
         };
         /** DeviceOut */
         DeviceOut: {
@@ -1263,6 +1693,13 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** FailureIn */
+        FailureIn: {
+            /** Reason */
+            reason: string;
+            /** Refused */
+            refused: boolean;
+        };
         /**
          * Fulfilment
          * @enum {string}
@@ -1280,6 +1717,40 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HistoryOut */
+        HistoryOut: {
+            /** Assignment Status */
+            assignment_status: string;
+            /** Delivered At */
+            delivered_at: string | null;
+            /** Duration Minutes */
+            duration_minutes: number | null;
+            /** Fulfilment Status */
+            fulfilment_status: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /**
+             * Offered At
+             * Format: date-time
+             */
+            offered_at: string;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /** Picked Up At */
+            picked_up_at: string | null;
+        };
+        /** IngestOut */
+        IngestOut: {
+            /** Accepted */
+            accepted: number;
+            /** Refused */
+            refused: {
+                [key: string]: number;
+            };
         };
         /** IngestionErrorOut */
         IngestionErrorOut: {
@@ -1498,6 +1969,37 @@ export interface components {
             /** Source Sha256 */
             source_sha256: string | null;
         };
+        /** LiveAssignmentOut */
+        LiveAssignmentOut: {
+            /** Agent Name */
+            agent_name: string;
+            /**
+             * Assignment Id
+             * Format: uuid
+             */
+            assignment_id: string;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /** Status */
+            status: string;
+        };
+        /** LiveLocationOut */
+        LiveLocationOut: {
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Simulated */
+            simulated: boolean;
+        };
         /** LiveResponse */
         LiveResponse: {
             /**
@@ -1604,6 +2106,48 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /** MyWorkOut */
+        MyWorkOut: {
+            assignment: components["schemas"]["AssignmentOut"] | null;
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "ONLINE" | "OFFLINE";
+            /** Availability Changed At */
+            availability_changed_at: string | null;
+            /** Customer Unavailable Wait Minutes */
+            customer_unavailable_wait_minutes: number;
+            /** Gps Interval Seconds */
+            gps_interval_seconds: [
+                number,
+                number
+            ];
+            /** Gps Stale Seconds */
+            gps_stale_seconds: number;
+            order: components["schemas"]["WorkOrderOut"] | null;
+            /**
+             * Route Is Estimated
+             * @default true
+             * @constant
+             */
+            route_is_estimated: true;
+        };
+        /** NameIn */
+        NameIn: {
+            /** Display Name */
+            display_name: string;
+        };
+        /** NameOut */
+        NameOut: {
+            /** Display Name */
+            display_name: string;
+        };
+        /** OptionalReasonIn */
+        OptionalReasonIn: {
+            /** Reason */
+            reason?: string | null;
+        };
         /** OrderCreateIn */
         OrderCreateIn: {
             /**
@@ -1653,6 +2197,8 @@ export interface components {
             agent_assigned: boolean;
             /** Delivery Address */
             delivery_address: string | null;
+            /** Delivery Code */
+            delivery_code?: string | null;
             /** Delivery Fee Paise */
             delivery_fee_paise: number | null;
             /** Discount Paise */
@@ -1669,6 +2215,7 @@ export interface components {
             is_test_fixture: boolean;
             /** Items */
             items: components["schemas"]["OrderItemOut"][];
+            live_location?: components["schemas"]["LiveLocationOut"] | null;
             /** Payable Paise */
             payable_paise: number | null;
             payment: components["schemas"]["PaymentOut"] | null;
@@ -1754,6 +2301,11 @@ export interface components {
          * @enum {string}
          */
         PaymentStatus: "PENDING" | "SUCCEEDED" | "FAILED" | "TIMED_OUT" | "REFUND_PENDING" | "REFUNDED" | "COLLECTION_PENDING" | "COLLECTED" | "MISMATCH";
+        /** PhoneOut */
+        PhoneOut: {
+            /** Phone */
+            phone: string;
+        };
         /** PipelineOut */
         PipelineOut: {
             /** Display Name */
@@ -1769,6 +2321,37 @@ export interface components {
             name: string;
             /** Pipeline Group */
             pipeline_group: string;
+        };
+        /** Place */
+        Place: {
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
+        };
+        /** PointIn */
+        PointIn: {
+            /** Accuracy M */
+            accuracy_m?: number | string | null;
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "REAL" | "SIMULATED";
+        };
+        /** PointsIn */
+        PointsIn: {
+            /** Points */
+            points: components["schemas"]["PointIn"][];
         };
         /**
          * Portal
@@ -1791,6 +2374,11 @@ export interface components {
              * @enum {string}
              */
             status: "ready" | "not_ready";
+        };
+        /** ReasonIn */
+        ReasonIn: {
+            /** Reason */
+            reason: string;
         };
         /**
          * RecipeStatus
@@ -1893,6 +2481,13 @@ export interface components {
             updated_at: string;
             /** Version */
             version: number;
+        };
+        /** RespondIn */
+        RespondIn: {
+            /** Accept */
+            accept: boolean;
+            /** Reason */
+            reason?: string | null;
         };
         /** ReviewItemOut */
         ReviewItemOut: {
@@ -2141,6 +2736,16 @@ export interface components {
         TrustedLoginIn: {
             portal: components["schemas"]["Portal"];
         };
+        /** UnavailableOut */
+        UnavailableOut: {
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /** Wait Minutes */
+            wait_minutes: number;
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -2153,6 +2758,44 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** WorkOrderOut */
+        WorkOrderOut: {
+            /** Code Attempts Left */
+            code_attempts_left: number | null;
+            /** Customer Phone Masked */
+            customer_phone_masked: string;
+            /** Customer Unavailable Since */
+            customer_unavailable_since: string | null;
+            /** Delivery Address */
+            delivery_address: string | null;
+            /** Delivery Exception Open */
+            delivery_exception_open: boolean;
+            destination: components["schemas"]["Place"] | null;
+            /** Fulfilment Status */
+            fulfilment_status: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            kitchen: components["schemas"]["Place"];
+            /** Kitchen Location Is Synthetic */
+            kitchen_location_is_synthetic: boolean;
+            /** Kitchen Name */
+            kitchen_name: string;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /** Payable Paise */
+            payable_paise: number | null;
+            /** Payment Method */
+            payment_method: string | null;
+            /** Payment Status */
+            payment_status: string | null;
+            /** Special Instructions */
+            special_instructions: string | null;
+            /** Status Label */
+            status_label: string;
         };
     };
     responses: never;
@@ -2439,6 +3082,569 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CartOut"];
+                };
+            };
+        };
+    };
+    respond_api_v1_delivery_assignments__assignment_id__respond_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RespondIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyWorkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    history_api_v1_delivery_history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryOut"][];
+                };
+            };
+        };
+    };
+    locations_api_v1_delivery_locations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PointsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IngestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agents_api_v1_delivery_manage_agents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentOut"][];
+                };
+            };
+        };
+    };
+    force_offline_api_v1_delivery_manage_agents__agent_id__force_offline_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                agent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assign_api_v1_delivery_manage_orders__order_id__assign_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveAssignmentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reissue_code_api_v1_delivery_manage_orders__order_id__code_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    failure_decision_api_v1_delivery_manage_orders__order_id__failure_decision_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_work_api_v1_delivery_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyWorkOut"];
+                };
+            };
+        };
+    };
+    set_availability_api_v1_delivery_me_availability_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AvailabilityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyWorkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_api_v1_delivery_me_name_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NameIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NameOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cod_api_v1_delivery_orders__order_id__cod_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CodIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contact_manager_api_v1_delivery_orders__order_id__contact_manager_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptionalReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    customer_phone_api_v1_delivery_orders__order_id__customer_phone_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhoneOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    customer_unavailable_api_v1_delivery_orders__order_id__customer_unavailable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnavailableOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deliver_api_v1_delivery_orders__order_id__deliver_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CodeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Wrong code */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    failure_request_api_v1_delivery_orders__order_id__failure_request_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FailureIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pickup_api_v1_delivery_orders__order_id__pickup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -71,6 +71,14 @@ class PaymentOut(BaseModel):
     simulated: Literal[True] = True
 
 
+class LiveLocationOut(BaseModel):
+    lat: float
+    lng: float
+    recorded_at: datetime
+    # Simulated GPS is labelled in every UI (DL-G2).
+    simulated: bool
+
+
 class OrderOut(BaseModel):
     id: uuid.UUID
     fulfilment_status: Fulfilment
@@ -88,6 +96,9 @@ class OrderOut(BaseModel):
     placed_at: datetime
     items: list[OrderItemOut]
     payment: PaymentOut | None
+    # Customer's own order, while Out for delivery only (DDR-113 (6), (8)).
+    delivery_code: str | None = None
+    live_location: LiveLocationOut | None = None
 
 
 # ---------------------------------------------------------------- cart and quote (DDR-110)

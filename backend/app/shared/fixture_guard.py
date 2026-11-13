@@ -17,6 +17,9 @@ FIXTURE_TABLES = (
     "stock_movements",
     # Requests about TEST dishes (DDR-111 (7)).
     "dish_availability_requests",
+    # Delivery codes and GPS points of TEST orders (DDR-113).
+    "delivery_otps",
+    "delivery_locations",
 )
 
 

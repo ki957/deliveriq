@@ -391,6 +391,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
   - Retention job deletes or irreversibly anonymises GPS records at day 31, keeps day 29, is idempotent and audited.
   - End-to-end delivery tests use `TEST –` orders.
   - Phone viewports are the primary suite; tablet/desktop secondary; axe; screenshots.
+- **Status:** delivered as 9A (backend: migration 0011, offers with 60 s expiry and re-offer, availability, manager assign/reassign/force-offline/failure decisions, delivery code, GPS ingest and retention; branch `task-09a-delivery-api`, built and verified, in review) and 9B (Delivery PWA UI); decisions DDR-113.
 
 ### Task 10 — Unified management portal
 
