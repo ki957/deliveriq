@@ -39,3 +39,16 @@ def test_failed_payment_cannot_later_succeed() -> None:
 
 def test_refund_only_after_success() -> None:
     assert [a for a, b in PAYMENT_TRANSITIONS if b == P.REFUND_PENDING] == [P.SUCCEEDED]
+
+
+def test_simulator_outcomes_map_to_prepaid_statuses() -> None:
+    from app.modules.payments.domain import OUTCOME_STATUS, SimOutcome, is_prepaid
+
+    assert {o.value: s.value for o, s in OUTCOME_STATUS.items()} == {
+        "SUCCESS": "SUCCEEDED",
+        "FAILED": "FAILED",
+        "TIMEOUT": "TIMED_OUT",
+    }
+    assert set(SimOutcome) == set(OUTCOME_STATUS)
+    assert is_prepaid(PaymentMethod.SIM_UPI) and is_prepaid(PaymentMethod.SIM_CARD)
+    assert not is_prepaid(PaymentMethod.COD)

@@ -18,6 +18,7 @@ from app.modules.identity.api import auth_router, me_router
 from app.modules.identity.dependencies import CSRF_HEADER
 from app.modules.menu.api import manage_router as menu_manage_router
 from app.modules.menu.api import public_router as menu_public_router
+from app.modules.orders.api import router as orders_router
 from app.modules.pipelines.api import router as pipelines_router
 from app.modules.recipes.api import router as recipes_router
 from app.shared.fixture_guard import assert_no_fixtures
@@ -36,6 +37,7 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(recipes_router)
     app.include_router(menu_public_router)
     app.include_router(menu_manage_router)
+    app.include_router(orders_router)
     return app
 
 

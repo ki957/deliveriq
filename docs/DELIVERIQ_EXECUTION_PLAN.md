@@ -164,7 +164,7 @@ Tasks 6–9 run end-to-end workflow tests using synthetic `TEST –` menu items.
 - Test recipes, opening stock, orders, order items and simulated payments that use them are flagged `is_test_fixture = true` and labelled "Test" in every UI.
 
 **Leak controls (all must pass; verified in Tasks 3, 5, 6, 12, 16, 22)**
-1. `is_test_fixture` column on `menu_items`, `recipe_versions`, `orders`, `order_items`, `payments`; set only by the fixture loader; not writable through any API.
+1. `is_test_fixture` column on `menu_items`, `recipe_versions`, `orders`, `order_items`, `payments`; set on menu items and recipes only by the fixture loader; on orders derived in the database from the chosen dishes, and inherited by order items and payments (DDR-109); never writable through any API.
 2. Fixture loader refuses to run unless `APP_ENV` is `local` or `test`.
 3. Production-profile startup check fails if any `is_test_fixture = true` row exists.
 4. Production-profile customer menu and checkout queries filter `is_test_fixture = false` (defence in depth).
@@ -341,6 +341,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 7 — Payments, order state machines and outbox
 
+- **Status:** Built before Task 6 (owner choice, 2026-11-12); branch `task-07-orders-payments`, built and verified, in review; decisions DDR-109. Outbox relay remains Task 12.
 - **Depends on:** Task 3.
 - **Acceptance criteria:**
   - Simulated UPI/card (`SUCCESS`, `FAILED`, `TIMEOUT`) and COD (`COLLECTION_PENDING`, `COLLECTED`, `MISMATCH`) behave per #15 §9; payments on fixture orders carry `is_test_fixture`.

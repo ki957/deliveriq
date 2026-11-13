@@ -174,6 +174,79 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Orders */
+        get: operations["my_orders_api_v1_orders_get"];
+        put?: never;
+        /** Place Order */
+        post: operations["place_order_api_v1_orders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Order Detail */
+        get: operations["order_detail_api_v1_orders__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{order_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Order */
+        post: operations["cancel_order_api_v1_orders__order_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{order_id}/payment/simulate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Simulate Payment
+         * @description Payment simulator: no real money moves. SUCCESS sends the order to the kitchen; FAILED or
+         *     TIMEOUT cancels it (DDR-109).
+         */
+        post: operations["simulate_payment_api_v1_orders__order_id__payment_simulate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pipelines": {
         parameters: {
             query?: never;
@@ -422,6 +495,11 @@ export interface components {
             /** Note */
             note: string;
         };
+        /** CancelIn */
+        CancelIn: {
+            /** Reason */
+            reason?: string | null;
+        };
         /** CancelOut */
         CancelOut: {
             /**
@@ -493,6 +571,11 @@ export interface components {
             /** Status */
             status: string;
         };
+        /**
+         * Fulfilment
+         * @enum {string}
+         */
+        Fulfilment: "PLACED" | "PENDING_KITCHEN" | "ACCEPTED" | "PREPARING" | "READY_FOR_PICKUP" | "PICKED_UP" | "OUT_FOR_DELIVERY" | "DELIVERED" | "CANCELLED" | "REJECTED" | "DELIVERY_FAILED";
         /** GrantOut */
         GrantOut: {
             /** Kitchen Id */
@@ -639,6 +722,71 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /** OrderCreateIn */
+        OrderCreateIn: {
+            /** Lines */
+            lines: components["schemas"]["OrderLineIn"][];
+            payment_method: components["schemas"]["PaymentMethod"];
+            /** Special Instructions */
+            special_instructions?: string | null;
+        };
+        /** OrderItemOut */
+        OrderItemOut: {
+            /** Item Name */
+            item_name: string | null;
+            /**
+             * Menu Item Id
+             * Format: uuid
+             */
+            menu_item_id: string;
+            /** Prep Status */
+            prep_status: string;
+            /** Quantity */
+            quantity: number;
+            /** Unit Price Paise */
+            unit_price_paise: number | null;
+        };
+        /** OrderLineIn */
+        OrderLineIn: {
+            /**
+             * Menu Item Id
+             * Format: uuid
+             */
+            menu_item_id: string;
+            /** Quantity */
+            quantity: number;
+        };
+        /** OrderOut */
+        OrderOut: {
+            /** Agent Assigned */
+            agent_assigned: boolean;
+            /** Delivery Fee Paise */
+            delivery_fee_paise: number | null;
+            /** Food Subtotal Paise */
+            food_subtotal_paise: number | null;
+            fulfilment_status: components["schemas"]["Fulfilment"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /** Items */
+            items: components["schemas"]["OrderItemOut"][];
+            /** Payable Paise */
+            payable_paise: number | null;
+            payment: components["schemas"]["PaymentOut"] | null;
+            /**
+             * Placed At
+             * Format: date-time
+             */
+            placed_at: string;
+            /** Special Instructions */
+            special_instructions: string | null;
+            /** Status Label */
+            status_label: string;
+        };
         /** OtpRequestIn */
         OtpRequestIn: {
             /**
@@ -684,6 +832,31 @@ export interface components {
              */
             trust_device: boolean;
         };
+        /**
+         * PaymentMethod
+         * @enum {string}
+         */
+        PaymentMethod: "SIM_UPI" | "SIM_CARD" | "COD";
+        /** PaymentOut */
+        PaymentOut: {
+            /** Amount Paise */
+            amount_paise: number | null;
+            method: components["schemas"]["PaymentMethod"];
+            /** Sim Reference */
+            sim_reference: string | null;
+            /**
+             * Simulated
+             * @default true
+             * @constant
+             */
+            simulated: true;
+            status: components["schemas"]["PaymentStatus"];
+        };
+        /**
+         * PaymentStatus
+         * @enum {string}
+         */
+        PaymentStatus: "PENDING" | "SUCCEEDED" | "FAILED" | "TIMED_OUT" | "REFUND_PENDING" | "REFUNDED" | "COLLECTION_PENDING" | "COLLECTED" | "MISMATCH";
         /** PipelineOut */
         PipelineOut: {
             /** Display Name */
@@ -963,6 +1136,16 @@ export interface components {
          * @enum {string}
          */
         SignoffType: "CHEF" | "FOOD_SAFETY_LEAD" | "INVENTORY_OWNER" | "KITCHEN_MANAGER" | "PRODUCT_OWNER";
+        /**
+         * SimOutcome
+         * @description Simulator scenarios for prepaid methods (#15 §9); chosen by the caller (DDR-109).
+         * @enum {string}
+         */
+        SimOutcome: "SUCCESS" | "FAILED" | "TIMEOUT";
+        /** SimulateIn */
+        SimulateIn: {
+            outcome: components["schemas"]["SimOutcome"];
+        };
         /** StageOut */
         StageOut: {
             /** Detail */
@@ -1270,6 +1453,170 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedMenuItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_orders_api_v1_orders_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"][];
+                };
+            };
+        };
+    };
+    place_order_api_v1_orders_post: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client-generated UUID; a repeat returns the original order */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Repeat of a request */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    order_detail_api_v1_orders__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_order_api_v1_orders__order_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CancelIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    simulate_payment_api_v1_orders__order_id__payment_simulate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
                 };
             };
             /** @description Validation Error */

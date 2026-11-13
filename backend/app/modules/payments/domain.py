@@ -54,3 +54,22 @@ def status_fits_method(method: PaymentMethod, status: PaymentStatus) -> bool:
 
 def can_transition(current: PaymentStatus, target: PaymentStatus) -> bool:
     return (current, target) in PAYMENT_TRANSITIONS
+
+
+class SimOutcome(StrEnum):
+    """Simulator scenarios for prepaid methods (#15 §9); chosen by the caller (DDR-109)."""
+
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
+    TIMEOUT = "TIMEOUT"
+
+
+OUTCOME_STATUS: dict[SimOutcome, PaymentStatus] = {
+    SimOutcome.SUCCESS: P.SUCCEEDED,
+    SimOutcome.FAILED: P.FAILED,
+    SimOutcome.TIMEOUT: P.TIMED_OUT,
+}
+
+
+def is_prepaid(method: PaymentMethod) -> bool:
+    return method is not PaymentMethod.COD

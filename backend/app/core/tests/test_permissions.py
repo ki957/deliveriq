@@ -109,3 +109,11 @@ def test_recipe_workflow_permissions_match_ddr_105_and_106() -> None:
     km = principal(Role.KITCHEN_MANAGER, region=REGION_A, kitchen=KITCHEN_A)
     assert can(km, P.KITCHEN_RECIPES_WORKFLOW, kitchen_id=KITCHEN_A)
     assert not can(km, P.KITCHEN_RECIPES_WORKFLOW, kitchen_id=KITCHEN_B)
+
+
+def test_only_customers_place_and_cancel_their_own_orders() -> None:
+    for permission in (P.CUSTOMER_ORDERS_PLACE, P.CUSTOMER_ORDERS_CANCEL):
+        assert {r for r, perms in ROLE_PERMISSIONS.items() if permission in perms} == {Role.CUSTOMER}
+    me = principal(Role.CUSTOMER)
+    assert can(me, P.CUSTOMER_ORDERS_PLACE, customer_id=me.user_id)
+    assert not can(me, P.CUSTOMER_ORDERS_CANCEL, customer_id=uuid.uuid4())
