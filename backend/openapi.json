@@ -4263,6 +4263,24 @@
         "title": "ValidationError",
         "type": "object"
       },
+      "WorkItemOut": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "quantity"
+        ],
+        "title": "WorkItemOut",
+        "type": "object"
+      },
       "WorkOrderOut": {
         "properties": {
           "code_attempts_left": {
@@ -4324,6 +4342,13 @@
           "is_test_fixture": {
             "title": "Is Test Fixture",
             "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WorkItemOut"
+            },
+            "title": "Items",
+            "type": "array"
           },
           "kitchen": {
             "$ref": "#/components/schemas/Place"
@@ -4392,6 +4417,7 @@
         },
         "required": [
           "order_id",
+          "items",
           "fulfilment_status",
           "status_label",
           "is_test_fixture",

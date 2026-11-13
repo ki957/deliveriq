@@ -95,6 +95,7 @@ export function OrderPage() {
         {o.is_test_fixture ? <TestBadge label="Test order" /> : null}
       </div>
       <p className="mt-1 text-sm text-text-muted">Placed {formatDateTime(o.placed_at)}</p>
+      <Tracking order={o} />
       <PaymentSimulator order={o} />
       <CancelOrder order={o} />
       <div className="mt-6 grid gap-6 md:grid-cols-2">
@@ -140,6 +141,41 @@ export function OrderPage() {
           </p>
         </section>
       </div>
+    </section>
+  );
+}
+
+// DDR-113 (6), (8): only on the customer's own order, after pickup. The code is never shown to the agent.
+function Tracking({ order }: { order: Order }) {
+  if (order.fulfilment_status !== "OUT_FOR_DELIVERY") return null;
+  const where = order.live_location;
+  return (
+    <section
+      aria-labelledby="tracking"
+      className="mt-4 space-y-2 rounded-panel border border-border bg-surface p-4"
+    >
+      <h2 id="tracking" className="text-lg font-semibold">
+        On the way
+      </h2>
+      {order.delivery_code ? (
+        <p>
+          Give this code to the agent:{" "}
+          <span className="font-mono text-2xl font-semibold tracking-widest" data-testid="delivery-code">
+            {order.delivery_code}
+          </span>
+        </p>
+      ) : null}
+      <p className="flex flex-wrap items-center gap-2 text-sm">
+        {where ? (
+          <>
+            Agent last seen at {where.lat.toFixed(4)}, {where.lng.toFixed(4)} (
+            {formatDateTime(where.recorded_at)}){where.simulated ? <TestBadge label="Simulated GPS" /> : null}
+          </>
+        ) : (
+          "The agent's position is not available yet."
+        )}
+      </p>
+      <p className="text-xs text-text-muted">Updates every 10 s.</p>
     </section>
   );
 }

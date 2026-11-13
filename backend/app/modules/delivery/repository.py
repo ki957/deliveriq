@@ -415,5 +415,17 @@ def history(conn: Connection, agent: uuid.UUID, days: int) -> list[HistoryRow]:
     return [HistoryRow(*r) for r in rows]
 
 
+def items(conn: Connection, order_id: uuid.UUID) -> list[tuple[str, int]]:
+    """Item summary for the agent (DL-08): name and quantity only."""
+    rows = conn.execute(
+        text(
+            "SELECT coalesce(item_name, 'Item'), quantity FROM app.order_items "
+            "WHERE order_id = :o ORDER BY created_at, id"
+        ),
+        {"o": order_id},
+    ).all()
+    return [(str(r[0]), int(r[1])) for r in rows]
+
+
 def set_display_name(conn: Connection, user_id: uuid.UUID, name: str) -> None:
     conn.execute(text("UPDATE app.users SET display_name = :n WHERE id = :id"), {"n": name, "id": user_id})

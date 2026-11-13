@@ -195,6 +195,7 @@ class MyWork:
     availability_changed_at: datetime | None
     assignment: AssignmentRow | None
     order: WorkOrder | None
+    items: list[tuple[str, int]]
     offer_seconds_left: int | None
     wait_minutes: int
     stale_seconds: int
@@ -216,6 +217,7 @@ def my_work(principal: Principal) -> MyWork:
             availability_changed_at=changed_at,
             assignment=a,
             order=order,
+            items=repo.items(conn, a.order_id) if a else [],
             offer_seconds_left=left,
             wait_minutes=int(config_value(conn, "CUSTOMER_UNAVAILABLE_WAIT", region_id=region)),
             stale_seconds=int(config_value(conn, "GPS_STALE_SECONDS")),

@@ -18,8 +18,14 @@ class Place(BaseModel):
     lng: float
 
 
+class WorkItemOut(BaseModel):
+    name: str
+    quantity: int
+
+
 class WorkOrderOut(BaseModel):
     order_id: uuid.UUID
+    items: list[WorkItemOut]
     fulfilment_status: str
     status_label: str
     is_test_fixture: bool
