@@ -1,5 +1,6 @@
 ---
-description: Run every verification gate for the current task and summarise the evidence
+name: verify
+description: Use when a DeliverIQ task is built and needs its verification gates run (make check, frontend-check, integration, e2e, DDR and hash checks) with evidence.
 ---
 Run the DeliverIQ gates in this order, from the repo root. Stop at the first failure, find the root cause, and fix it before continuing. If an approach has failed twice, stop and propose a different one. Never run two heavy jobs at once (e2e, dbt, embeddings, agent, osrm-prep).
 

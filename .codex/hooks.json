@@ -1,0 +1,18 @@
+{
+  "description": "DeliverIQ guard (rules §5, §7): unsafe git, .env reads, protected paths.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|apply_patch)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.codex/hooks/guard-git.sh\"",
+            "timeout": 30,
+            "statusMessage": "DeliverIQ guard"
+          }
+        ]
+      }
+    ]
+  }
+}

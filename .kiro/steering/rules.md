@@ -3,11 +3,11 @@ inclusion: always
 ---
 # DeliverIQ — Build Rules for Kiro
 
-**Version:** 1.1 (approved 2026-11-12; 1.1 adds the tool-neutral note below)
+**Version:** 1.2 (approved 2026-11-12; 1.1 added the tool-neutral note below; 1.2 names Codex as the builder in place of Claude Code)
 
 These rules bind Kiro (IDE and CLI) for every build step. If a rule conflicts with a request, stop and ask the owner.
 
-**Tool-neutral:** "Kiro" in these rules means whichever AI agent is building DeliverIQ, including Claude Code. Claude Code loads this file through `CLAUDE.md`; the `inclusion: always` header is Kiro-only and can be ignored. Start every session with `passon.md`.
+**Tool-neutral:** "Kiro" in these rules means whichever AI agent is building DeliverIQ, including OpenAI Codex. Codex reads `AGENTS.md`, which points it to this file and `passon.md`; the `inclusion: always` header is Kiro-only and can be ignored. Start every session with `passon.md`.
 
 ## 1. Sources of truth
 

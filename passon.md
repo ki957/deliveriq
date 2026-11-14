@@ -1,11 +1,11 @@
-# passon.md: DeliverIQ handover guide for Claude Code
+# passon.md: DeliverIQ handover guide for Codex
 
-**Written:** 2026-11-12 by Kiro; **last updated** after Task 13 (reports). **For:** Claude Code, continuing the build.
-**Read this file first.** It tells you where the project stands, what to read, how to work, and what to build next. `CLAUDE.md` loads it and `.kiro/steering/rules.md` (the binding rules) every session.
+**Written:** 2026-11-12 by Kiro; **last updated** after Task 13 (reports). **For:** OpenAI Codex (CLI or IDE extension), continuing the build.
+**Read this file first.** It tells you where the project stands, what to read, how to work, and what to build next. `AGENTS.md` points Codex to it and to `.kiro/steering/rules.md` (the binding rules) at every start.
 
 > ## ⛔ Do not (each of these has broken something, or would)
 > 1. **Never edit** `/home/k/Downloads/task1/` or `data/source/**`. `make verify-sources` must stay 21/21.
-> 2. **Never print or commit `.env` values**; name secrets by key only. The guard hook blocks staged secret-looking files.
+> 2. **Never print or commit `.env` values**; name secrets by key only. The guard hook blocks `.env` reads and staged secret-looking files.
 > 3. **Never activate an SOP recipe** or publish a non-`TEST –` dish (DDR-50). Never let the API write `is_test_fixture`; new tables with TEST-derived rows need a derived flag plus a `fixture_guard.py` entry.
 > 4. **Never invent values** (prices, thresholds, rules, formulas, copy for business rules). Put them on the decision sheet.
 > 5. **Never `git add .` / `-A`, push `main`, force-push, `reset --hard`, `clean -f`, `--no-verify`, or change git config.** The hook blocks these. The owner merges.
@@ -44,7 +44,7 @@ Tasks 0–13 are merged; `main` is at `1465b13` (PR #24, Task 13 reports). This 
 | 7 | Payments (simulated), order state machines, outbox (built before 6, owner choice) | ✅ merged (PR #10) |
 | 6A / 6B | Customer serviceability, cart, pricing, checkout API / customer UI | ✅ merged (PR #11, #12) |
 | 8A | Kitchen operations and inventory backend (migration 0010, DDR-111) | ✅ merged (PR #13) |
-| tooling | `CLAUDE.md`, `.claude/` commands + hook, `make reset-fixtures`, this guide | ✅ merged (PR #14) |
+| tooling | Claude Code setup (now replaced by the Codex setup), `make reset-fixtures`, this guide | ✅ merged (PR #14) |
 | 8B | Kitchen + Management UI for Task 8, tablet + KDS E2E (DDR-112) | ✅ merged (PR #15) |
 | 9A | Delivery backend (migration 0011, DDR-113) | ✅ merged (PR #16) |
 | 9B | Delivery PWA UI | ✅ merged (PR #17) |
@@ -55,7 +55,7 @@ Tasks 0–13 are merged; `main` is at `1465b13` (PR #24, Task 13 reports). This 
 | 12A | P2 landing, backlog, pseudonymous key (DDR-116) | ✅ merged (PR #22) |
 | 12B | dbt models, P2 run, tests, freshness, schedule | ✅ merged (PR #23) |
 | 13 | Marts and management analytics (DDR-117) | ✅ merged (PR #24) |
-| tooling | Handover refresh: this guide, `CLAUDE.md`, `.claude/` | 🟡 on `tooling-handover-refresh` |
+| tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | 🟡 on `tooling-handover-refresh` |
 | 14 – 22 | See §6 | ⬜ not started |
 
 **Milestones** (plan §4.1):
@@ -64,21 +64,21 @@ Tasks 0–13 are merged; `main` is at `1465b13` (PR #24, Task 13 reports). This 
 - **M3 Ops & data (10–14): 10–13 merged; only Task 14 remains.**
 - M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** if `tooling-handover-refresh` is not merged yet, wait for the owner. Then sync `main`, check CI, and plan Task 14 with `/start-task 14` (P3 synthetic data) with a decision sheet (plan "### Task 14", DDR-56, DDR-74; the reports Simulated tab and `analytics_synthetic` grants are waiting for it).
+**First thing to do:** if `tooling-handover-refresh` is not merged yet, wait for the owner. Then sync `main`, check CI, and plan Task 14 with `$start-task 14` (P3 synthetic data) with a decision sheet (plan "### Task 14", DDR-56, DDR-74; the reports Simulated tab and `analytics_synthetic` grants are waiting for it).
 
 ---
 
 ## 3. Documents to read, in this order
 
 ### 3.1 Binding rules (read every session)
-1. **`.kiro/steering/rules.md`**: the build rules (v1.1, tool-neutral). `CLAUDE.md` imports it every session. "Kiro" in it means you.
+1. **`.kiro/steering/rules.md`**: the build rules (v1.2, tool-neutral). `AGENTS.md` sends you to it every session. "Kiro" in it means you.
 2. **This file.**
 
 ### 3.1a Read cheaply (saves tokens)
 - **Grep, don't read whole files.** The plan (50 KB) and the register (52 KB) are large. Use `grep -n "### Task 9" docs/DELIVERIQ_EXECUTION_PLAN.md`, `grep -n "DDR-111" docs/DESIGN_DECISION_REGISTER.md` and `grep -n "KI-2[0-4]" docs/PORTAL_REQUIREMENTS_MATRIX.md`, then read only those line ranges.
 - **Read in full only:** `rules.md`, this file, the task's plan section, plan §5.2 and §6, and the README cards of modules you touch.
 - **Read only when the task needs them:** `RAG_AI_DESIGN.md` (Tasks 15–17), `DATA_PIPELINE_DESIGN.md` (12–14, or any new event), `DOCKER_DEPLOYMENT_DESIGN.md` (infra), `KITCHEN_SOURCE_VALIDATION.md` (recipes), `adr/*` (platform choices), source files in `data/source/` (to settle an undefined value).
-- **Use sub-agents** for broad codebase investigation, so the main context stays small.
+- **Keep context small:** for broad investigation, grep and read narrow line ranges; don't load whole directories.
 - **Don't re-investigate:** §5 holds the brief for the next task; write the following task's brief into §5 when you close a task.
 
 ### 3.2 Precedence when documents disagree (rules §1)
@@ -122,15 +122,17 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 
 ## 4. How to work (owner's expectations)
 
-### Tooling (Claude Code)
-- `CLAUDE.md` imports the rules and this file.
-- Slash commands in `.claude/commands/`:
-  - `/start-task <n>`: inspect, then present the plan and decision sheet; stops for approval.
-  - `/verify`: every gate in order, with evidence.
-  - `/report`: the owner's report format, plus the update to this file.
-  - `/ship`: after "approve", push and print the PR link and text; after "merged", sync and check CI.
-- `.claude/settings.json`: the guard hook (`.claude/hooks/guard-git.sh`) blocks unsafe git commands and commits of secret-looking files; `deny` rules stop reads of `.env` and edits of `task1/`, `data/source/` and the generated client.
-- `CLAUDE.md` and the commands are tool-neutral copies of the Kiro workflow; when the workflow changes, update both this file and the matching command.
+### Tooling (Codex)
+- `AGENTS.md` (repo root) is read by Codex at every start. Codex has no file imports, so it tells you to read `.kiro/steering/rules.md` and this file in full first.
+- Skills in `.agents/skills/<name>/SKILL.md` (run with `$name`, or `/skills`; Codex may also pick one by its description):
+  - `$start-task` + the task number: inspect, then present the plan and decision sheet; stops for approval.
+  - `$verify`: every gate in order, with evidence.
+  - `$report`: the owner's report format, plus the update to this file.
+  - `$ship`: after "approve", push and print the PR link and text; after "merged", sync and check CI.
+- `.codex/hooks.json` runs `.codex/hooks/guard-git.sh` before every Bash and `apply_patch` call. It blocks unsafe git commands, commits of secret-looking files, commands that read `.env`, and patches to `/home/k/Downloads/task1/`, `data/source/`, the generated client and `.env`. **Project hooks run only after the owner trusts them** (`/hooks` in Codex; re-trust after any change to the hook files).
+- Codex runs in a sandbox. Docker, `git push` and `curl` need the socket or the network; if a command is refused by the sandbox, ask the owner to approve it rather than working around it.
+- For an independent review of a large or security-sensitive diff, use Codex `/review`.
+- `AGENTS.md` and the skills are tool-neutral copies of the Kiro workflow; when the workflow changes, update this file and the matching skill.
 - `make reset-fixtures`: kitchen NORMAL, the three DDR-42 test defaults with their labels, TEST Dishes A–C PUBLISHED, TEST stock 10,000 g with no threshold (reserved stock is left alone and reported). Idempotent; ledger entries carry the reason "TEST fixture reset".
 
 ### Working loop (rules §2)
@@ -143,7 +145,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 7. Commit (stage **files by name**, never `git add .`; check no `.env` is staged) and report.
 8. After the owner says "approve": push, then give the PR compare link plus a title and description. **`gh` is NOT installed**, so use the link `https://github.com/ki957/deliveriq/compare/main...<branch>?expand=1`. The owner squash-merges. **Never merge, never push to main, never force-push.**
 9. After "merged": `git checkout main && git pull --ff-only`, check CI, delete the local branch with `git branch -d` (the hook blocks `-D`; a squash-merged branch may need the owner's OK to force-delete).
-10. Tooling or handover-only changes (this file, `CLAUDE.md`, `.claude/`) go on the open task branch as their own commit, or on a `tooling-<name>` branch from `main` when no task branch is open. Run `git fetch` first: a branch whose PR is already merged no longer reaches `main`.
+10. Tooling or handover-only changes (this file, `AGENTS.md`, `.agents/skills/`, `.codex/`) go on the open task branch as their own commit, or on a `tooling-<name>` branch from `main` when no task branch is open. Run `git fetch` first: a branch whose PR is already merged no longer reaches `main`.
 
 ### Report format (rules §10), kept short
 What changed (files) · evidence per acceptance criterion (test names or command output) · review findings with grades · not verified and why · memory (`docker stats`, `free -h`) · open items · next task.
@@ -158,7 +160,7 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ## 5. Next task: 14 (Labelled synthetic data generator, P3)
 
-**Not planned yet.** Run `/start-task 14`: plan + decision sheet, then the next DDR row after DDR-117. Read plan "### Task 14", DDR-50, DDR-56, DDR-74, DDR-78, DDR-117 (4), DATA_PIPELINE (P3 and dbt sections; grep `P3`), `backend/app/pipelines/README.md`, `backend/app/pipelines/p2_elt/README.md` and `analytics/dbt/README.md`.
+**Not planned yet.** Run `$start-task 14`: plan + decision sheet, then the next DDR row after DDR-117. Read plan "### Task 14", DDR-50, DDR-56, DDR-74, DDR-78, DDR-117 (4), DATA_PIPELINE (P3 and dbt sections; grep `P3`), `backend/app/pipelines/README.md`, `backend/app/pipelines/p2_elt/README.md` and `analytics/dbt/README.md`.
 
 **Plan acceptance criteria (summary):** P3 runs on the pipeline framework in the Data group; writes `synthetic.events`; the same dbt models build `analytics_synthetic`; demo seed 7 days × 10 orders/day and ML set 90 days × 30 orders/day, generated offline once (DDR-56); a few full synthetic GPS tracks (DDR-78); fixed seed is deterministic; every row flagged synthetic; real marts unaffected; "Simulated data" label wherever it appears; RM sees P3 runs read-only; `TEST –` or explicitly synthetic menu items only, never SOP dishes.
 
@@ -325,6 +327,6 @@ Rules:
 | 2026-11-12 | 12A / #22 | DDR-116 (5), (6), (10), (12) | Migration 0014 (`ops.outbox_backlog()`, backlog notice); worker thread `p2-landing` as `p2_elt`; `customer_key` (HMAC, `PSEUDONYM_KEY`) on `order.placed`; `GET /api/v1/pipelines/p2/backlog` CA only; overview panel. First start lands every older event (3,472 locally) |
 | 2026-11-12 | 12B / #23 | DDR-116 | dbt 1.12.7 + dbt-postgres 1.11.0 (worker group); `analytics/dbt` (staging, 11 core, 6 marts, 45 tests); P2 stages land → dbt → tests → publish freshness; migration 0015 (reference grants by column, `ops.dataset_freshness`, `ops.pipeline_schedules`, `ops.queue_due_schedules()`); `order.placed` carries `items`; P2 page; real marts empty (all TEST); framework tests now use `p3_synthetic` as the unimplemented pipeline |
 | 2026-11-12 | 13 / #24 | DDR-117 | `modules/reports` + `features/reports` (13 ETL §9 KPIs labelled pending DDR-44; Real/Simulated tabs; audited CSV); `management.reports.view`; migration 0016 (schema usage, `ops.operational_totals()`); dbt `grants` to app_api on marts and dims; P2 reconciles operational totals (6 critical checks); payment/delivery marts gain `kitchen_id` |
-| 2026-11-12 | tooling / branch `tooling-handover-refresh` | — | Handover refresh: this guide (status, Task 14 brief, gotchas, memory), `CLAUDE.md`, `.claude/` commands |
+| 2026-11-12 | tooling / branch `tooling-handover-refresh` | rules v1.2 | Handover refresh (status, Task 14 brief, gotchas, memory); builder switched from Claude Code to Codex: `CLAUDE.md` → `AGENTS.md`, `.claude/commands` → `.agents/skills`, guard hook → `.codex/hooks.json` (now also guards `apply_patch` and `.env` reads) |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

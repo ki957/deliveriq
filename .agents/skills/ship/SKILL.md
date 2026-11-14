@@ -1,5 +1,6 @@
 ---
-description: After the owner approves - commit check, push the branch, and print the PR link and text
+name: ship
+description: Use only after the owner says "approve" (push the branch, give the PR link and text) or "merged" (sync main, check CI).
 ---
 Only run this after the owner has said "approve" for the current task.
 
