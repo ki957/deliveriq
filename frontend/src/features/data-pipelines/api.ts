@@ -8,6 +8,7 @@ import { ACTIVE_RUN_STATUSES } from "@/shared/ui/status-tones";
 export type Pipeline = components["schemas"]["PipelineOut"];
 export type Run = components["schemas"]["RunSummaryOut"];
 export type RunDetail = components["schemas"]["RunDetailOut"];
+export type Backlog = components["schemas"]["BacklogOut"];
 
 // Live stage hints (DDR-115 (13)); REST polling every 2 s while a run is active and hints are down (DDR-105).
 export const POLL_MS = 2000;
@@ -24,6 +25,7 @@ export const keys = {
   pipelines: ["pipelines"] as const,
   runs: (pipeline: string) => ["pipelines", "runs", pipeline] as const,
   run: (id: string) => ["pipelines", "run", id] as const,
+  backlog: ["pipelines", "backlog"] as const,
 };
 
 function usePipelinesLive(): boolean {
@@ -36,6 +38,18 @@ export function usePipelines() {
     queryKey: keys.pipelines,
     queryFn: async () => unwrap(await api.GET("/api/v1/pipelines")),
     refetchInterval: (q) => !live && pollInterval(Boolean(q.state.data?.some((p) => isActive(p.last_run)))),
+  });
+}
+
+/** P2 outbox backlog (DATA_PIPELINE §12; DDR-116 (10)): CA only; live hints, else every 10 s. */
+export function useBacklog(enabled: boolean) {
+  const live = usePipelinesLive();
+  return useQuery({
+    queryKey: keys.backlog,
+    queryFn: async () => unwrap(await api.GET("/api/v1/pipelines/p2/backlog")),
+    enabled,
+    refetchInterval: live ? false : 10_000,
+    refetchIntervalInBackground: false,
   });
 }
 

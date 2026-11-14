@@ -33,6 +33,8 @@ class Settings(BaseSettings):
 
     otp_adapter: OtpAdapter = Field(default="disabled", validation_alias="OTP_ADAPTER")
     otp_pepper: SecretStr = Field(validation_alias="OTP_PEPPER", min_length=16)
+    # DDR-116 (5): HMAC key for pseudonymous customer keys in events; never in logs or events.
+    pseudonym_key: SecretStr = Field(validation_alias="PSEUDONYM_KEY", min_length=32)
     # Comma-separated dev origins allowed for cross-origin requests (DDR-98). Empty = none.
     cors_origins: str = Field(default="", validation_alias="CORS_ORIGINS")
 

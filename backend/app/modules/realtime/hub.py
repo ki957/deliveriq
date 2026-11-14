@@ -112,7 +112,7 @@ class Hub:
                     continue
                 regions = c.topics[topic]
                 if hint.topic.kind == "pipelines" and regions is not None and hint.region not in regions:
-                    continue  # an RM sees own-region runs only (DDR-105)
+                    continue  # an RM sees own-region runs only (DDR-105); region-less hints are CA-only
                 frame = hint.frame()
                 frame["topic"] = c.names.get(topic, topic)
                 c.send(frame)

@@ -123,6 +123,45 @@ describe("polling", () => {
   });
 });
 
+describe("P2 outbox backlog (DDR-116 (10), (12))", () => {
+  const backlog = {
+    waiting: 3,
+    oldest_waiting_at: "2026-11-12T10:00:00Z",
+    oldest_age_seconds: 420,
+    landed: 3472,
+    rejected: 1,
+    warn_after_seconds: 300,
+    warn_is_test_default: true,
+  };
+
+  it("shows a Central Administrator the backlog, its age and a labelled warning", async () => {
+    mockApi({
+      "GET /api/v1/me": () => json(CA),
+      "GET /api/v1/pipelines": () => json(PIPELINES),
+      "GET /api/v1/pipelines/p2/backlog": () => json(backlog),
+    });
+    renderAt("/management/data-pipelines");
+    const figures = await screen.findByTestId("backlog");
+    expect(figures).toHaveTextContent("Waiting3");
+    expect(figures).toHaveTextContent("Oldest waiting7 min");
+    expect(figures).toHaveTextContent("Landed3472");
+    expect(figures).toHaveTextContent("Rejected (kept)1");
+    expect(screen.getByText("Backlog older than 5 min")).toBeInTheDocument();
+    expect(screen.getByText(/Warning after 5 min \(test default, not a final value\)/)).toBeInTheDocument();
+  });
+
+  it("shows a Regional Manager no backlog and never asks for it", async () => {
+    const { calls } = mockApi({
+      "GET /api/v1/me": () => json(RM),
+      "GET /api/v1/pipelines": () => json(PIPELINES),
+    });
+    renderAt("/management/data-pipelines");
+    expect(await screen.findByRole("region", { name: "Data" })).toBeInTheDocument();
+    expect(screen.queryByTestId("backlog")).not.toBeInTheDocument();
+    expect(calls.some((c) => c.url.includes("backlog"))).toBe(false);
+  });
+});
+
 describe("Data & Pipelines overview", () => {
   it("groups pipelines, shows the last persisted status and labels unbuilt pipelines with their task", async () => {
     mockApi({ "GET /api/v1/me": () => json(RM), "GET /api/v1/pipelines": () => json(PIPELINES) });

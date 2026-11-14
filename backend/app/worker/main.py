@@ -19,6 +19,7 @@ from app.core.db import get_engine
 from app.core.logging import configure_logging
 from app.pipelines.framework import queue, runner
 from app.pipelines.framework.context import TransientError
+from app.pipelines.p2_elt import landing
 
 POLL_SECONDS = 2
 HEARTBEAT_SECONDS = 10
@@ -71,6 +72,20 @@ class Worker:
             except Exception:
                 _log.warning("delivery job failed", exc_info=True)
 
+    def _landing(self) -> None:
+        """P2 landing, continuous and independent of queued jobs (DATA_PIPELINE §11; DDR-116 (6))."""
+        while not self.stopping.wait(landing.POLL_SECONDS):
+            try:
+                while True:  # drain the backlog in batches, then wait
+                    with runner.role_engine("p2_elt").begin() as conn:
+                        result = landing.land_batch(conn)
+                    if result.accepted or result.rejected:
+                        _log.info("events landed", extra=result.__dict__)
+                    if result.accepted + result.rejected + result.duplicates < landing.BATCH_MAX:
+                        break
+            except Exception:
+                _log.warning("landing failed; retrying", exc_info=True)
+
     def stop(self, signum: int, _frame: FrameType | None) -> None:
         _log.info("stopping after the current job", extra={"signal": signum})
         self.stopping.set()
@@ -80,6 +95,7 @@ class Worker:
             queue.register_worker(conn, self.worker_id)
         threading.Thread(target=self._heartbeats, name="heartbeat", daemon=True).start()
         threading.Thread(target=self._delivery_jobs, name="delivery-jobs", daemon=True).start()
+        threading.Thread(target=self._landing, name="p2-landing", daemon=True).start()
         _log.info("worker started", extra={"worker_id": self.worker_id})
         while not self.stopping.is_set():
             try:

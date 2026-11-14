@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 
-import { PLANNED_TASK, usePipelines, type Pipeline } from "../api";
+import { PLANNED_TASK, useBacklog, usePipelines, type Backlog, type Pipeline } from "../api";
+import { useCan } from "@/shared/auth/require-permission";
 import { EmptyState } from "@/shared/ui/states";
 import { queryState } from "@/shared/ui/query-state";
 import { StatusBadge } from "@/shared/ui/status-badge";
@@ -42,6 +43,7 @@ export function PipelinesOverview() {
                 <PipelineRow key={p.name} pipeline={p} />
               ))}
             </ul>
+            {key === "DATA" ? <BacklogPanel /> : null}
           </section>
         );
       })}
@@ -83,5 +85,67 @@ function PipelineRow({ pipeline }: { pipeline: Pipeline }) {
         )}
       </div>
     </li>
+  );
+}
+
+/** "12 s" / "4 min" / "2 h" for the oldest waiting event. */
+function age(seconds: number): string {
+  if (seconds < 60) return `${seconds} s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min`;
+  return `${Math.floor(seconds / 3600)} h`;
+}
+
+// DATA_PIPELINE §12, DDR-116 (10), (12): P2 landing is continuous; the backlog covers every region, so only
+// a Central Administrator sees it (the backend refuses everyone else).
+function BacklogPanel() {
+  const global = useCan("pipelines.operate");
+  const backlog = useBacklog(global);
+  if (!global) return null;
+  const state = queryState(backlog, { loading: "Loading outbox backlog…" });
+  return (
+    <section aria-labelledby="backlog" className="mt-3 rounded-panel border border-border bg-surface p-4">
+      <h3 id="backlog" className="font-semibold">
+        P2 event landing (outbox → raw)
+      </h3>
+      {state ?? (backlog.data ? <BacklogFigures b={backlog.data} /> : null)}
+    </section>
+  );
+}
+
+function BacklogFigures({ b }: { b: Backlog }) {
+  const late = b.oldest_age_seconds !== null && b.oldest_age_seconds > b.warn_after_seconds;
+  return (
+    <>
+      <dl className="mt-2 grid gap-3 text-sm sm:grid-cols-4" data-testid="backlog">
+        <div>
+          <dt className="text-text-muted">Waiting</dt>
+          <dd className="text-xl font-semibold">{b.waiting}</dd>
+        </div>
+        <div>
+          <dt className="text-text-muted">Oldest waiting</dt>
+          <dd className="text-xl font-semibold">
+            {b.oldest_age_seconds === null ? "—" : age(b.oldest_age_seconds)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-text-muted">Landed</dt>
+          <dd className="text-xl font-semibold">{b.landed}</dd>
+        </div>
+        <div>
+          <dt className="text-text-muted">Rejected (kept)</dt>
+          <dd className="text-xl font-semibold">{b.rejected}</dd>
+        </div>
+      </dl>
+      {late ? (
+        <p className="mt-2">
+          <StatusBadge tone="warning" label={`Backlog older than ${age(b.warn_after_seconds)}`} />
+        </p>
+      ) : null}
+      <p className="mt-2 text-xs text-text-muted">
+        Warning after {age(b.warn_after_seconds)}
+        {b.warn_is_test_default ? " (test default, not a final value)" : ""}. The dbt run (staging, core,
+        marts, tests) comes with Task 12B.
+      </p>
+    </>
   );
 }

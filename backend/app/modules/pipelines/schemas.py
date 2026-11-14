@@ -30,6 +30,19 @@ class RunSummaryOut(BaseModel):
     has_report: bool
 
 
+class BacklogOut(BaseModel):
+    """P2 outbox backlog (DATA_PIPELINE §12; DDR-116 (10), (12)). Counts and one timestamp only."""
+
+    waiting: int
+    oldest_waiting_at: datetime | None
+    oldest_age_seconds: int | None
+    landed: int
+    rejected: int
+    # Labelled test default (DDR-116 (12)): a backlog older than this is a warning, recorded only.
+    warn_after_seconds: int
+    warn_is_test_default: bool = True
+
+
 class PipelineOut(BaseModel):
     name: str
     display_name: str

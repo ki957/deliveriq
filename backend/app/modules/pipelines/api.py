@@ -12,6 +12,7 @@ from app.modules.identity.dependencies import CurrentPrincipal, csrf_protect
 from app.modules.pipelines import repository as repo
 from app.modules.pipelines import service
 from app.modules.pipelines.schemas import (
+    BacklogOut,
     CancelOut,
     DqResultOut,
     IngestionErrorOut,
@@ -58,6 +59,20 @@ def list_pipelines(principal: CurrentPrincipal) -> list[PipelineOut]:
         )
         for s in _call(lambda: service.list_pipelines(principal))
     ]
+
+
+@router.get("/p2/backlog", response_model=BacklogOut)
+def p2_backlog(principal: CurrentPrincipal) -> BacklogOut:
+    """Unpublished outbox events and the oldest one's age; landed and rejected raw counts (CA only)."""
+    b = _call(lambda: service.backlog(principal))
+    return BacklogOut(
+        waiting=b.waiting,
+        oldest_waiting_at=b.oldest_waiting_at,
+        oldest_age_seconds=b.oldest_age_seconds,
+        landed=b.landed,
+        rejected=b.rejected,
+        warn_after_seconds=service.BACKLOG_WARN_SECONDS,
+    )
 
 
 @router.get("/runs", response_model=list[RunSummaryOut])

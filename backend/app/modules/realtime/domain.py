@@ -129,6 +129,10 @@ def hints(n: Notice) -> list[Hint]:
         out.append(Hint(Topic("kitchen", n.kitchen), n.kind, n.id))
     elif n.kind == "agent" and n.agent is not None:
         out.append(Hint(Topic("agent", n.agent), n.kind, n.id))
+    elif n.kind == "backlog":
+        # Outbox backlog for the overview; no region, so only global viewers (CA) receive it (DDR-116 (10)).
+        out.append(Hint(Topic("pipelines"), n.kind, n.id))
+        return out
     elif n.kind == "run":
         out.append(Hint(Topic("pipelines"), n.kind, n.id, region=n.region))
         return out
