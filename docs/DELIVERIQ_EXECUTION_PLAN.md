@@ -432,6 +432,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 - **Gated features:** presenting KPIs as business truth (A, DDR-44).
 - **Guidance:** Builds the six marts (DDR-75).
 - **Acceptance criteria:** Marts reconcile with operational tables; every KPI shows its definition status ("pending approval" until DDR-44); freshness visible; scope enforced; no fixture rows.
+- **Status:** planned and approved (DDR-117); built and verified on `task-13-reports` (reports module and page, operational reconciliation in P2, migration 0016), in review.
 
 ### Task 14 — Labelled synthetic data generator, P3
 

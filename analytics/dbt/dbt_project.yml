@@ -27,6 +27,9 @@ models:
       +schema: analytics  # `analytics_synthetic` when var dataset says so (macros/generate_schema_name.sql)
     marts:
       +schema: analytics
+      # DDR-117 (6): the API reads marts and dimensions only (never raw, staging or facts).
+      +grants:
+        select: [app_api]
 
 data_tests:
   deliveriq:

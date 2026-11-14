@@ -37,6 +37,7 @@ from app.modules.pipelines.api import router as pipelines_router
 from app.modules.realtime.api import router as realtime_router
 from app.modules.realtime.hub import hub
 from app.modules.recipes.api import router as recipes_router
+from app.modules.reports.api import router as reports_router
 from app.shared.fixture_guard import assert_no_fixtures
 
 API_TITLE = "DeliverIQ API"
@@ -65,6 +66,7 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(delivery_manage_router)
     app.include_router(management_router)
     app.include_router(notifications_router)
+    app.include_router(reports_router)
     return app
 
 

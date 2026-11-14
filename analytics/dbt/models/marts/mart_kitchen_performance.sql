@@ -4,6 +4,8 @@ select
     kitchen_id,
     count(*) filter (where accepted_at is not null) as orders_accepted,
     count(*) filter (where rejected_at is not null) as orders_rejected,
+    -- Orders the kitchen accepted or rejected: the rejection-rate denominator chosen for the POC (DDR-117 (2)).
+    count(*) filter (where accepted_at is not null or rejected_at is not null) as orders_decided,
     count(*) filter (where ready_at is not null) as orders_ready,
     sum(extract(epoch from accepted_at - placed_at)) filter (where accepted_at is not null) as accept_seconds_total,
     sum(extract(epoch from ready_at - accepted_at)) filter (where ready_at is not null) as prepare_seconds_total

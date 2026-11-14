@@ -22,6 +22,7 @@ from sqlalchemy import text
 from app.core.config import get_pipeline_roles, get_settings
 from app.pipelines.framework.context import DataError, RunContext, StructuralError
 from app.pipelines.framework.registry import register
+from app.pipelines.p2_elt import reconcile
 from app.pipelines.p2_elt.landing import BATCH_MAX, land_batch
 
 DBT_TIMEOUT_SECONDS = 600
@@ -140,11 +141,19 @@ def run(ctx: RunContext) -> None:
                 int(r.get("failures") or 0),
                 {"status": r["status"]},
             )
+        # DDR-117 (8): real operational totals vs the facts (ETL spec §11.2), critical.
+        comparisons = reconcile.run(ctx.data, orders_offset=1 if fault else 0)
+        ctx.data.commit()
+        for c in comparisons:
+            failed += 0 if c.passed else 1
+            ctx.dq(c.check, "critical", c.passed, 0 if c.passed else 1, c.detail())
         _warnings(ctx)
-        counts.rows_in, counts.rows_rejected = len(results), failed
-        ctx.counts.update({"dbt_tests": len(results), "dbt_tests_failed": failed})
+        counts.rows_in, counts.rows_rejected = len(results) + len(comparisons), failed
+        ctx.counts.update(
+            {"dbt_tests": len(results), "reconciliation_checks": len(comparisons), "dbt_tests_failed": failed}
+        )
         if failed:
-            raise DataError(f"{failed} critical dbt test(s) failed; the marts are not marked fresh")
+            raise DataError(f"{failed} critical check(s) failed; the marts are not marked fresh")
 
     with ctx.stage("publish freshness"), ctx.data.begin():
         ctx.data.execute(

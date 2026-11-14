@@ -55,6 +55,7 @@ def test_a_ca_run_builds_tests_and_publishes_freshness(team: Team) -> None:
     assert critical and all(d["status"] == "pass" for d in critical)
     names = {d["check_name"] for d in critical}
     assert {"reconcile_orders", "zero_fixture_rows", "reconcile_inventory"} <= names
+    assert {"reconcile_operational_orders", "reconcile_operational_deliveries"} <= names  # DDR-117 (8)
     warnings = {d["check_name"] for d in detail["dq_results"] if d["severity"] == "warning"}
     assert warnings == {"raw_freshness", "outbox_backlog_age"}  # recorded only, never failing the run
     counts = run["counts"]
@@ -69,11 +70,12 @@ def test_a_failed_critical_test_fails_the_run_and_leaves_the_marts_not_fresh(tea
     detail = run_p2(team.ca, "fault:reconciliation")
     run = detail["run"]
     assert (run["status"], run["failure_class"], run["is_test"]) == ("failed", "data", True)
-    assert "critical dbt test" in run["error_summary"]
+    assert "critical check" in run["error_summary"]
     failed = [
         d["check_name"] for d in detail["dq_results"] if d["status"] == "fail" and d["severity"] == "critical"
     ]
-    assert failed == ["reconcile_orders"]
+    # The dbt reconciliation and the operational one (DDR-117 (8)) both catch the offset.
+    assert sorted(failed) == ["reconcile_operational_orders", "reconcile_orders"]
     assert "publish freshness" not in [s["stage"] for s in detail["stages"]]
     assert team.ca.get(f"{P}/p2/status").json()["freshness"] == before  # not marked fresh
 
