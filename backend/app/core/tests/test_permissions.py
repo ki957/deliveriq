@@ -149,3 +149,13 @@ def test_management_inventory_view_is_read_only_and_scoped() -> None:
     assert not can(rm, P.KITCHEN_STOCK_ADJUST, kitchen_id=KITCHEN_A)  # management never adjusts stock
     assert not can(principal(Role.KITCHEN_MANAGER, region=REGION_A, kitchen=KITCHEN_A), P.MGMT_INVENTORY_VIEW,
                    region_id=REGION_A)  # fmt: skip
+
+
+def test_management_reports_are_scoped_to_rm_regions_and_global_for_ca() -> None:
+    rm = principal(Role.REGIONAL_MANAGER, region=REGION_A)
+    assert can(rm, P.MGMT_REPORTS_VIEW, region_id=REGION_A)
+    assert not can(rm, P.MGMT_REPORTS_VIEW, region_id=REGION_B)
+    assert not can(rm, P.MGMT_REPORTS_VIEW)  # an RM has no global grant
+    assert can(principal(Role.CENTRAL_ADMIN), P.MGMT_REPORTS_VIEW)
+    for role in (Role.KITCHEN_MANAGER, Role.KITCHEN_STAFF, Role.DELIVERY_AGENT, Role.CUSTOMER):
+        assert P.MGMT_REPORTS_VIEW not in ROLE_PERMISSIONS[role]

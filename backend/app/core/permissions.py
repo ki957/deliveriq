@@ -73,6 +73,8 @@ class Permission(StrEnum):
     MGMT_OPERATIONS_VIEW = "management.operations.view"
     # Read-only stock, reservations, thresholds and ledger (DDR-114 (12)).
     MGMT_INVENTORY_VIEW = "management.inventory.view"
+    # Management reports on the analytics marts (DDR-117 (7)): RM own regions, CA all.
+    MGMT_REPORTS_VIEW = "management.reports.view"
     MGMT_STAFF_MANAGE = "management.staff.manage"
     MGMT_RM_MANAGE = "management.regional_managers.manage"
     MGMT_AGENTS_ASSIGN = "management.agents.assign"
@@ -106,6 +108,7 @@ _MGMT_SHARED = frozenset(
     {
         P.MGMT_OPERATIONS_VIEW,
         P.MGMT_INVENTORY_VIEW,
+        P.MGMT_REPORTS_VIEW,
         P.MGMT_STAFF_MANAGE,
         P.MGMT_AGENTS_ASSIGN,
         P.KITCHEN_MODE_CHANGE,

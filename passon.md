@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is merged (PR #18, `main` at `8e297cb`); 10B is merged (PR #19, `main` at `7da6731`): **Task 10 is complete.** **Task 11 is planned and approved (DDR-115); 11A is merged (PR #20, `main` at `09997f0`); 11B is merged (PR #21, `main` at `8deb9fc`): **Task 11 is complete.** **Task 12 is planned and approved (DDR-116); 12A is merged (PR #22, `main` at `040d431`); 12B is merged (PR #23, `main` at `b7cf438`): **Task 12 is complete.** **Task 13 is planned and approved (DDR-117); in progress on `task-13-reports`.**
+`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is merged (PR #18, `main` at `8e297cb`); 10B is merged (PR #19, `main` at `7da6731`): **Task 10 is complete.** **Task 11 is planned and approved (DDR-115); 11A is merged (PR #20, `main` at `09997f0`); 11B is merged (PR #21, `main` at `8deb9fc`): **Task 11 is complete.** **Task 12 is planned and approved (DDR-116); 12A is merged (PR #22, `main` at `040d431`); 12B is merged (PR #23, `main` at `b7cf438`): **Task 12 is complete.** **Task 13 is planned and approved (DDR-117); built and verified on `task-13-reports`, report in review.**
 
 | Task | Scope | State |
 |---|---|---|
@@ -54,7 +54,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | 11B | In-app notifications, purge jobs | ✅ merged (PR #21) |
 | 12A | P2 landing, backlog, pseudonymous key (DDR-116) | ✅ merged (PR #22) |
 | 12B | dbt models, P2 run, tests, freshness, schedule | ✅ merged (PR #23) |
-| **13** | Marts and management analytics (DDR-117) | 🟡 **in progress on `task-13-reports`; plan approved** |
+| **13** | Marts and management analytics (DDR-117) | 🟡 **built and verified on `task-13-reports`; report in review** |
 | 9 – 22 | See §6 | ⬜ not started |
 
 **Milestones** (plan §4.1):
@@ -62,7 +62,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 - **M2 Core order flow (5–9): only Task 9 (9A, 9B) remains.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** Task 13 is approved (DDR-117, 13 points): `git checkout task-13-reports`, check `git log --oneline main..` and `git status`, then build per DDR-117 (no new plan or sheet).
+**First thing to do:** if Task 13 is not merged yet, check `git log --oneline main..task-13-reports` and wait for the owner. Once merged, sync `main`, check CI, and plan Task 14 (P3 synthetic data) with a decision sheet (plan "### Task 14", DDR-56, DDR-74; the reports Simulated tab and `analytics_synthetic` grants are waiting for it).
 
 ---
 
@@ -297,6 +297,7 @@ Rules:
 | 2026-11-12 | 11 plan | DDR-115 | Approved; 11A started |
 | 2026-11-12 | 12 plan | DDR-116 | Approved; 12A started |
 | 2026-11-12 | 13 plan | DDR-117 | Approved; started |
+| 2026-11-12 | 13 / branch | DDR-117 | `modules/reports` + `features/reports` (13 ETL §9 KPIs labelled pending DDR-44; Real/Simulated tabs; audited CSV); `management.reports.view`; migration 0016 (schema usage, `ops.operational_totals()`); dbt `grants` to app_api on marts and dims; P2 reconciles operational totals (6 critical checks); payment/delivery marts gain `kitchen_id` |
 | 2026-11-12 | 12B / #23 | DDR-116 | dbt 1.12.7 + dbt-postgres 1.11.0 (worker group); `analytics/dbt` (staging, 11 core, 6 marts, 45 tests); P2 stages land → dbt → tests → publish freshness; migration 0015 (reference grants by column, `ops.dataset_freshness`, `ops.pipeline_schedules`, `ops.queue_due_schedules()`); `order.placed` carries `items`; P2 page; real marts empty (all TEST); framework tests now use `p3_synthetic` as the unimplemented pipeline |
 | 2026-11-12 | 12A / #22 | DDR-116 (5), (6), (10), (12) | Migration 0014 (`ops.outbox_backlog()`, backlog notice); worker thread `p2-landing` as `p2_elt`; `customer_key` (HMAC, `PSEUDONYM_KEY`) on `order.placed`; `GET /api/v1/pipelines/p2/backlog` CA only; overview panel. First start lands every older event (3,472 locally) |
 | 2026-11-12 | 11B / #21 | DDR-115 (10)–(12) | Migration 0013 (`app.notifications` by triggers; `purge_notifications`, `purge_auth` for the worker); `/api/v1/me/notifications`; bell + page (customer, KM, agent); `reset-shared` closes pending TEST dish requests; E2E helpers retry superseded OTP sign-ins and taken TEST numbers; mutations refetch in the background and hints refetch once per 250 ms burst |

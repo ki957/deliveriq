@@ -924,6 +924,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/management/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Report
+         * @description KPIs with definition status and previous-period values, daily rows and ingredient consumption.
+         */
+        get: operations["report_api_v1_management_reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/reports.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Report Csv
+         * @description The current daily report view as CSV, same scope; the export is audited.
+         */
+        get: operations["report_csv_api_v1_management_reports_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/management/staff": {
         parameters: {
             query?: never;
@@ -2056,6 +2096,22 @@ export interface components {
             /** Spice Level */
             spice_level: string | null;
         };
+        /** DailyOut */
+        DailyOut: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Discount Paise */
+            discount_paise: number;
+            /** Orders Delivered */
+            orders_delivered: number;
+            /** Orders Placed */
+            orders_placed: number;
+            /** Payable Paise */
+            payable_paise: number;
+        };
         /** DecisionIn */
         DecisionIn: {
             /** Approve */
@@ -2290,6 +2346,20 @@ export interface components {
             /** Unit */
             unit: string;
         };
+        /** IngredientOut */
+        IngredientOut: {
+            /** Consumed Quantity */
+            consumed_quantity: string;
+            /**
+             * Ingredient Id
+             * Format: uuid
+             */
+            ingredient_id: string;
+            /** Name */
+            name: string;
+            /** Unit */
+            unit: string;
+        };
         /** IntakeOut */
         IntakeOut: {
             /** Accepting */
@@ -2441,6 +2511,16 @@ export interface components {
             /** Kitchen Name */
             kitchen_name: string;
         };
+        /** KitchenRefOut */
+        KitchenRefOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
         /** KitchenRejectIn */
         KitchenRejectIn: {
             /** Reason */
@@ -2494,6 +2574,30 @@ export interface components {
             region_id: string;
             /** Region Name */
             region_name: string;
+        };
+        /** KpiOut */
+        KpiOut: {
+            /** Definition Status */
+            definition_status: string;
+            /** Denominator Note */
+            denominator_note: string | null;
+            /** Formula */
+            formula: string;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Previous */
+            previous: number | null;
+            /** Source */
+            source: string;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "count" | "paise" | "seconds" | "ratio";
+            /** Value */
+            value: number | null;
         };
         /** LineageOut */
         LineageOut: {
@@ -2754,6 +2858,13 @@ export interface components {
         NameOut: {
             /** Display Name */
             display_name: string;
+        };
+        /** NotAvailableOut */
+        NotAvailableOut: {
+            /** Area */
+            area: string;
+            /** Reason */
+            reason: string;
         };
         /** NotificationOut */
         NotificationOut: {
@@ -3262,6 +3373,63 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** ReportOut */
+        ReportOut: {
+            /** Available */
+            available: boolean;
+            /** Daily */
+            daily: components["schemas"]["DailyOut"][];
+            /**
+             * Dataset
+             * @enum {string}
+             */
+            dataset: "analytics" | "analytics_synthetic";
+            /** Dataset Label */
+            dataset_label: string;
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /** Fresh As Of */
+            fresh_as_of: string | null;
+            /** Freshness Warn Hours */
+            freshness_warn_hours: number;
+            /** Ingredients */
+            ingredients: components["schemas"]["IngredientOut"][];
+            /** Kitchen Id */
+            kitchen_id: string | null;
+            /** Kitchens */
+            kitchens: components["schemas"]["KitchenRefOut"][];
+            /** Kpis */
+            kpis: components["schemas"]["KpiOut"][];
+            /**
+             * Kpis Are Business Truth
+             * @constant
+             */
+            kpis_are_business_truth: false;
+            /** Not Available */
+            not_available: components["schemas"]["NotAvailableOut"][];
+            /**
+             * Previous From
+             * Format: date
+             */
+            previous_from: string;
+            /**
+             * Previous To
+             * Format: date
+             */
+            previous_to: string;
+            /** Stale */
+            stale: boolean;
+            /** Unavailable Reason */
+            unavailable_reason: string | null;
         };
         /** RespondIn */
         RespondIn: {
@@ -5241,6 +5409,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegionOut"][];
+                };
+            };
+        };
+    };
+    report_api_v1_management_reports_get: {
+        parameters: {
+            query?: {
+                dataset?: "analytics" | "analytics_synthetic";
+                date_from?: string | null;
+                date_to?: string | null;
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    report_csv_api_v1_management_reports_csv_get: {
+        parameters: {
+            query?: {
+                dataset?: "analytics" | "analytics_synthetic";
+                date_from?: string | null;
+                date_to?: string | null;
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

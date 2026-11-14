@@ -1063,6 +1063,40 @@
         "title": "CustomerMenuItemOut",
         "type": "object"
       },
+      "DailyOut": {
+        "properties": {
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "discount_paise": {
+            "title": "Discount Paise",
+            "type": "integer"
+          },
+          "orders_delivered": {
+            "title": "Orders Delivered",
+            "type": "integer"
+          },
+          "orders_placed": {
+            "title": "Orders Placed",
+            "type": "integer"
+          },
+          "payable_paise": {
+            "title": "Payable Paise",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "day",
+          "orders_placed",
+          "orders_delivered",
+          "payable_paise",
+          "discount_paise"
+        ],
+        "title": "DailyOut",
+        "type": "object"
+      },
       "DecisionIn": {
         "properties": {
           "approve": {
@@ -1733,6 +1767,35 @@
         "title": "IngredientLineOut",
         "type": "object"
       },
+      "IngredientOut": {
+        "properties": {
+          "consumed_quantity": {
+            "title": "Consumed Quantity",
+            "type": "string"
+          },
+          "ingredient_id": {
+            "format": "uuid",
+            "title": "Ingredient Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ingredient_id",
+          "name",
+          "unit",
+          "consumed_quantity"
+        ],
+        "title": "IngredientOut",
+        "type": "object"
+      },
       "IntakeOut": {
         "properties": {
           "accepting": {
@@ -2172,6 +2235,25 @@
         "title": "KitchenQueueOut",
         "type": "object"
       },
+      "KitchenRefOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "KitchenRefOut",
+        "type": "object"
+      },
       "KitchenRejectIn": {
         "properties": {
           "reason": {
@@ -2320,6 +2402,86 @@
           "intake"
         ],
         "title": "KitchenStatusOut",
+        "type": "object"
+      },
+      "KpiOut": {
+        "properties": {
+          "definition_status": {
+            "title": "Definition Status",
+            "type": "string"
+          },
+          "denominator_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Denominator Note"
+          },
+          "formula": {
+            "title": "Formula",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "unit": {
+            "enum": [
+              "count",
+              "paise",
+              "seconds",
+              "ratio"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "unit",
+          "value",
+          "previous",
+          "formula",
+          "source",
+          "definition_status",
+          "denominator_note"
+        ],
+        "title": "KpiOut",
         "type": "object"
       },
       "LineageOut": {
@@ -3094,6 +3256,24 @@
           "display_name"
         ],
         "title": "NameOut",
+        "type": "object"
+      },
+      "NotAvailableOut": {
+        "properties": {
+          "area": {
+            "title": "Area",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "area",
+          "reason"
+        ],
+        "title": "NotAvailableOut",
         "type": "object"
       },
       "NotificationOut": {
@@ -4574,6 +4754,151 @@
           "name"
         ],
         "title": "RegionOut",
+        "type": "object"
+      },
+      "ReportOut": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/DailyOut"
+            },
+            "title": "Daily",
+            "type": "array"
+          },
+          "dataset": {
+            "enum": [
+              "analytics",
+              "analytics_synthetic"
+            ],
+            "title": "Dataset",
+            "type": "string"
+          },
+          "dataset_label": {
+            "title": "Dataset Label",
+            "type": "string"
+          },
+          "date_from": {
+            "format": "date",
+            "title": "Date From",
+            "type": "string"
+          },
+          "date_to": {
+            "format": "date",
+            "title": "Date To",
+            "type": "string"
+          },
+          "fresh_as_of": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fresh As Of"
+          },
+          "freshness_warn_hours": {
+            "title": "Freshness Warn Hours",
+            "type": "integer"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientOut"
+            },
+            "title": "Ingredients",
+            "type": "array"
+          },
+          "kitchen_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kitchen Id"
+          },
+          "kitchens": {
+            "items": {
+              "$ref": "#/components/schemas/KitchenRefOut"
+            },
+            "title": "Kitchens",
+            "type": "array"
+          },
+          "kpis": {
+            "items": {
+              "$ref": "#/components/schemas/KpiOut"
+            },
+            "title": "Kpis",
+            "type": "array"
+          },
+          "kpis_are_business_truth": {
+            "const": false,
+            "title": "Kpis Are Business Truth",
+            "type": "boolean"
+          },
+          "not_available": {
+            "items": {
+              "$ref": "#/components/schemas/NotAvailableOut"
+            },
+            "title": "Not Available",
+            "type": "array"
+          },
+          "previous_from": {
+            "format": "date",
+            "title": "Previous From",
+            "type": "string"
+          },
+          "previous_to": {
+            "format": "date",
+            "title": "Previous To",
+            "type": "string"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "unavailable_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unavailable Reason"
+          }
+        },
+        "required": [
+          "dataset",
+          "dataset_label",
+          "available",
+          "unavailable_reason",
+          "fresh_as_of",
+          "freshness_warn_hours",
+          "stale",
+          "date_from",
+          "date_to",
+          "previous_from",
+          "previous_to",
+          "kitchens",
+          "kitchen_id",
+          "kpis",
+          "daily",
+          "ingredients",
+          "not_available",
+          "kpis_are_business_truth"
+        ],
+        "title": "ReportOut",
         "type": "object"
       },
       "RespondIn": {
@@ -8398,6 +8723,200 @@
         "summary": "Regions",
         "tags": [
           "management"
+        ]
+      }
+    },
+    "/api/v1/management/reports": {
+      "get": {
+        "description": "KPIs with definition status and previous-period values, daily rows and ingredient consumption.",
+        "operationId": "report_api_v1_management_reports_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "dataset",
+            "required": false,
+            "schema": {
+              "default": "analytics",
+              "enum": [
+                "analytics",
+                "analytics_synthetic"
+              ],
+              "title": "Dataset",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Report",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/management/reports.csv": {
+      "get": {
+        "description": "The current daily report view as CSV, same scope; the export is audited.",
+        "operationId": "report_csv_api_v1_management_reports_csv_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "dataset",
+            "required": false,
+            "schema": {
+              "default": "analytics",
+              "enum": [
+                "analytics",
+                "analytics_synthetic"
+              ],
+              "title": "Dataset",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Report Csv",
+        "tags": [
+          "reports"
         ]
       }
     },

@@ -35,6 +35,7 @@ import {
   PaymentsPage,
   StaffPage,
 } from "@/features/management";
+import { ReportsPage } from "@/features/reports";
 import { RequirePermission } from "@/shared/auth/require-permission";
 import { NotBuilt } from "@/shared/ui/not-built";
 
@@ -109,7 +110,15 @@ export const managementConfig: PortalConfig = {
       task: 10,
       element: gate(OPS, <PaymentsPage />),
     },
-    { to: "/management/reports", label: "Reports & Analytics", Icon: BarChart3, task: 13 },
+    // DDR-117: ETL spec §9 KPIs over the DDR-75 marts, each "Definition pending approval (DDR-44)".
+    {
+      to: "/management/reports",
+      label: "Reports & Analytics",
+      Icon: BarChart3,
+      task: 13,
+      permission: "management.reports.view",
+      element: gate("management.reports.view", <ReportsPage />),
+    },
     {
       to: "/management/menu-publication",
       label: "Menu Publication",

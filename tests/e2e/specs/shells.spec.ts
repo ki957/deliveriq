@@ -60,12 +60,12 @@ for (const shell of SHELLS) {
 }
 
 test("unbuilt screens say so honestly", async ({ page }) => {
-  // Task 10B built the Management sections of DDR-114 (2); Reports & Analytics is still Task 13.
+  // Customers & Support stays a labelled placeholder: no ticket or review model (DDR-114 (2)).
   await signIn(page, "management", SEED.centralAdmin);
-  await page.getByRole("link", { name: "Reports & Analytics" }).first().click();
-  const section = page.locator("section", { has: page.getByRole("heading", { name: "Reports & Analytics" }) });
+  await page.getByRole("link", { name: "Customers & Support" }).first().click();
+  const section = page.locator("section", { has: page.getByRole("heading", { name: "Customers & Support" }) });
   await expect(section).toContainText("Not built yet");
-  await expect(section).toContainText("Task 13");
+  await expect(section).toContainText("no support ticket or review model");
   await expectNoAxeViolations(page);
 });
 
