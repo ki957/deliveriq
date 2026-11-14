@@ -10,6 +10,7 @@ import {
   type Order,
   type SimOutcome,
 } from "../api";
+import { useRealtimeStatus } from "@/shared/realtime/use-live";
 import { Button } from "@/shared/ui/button";
 import { queryState } from "@/shared/ui/query-state";
 import { EmptyState } from "@/shared/ui/states";
@@ -175,7 +176,7 @@ function Tracking({ order }: { order: Order }) {
           "The agent's position is not available yet."
         )}
       </p>
-      <p className="text-xs text-text-muted">Updates every 10 s.</p>
+      <TrackingNote />
     </section>
   );
 }
@@ -287,5 +288,15 @@ function CancelOrder({ order }: { order: Order }) {
         </p>
       ) : null}
     </div>
+  );
+}
+
+/** DDR-115 (8), (9): the position updates live, or every 10 s while live updates are paused. */
+function TrackingNote() {
+  const status = useRealtimeStatus();
+  return (
+    <p className="text-xs text-text-muted" data-testid="tracking-note">
+      {status === "live" ? "Updates live." : "Live updates paused · updates every 10 s."}
+    </p>
   );
 }

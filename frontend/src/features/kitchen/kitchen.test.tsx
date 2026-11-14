@@ -169,7 +169,7 @@ describe("live orders (KI-01–KI-03)", () => {
     expect(within(card).getByText("Test order")).toBeInTheDocument();
     expect(within(card).getByText("Instructions: Less oil")).toBeInTheDocument();
     expect(screen.getByText(/test default, not\s+final/)).toBeInTheDocument();
-    expect(screen.getByTestId("poll-note")).toHaveTextContent("Updates every 10 s");
+    expect(screen.getByTestId("poll-note")).toHaveTextContent("Live updates paused · updates every 10 s");
     expect(screen.getByTestId("intake")).toHaveTextContent("2 / 10 orders in progress");
     await userEvent.click(within(card).getByRole("button", { name: "Accept" }));
     await waitFor(() =>

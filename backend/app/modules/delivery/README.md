@@ -1,6 +1,6 @@
 # Delivery module (assignment, availability, delivery code, GPS)
 
-**Purpose and scope:** the delivery-agent side of an order after kitchen acceptance (#7 §3–§10; DL-01–DL-17, DL-G1–DL-G5; DDR-14, DDR-16, DDR-43, DDR-51, DDR-52, DDR-78, DDR-113). Order status changes (pickup, delivered, failed) are in the orders service; this module never writes an order. The Delivery PWA is Task 9B; the manager UI is Task 10; realtime is Task 11; OSRM is optional and deferred (DDR-55).
+**Purpose and scope:** the delivery-agent side of an order after kitchen acceptance (#7 §3–§10; DL-01–DL-17, DL-G1–DL-G5; DDR-14, DDR-16, DDR-43, DDR-51, DDR-52, DDR-78, DDR-113). Order status changes (pickup, delivered, failed) are in the orders service; this module never writes an order. The Delivery PWA is Task 9B; the manager UI is Task 10; realtime hints are Task 11A (`realtime` module); OSRM is optional and deferred (DDR-55).
 
 | Item | Value |
 | --- | --- |

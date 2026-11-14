@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 
 import { api, unwrap } from "@/shared/api/client";
 import type { components } from "@/shared/api/generated/schema";
+import { useLiveRefresh } from "@/shared/realtime/use-live";
 
 type S = components["schemas"];
 export type Overview = S["OverviewOut"];
@@ -19,9 +20,17 @@ export type Staff = S["StaffOut"];
 export type StaffIn = S["StaffIn"];
 export type Agent = S["AgentOut"];
 
-// DDR-112 (5) pattern: poll while the tab is visible until realtime (Task 11).
+// DDR-115 (5), (8): live hints for every region in scope; poll while the tab is visible when they are down.
 export const POLL_MS = 10_000;
-const poll = { refetchInterval: POLL_MS, refetchIntervalInBackground: false } as const;
+
+/** Region topics for the caller's scope (RM: assigned regions; CA: every region). */
+function usePoll() {
+  const regions = useRegions();
+  const topics = (regions.data ?? []).map((r) => `region:${r.id}`);
+  // Kitchen views shown in Management (settings panel, dish availability) refresh too.
+  const live = useLiveRefresh(topics, [keys.all, ["kitchen"]]);
+  return { refetchInterval: live ? false : POLL_MS, refetchIntervalInBackground: false } as const;
+}
 
 // Fulfilment statuses with their Management labels (Matrix §7.3; backend `orders.domain._LABELS`).
 export const ORDER_STATUSES: { value: string; label: string }[] = [
@@ -89,6 +98,7 @@ export const keys = {
 
 // ---------------------------------------------------------------- reads
 export function useOverview() {
+  const poll = usePoll();
   return useQuery({
     queryKey: keys.overview,
     queryFn: async () => unwrap(await api.GET("/api/v1/management/overview")),
@@ -104,6 +114,7 @@ export function useRegions() {
 }
 
 export function useKitchens() {
+  const poll = usePoll();
   return useQuery({
     queryKey: keys.kitchens,
     queryFn: async () => unwrap(await api.GET("/api/v1/management/kitchens")),
@@ -112,6 +123,7 @@ export function useKitchens() {
 }
 
 export function useOrders(page: number, filters: OrderFilters) {
+  const poll = usePoll();
   return useQuery({
     queryKey: keys.orders(page, filters),
     queryFn: async () =>
@@ -126,6 +138,7 @@ export function useOrders(page: number, filters: OrderFilters) {
 }
 
 export function useOrderDetail(orderId: string) {
+  const poll = usePoll();
   return useQuery({
     queryKey: keys.order(orderId),
     queryFn: async () =>
@@ -139,6 +152,7 @@ export function useOrderDetail(orderId: string) {
 }
 
 export function useDeliveries() {
+  const poll = usePoll();
   return useQuery({
     queryKey: keys.deliveries,
     queryFn: async () => unwrap(await api.GET("/api/v1/management/deliveries")),
@@ -147,6 +161,7 @@ export function useDeliveries() {
 }
 
 export function useAgents(enabled = true) {
+  const poll = usePoll();
   return useQuery({
     queryKey: keys.agents,
     queryFn: async () => unwrap(await api.GET("/api/v1/delivery/manage/agents")),

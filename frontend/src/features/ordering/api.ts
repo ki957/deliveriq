@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap } from "@/shared/api/client";
 import type { components } from "@/shared/api/generated/schema";
+import { useLiveRefresh } from "@/shared/realtime/use-live";
 
 type S = components["schemas"];
 export type MenuItem = S["CustomerMenuItemOut"];
@@ -187,17 +188,30 @@ export function usePlaceOrder() {
   });
 }
 
+const TERMINAL = new Set(["DELIVERED", "CANCELLED", "REJECTED", "DELIVERY_FAILED"]);
+
 export function useOrders() {
-  return useQuery({ queryKey: keys.orders, queryFn: async () => unwrap(await api.GET("/api/v1/orders")) });
+  const orders = useQuery({
+    queryKey: keys.orders,
+    queryFn: async () => unwrap(await api.GET("/api/v1/orders")),
+  });
+  // Live hints for every open order (DDR-115 (5)), e.g. "Agent Assigned" appears without a reload.
+  const open = (orders.data ?? [])
+    .filter((o) => !TERMINAL.has(o.fulfilment_status))
+    .map((o) => `order:${o.id}`);
+  useLiveRefresh(open, [keys.orders]);
+  return orders;
 }
 
 export function useOrder(id: string) {
+  const live = useLiveRefresh([`order:${id}`], [keys.order(id), keys.orders]);
   return useQuery({
     queryKey: keys.order(id),
     queryFn: async () =>
       unwrap(await api.GET("/api/v1/orders/{order_id}", { params: { path: { order_id: id } } })),
-    // While the order is on its way, refresh the code and position (DDR-113 (8); realtime is Task 11).
-    refetchInterval: (query) => (query.state.data?.fulfilment_status === "OUT_FOR_DELIVERY" ? 10_000 : false),
+    // Live hints (DDR-115 (9)); while they are down and the order is on its way, poll the code and position.
+    refetchInterval: (query) =>
+      !live && query.state.data?.fulfilment_status === "OUT_FOR_DELIVERY" ? 10_000 : false,
     refetchIntervalInBackground: false,
   });
 }

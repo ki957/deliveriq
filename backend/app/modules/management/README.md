@@ -1,6 +1,6 @@
 # Management module (unified RM / CA read views, staff access, exports)
 
-**Purpose and scope:** the backend of the unified management portal (#10; MG-01, MG-03, MG-08; DDR-114). Read models are scoped to the caller: a Regional Manager sees assigned regions only, a Central Administrator sees everything; anything outside scope reads as 404. Operational actions (kitchen settings, unavailability approval, agent assignment, force-offline, failure decisions, code reissue) reuse the owning modules' existing routes; this module never duplicates them. The screens are Task 10B; WebSocket scope checks are Task 11; Reports are Task 13; AI is Task 15.
+**Purpose and scope:** the backend of the unified management portal (#10; MG-01, MG-03, MG-08; DDR-114). Read models are scoped to the caller: a Regional Manager sees assigned regions only, a Central Administrator sees everything; anything outside scope reads as 404. Operational actions (kitchen settings, unavailability approval, agent assignment, force-offline, failure decisions, code reissue) reuse the owning modules' existing routes; this module never duplicates them. The screens are Task 10B; WebSocket scope is tested in Task 11A (`realtime` module); Reports are Task 13; AI is Task 15.
 
 | Item | Value |
 | --- | --- |
@@ -25,5 +25,5 @@
 ## Assumptions and integration points
 
 - The 31-day range and 50-row page are UI bounds (#10 §14), not business values.
-- WebSocket channel scope checks are deferred to Task 11 (DDR-114 (13)).
+- WebSocket scope (region topics, RM own regions, CA all) is tested in `realtime/tests` (DDR-114 (13), DDR-115 (5)).
 - No migration was needed for 10A (see Tables); DDR-114 (1) was updated to say so (2026-11-12).

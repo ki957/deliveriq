@@ -89,8 +89,15 @@ test("@phone an agent delivers a TEST order with the customer's code", async ({ 
     await expect(offer.getByText("The address is shown after you accept.")).toBeVisible();
     await expect(offer.getByTestId("offer-countdown")).toContainText("s left to answer");
     await expectNoAxeViolations(agent);
+    // The customer's page is open; "Agent Assigned" appears live (no reload) and the label stays
+    // "Accepted" (DDR-16, DDR-115 (14)). Polling is off while live, so this can only come from a hint.
+    await customer.goto(`/customer/orders/${orderId}`);
+    await expect(customer.getByText("Accepted", { exact: true }).first()).toBeVisible();
+    await expect(customer.getByText("Agent Assigned")).toHaveCount(0);
     await offer.getByRole("button", { name: "Accept" }).click();
     await expect(agent.getByText(/Deliver to:/)).toBeVisible();
+    await expect(customer.getByText("Agent Assigned")).toBeVisible({ timeout: 5_000 });
+    await expect(customer.getByText("Accepted", { exact: true }).first()).toBeVisible();
 
     // Simulated GPS, then the map with its labelled fallback (tiles are blocked here).
     await agent.goto("/delivery/active");

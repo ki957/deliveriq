@@ -2,12 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap } from "@/shared/api/client";
 import type { components } from "@/shared/api/generated/schema";
+import { useLiveRefresh } from "@/shared/realtime/use-live";
 
 type S = components["schemas"];
 export type History = S["HistoryOut"];
 export type PointIn = S["PointIn"];
 
-// Poll while the tab is visible until realtime (Task 11); the offer countdown needs a fresh view.
+// Live hints on the agent's own topic (DDR-115 (5)); poll while they are down (the offer needs a fresh view).
 export const POLL_MS = 5_000;
 const keys = { me: ["delivery", "me"] as const, history: ["delivery", "history"] as const };
 
@@ -41,10 +42,11 @@ export type MyWork = NonNullable<ReturnType<typeof useMyWork>["data"]>;
 export type WorkOrder = NonNullable<MyWork["order"]>;
 
 export function useMyWork() {
+  const live = useLiveRefresh(["agent:me"], [["delivery"]]);
   return useQuery({
     queryKey: keys.me,
     queryFn: async () => unwrap(await api.GET("/api/v1/delivery/me")),
-    refetchInterval: POLL_MS,
+    refetchInterval: live ? false : POLL_MS,
     refetchIntervalInBackground: false,
   });
 }

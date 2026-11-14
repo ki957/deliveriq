@@ -194,12 +194,14 @@ def trusted_login(device_token: str, portal: Portal) -> IssuedLogin:
 
 
 # ---------------------------------------------------------------- sessions
-def principal_for_session(session_token: str) -> Principal | None:
+def principal_for_session(session_token: str, *, touch: bool = True) -> Principal | None:
+    """`touch=False` checks the session without counting as activity (realtime re-validation)."""
     with get_engine().begin() as conn:
         session = repo.find_live_session(conn, token_hash(session_token), d.SESSION_IDLE_SECONDS)
         if session is None:
             return None
-        repo.touch_session(conn, session.id)
+        if touch:
+            repo.touch_session(conn, session.id)
         return Principal(session.user_id, repo.active_grants(conn, session.user_id), session.id)
 
 

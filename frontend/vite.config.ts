@@ -7,7 +7,8 @@ import { defineConfig } from "vitest/config";
 // The browser always talks to its own origin; Vite proxies /api to the backend, so no CORS is
 // needed in development (DDR-98). In the e2e container the backend is http://api:8000.
 const apiTarget = process.env.VITE_API_PROXY ?? "http://127.0.0.1:8000";
-const proxy = { "/api": { target: apiTarget, changeOrigin: false } };
+// `ws: true` forwards the realtime WebSocket (/api/v1/realtime, DDR-115 (6)) with the same Origin and cookie.
+const proxy = { "/api": { target: apiTarget, changeOrigin: false, ws: true } };
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],

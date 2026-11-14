@@ -91,6 +91,7 @@ source_modules = [
     "app.modules.menu.domain",
     "app.modules.kitchen_ops.domain",
     "app.modules.inventory.domain",
+    "app.modules.realtime.domain",
 ]
 forbidden_modules = ["app.core", "app.shared", "app.cli", "app.main"]
 
