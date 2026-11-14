@@ -20,6 +20,7 @@ TEST_ENV = {
     "REDIS_URL": "redis://redis.invalid:6379/0",
     "OTP_ADAPTER": "mock",
     "OTP_PEPPER": "unit-test-pepper-not-secret",
+    "PSEUDONYM_KEY": "unit-test-pseudonym-key-not-a-secret-value",
 }
 
 

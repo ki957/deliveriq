@@ -17,3 +17,4 @@
 - The Run control offers only the inputs the backend lists for this environment; TEST fault inputs appear only in local/test and are labelled.
 - Test runs carry a "Test run" badge everywhere.
 - Live stage hints refresh the views (DDR-115 (13)); while they are down, polling runs every 2 s and only while a run is queued or running.
+- The Data group shows "P2 event landing (outbox → raw)" to a Central Administrator only: waiting events, the oldest one's age, landed and rejected counts, live; a warning when the oldest waits more than 5 min (labelled test default, DDR-116 (12)). The dbt run is Task 12B.

@@ -1373,6 +1373,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pipelines/p2/backlog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * P2 Backlog
+         * @description Unpublished outbox events and the oldest one's age; landed and rejected raw counts (CA only).
+         */
+        get: operations["p2_backlog_api_v1_pipelines_p2_backlog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pipelines/runs": {
         parameters: {
             query?: never;
@@ -1846,6 +1866,29 @@ export interface components {
              * @enum {string}
              */
             status: "PENDING" | "APPROVED" | "REJECTED";
+        };
+        /**
+         * BacklogOut
+         * @description P2 outbox backlog (DATA_PIPELINE §12; DDR-116 (10), (12)). Counts and one timestamp only.
+         */
+        BacklogOut: {
+            /** Landed */
+            landed: number;
+            /** Oldest Age Seconds */
+            oldest_age_seconds: number | null;
+            /** Oldest Waiting At */
+            oldest_waiting_at: string | null;
+            /** Rejected */
+            rejected: number;
+            /** Waiting */
+            waiting: number;
+            /** Warn After Seconds */
+            warn_after_seconds: number;
+            /**
+             * Warn Is Test Default
+             * @default true
+             */
+            warn_is_test_default: boolean;
         };
         /** BillOut */
         BillOut: {
@@ -5924,6 +5967,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PipelineOut"][];
+                };
+            };
+        };
+    };
+    p2_backlog_api_v1_pipelines_p2_backlog_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacklogOut"];
                 };
             };
         };

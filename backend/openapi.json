@@ -599,6 +599,65 @@
         "title": "AvailabilityRequestOut",
         "type": "object"
       },
+      "BacklogOut": {
+        "description": "P2 outbox backlog (DATA_PIPELINE \u00a712; DDR-116 (10), (12)). Counts and one timestamp only.",
+        "properties": {
+          "landed": {
+            "title": "Landed",
+            "type": "integer"
+          },
+          "oldest_age_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest Age Seconds"
+          },
+          "oldest_waiting_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest Waiting At"
+          },
+          "rejected": {
+            "title": "Rejected",
+            "type": "integer"
+          },
+          "waiting": {
+            "title": "Waiting",
+            "type": "integer"
+          },
+          "warn_after_seconds": {
+            "title": "Warn After Seconds",
+            "type": "integer"
+          },
+          "warn_is_test_default": {
+            "default": true,
+            "title": "Warn Is Test Default",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "waiting",
+          "oldest_waiting_at",
+          "oldest_age_seconds",
+          "landed",
+          "rejected",
+          "warn_after_seconds"
+        ],
+        "title": "BacklogOut",
+        "type": "object"
+      },
       "BillOut": {
         "properties": {
           "delivery_fee_paise": {
@@ -9412,6 +9471,28 @@
           }
         },
         "summary": "List Pipelines",
+        "tags": [
+          "pipelines"
+        ]
+      }
+    },
+    "/api/v1/pipelines/p2/backlog": {
+      "get": {
+        "description": "Unpublished outbox events and the oldest one's age; landed and rejected raw counts (CA only).",
+        "operationId": "p2_backlog_api_v1_pipelines_p2_backlog_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BacklogOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "P2 Backlog",
         "tags": [
           "pipelines"
         ]

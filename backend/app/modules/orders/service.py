@@ -36,6 +36,7 @@ from app.shared.actor import set_actor
 from app.shared.audit import write_event
 from app.shared.config_values import value as config_value
 from app.shared.events import emit
+from app.shared.pseudonym import customer_key
 
 P = Permission
 F = d.Fulfilment
@@ -356,6 +357,8 @@ def place(
                 "payable_paise": order.payable_paise,
                 "discount_paise": order.discount_paise,
                 "lines": len(lines),
+                # DDR-116 (5): pseudonymous, never the customer id.
+                "customer_key": customer_key(order.customer_user_id),
             },
         )
         if not is_prepaid(method):

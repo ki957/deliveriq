@@ -73,8 +73,23 @@ test("unbuilt pipelines are labelled with their task", async ({ page }) => {
   await page.getByRole("link", { name: "Data & Pipelines" }).first().click();
   await expect(page.getByRole("region", { name: "Data" })).toContainText("Not built yet (Task 12)");
   await expect(page.getByRole("region", { name: "Knowledge" })).toContainText("Not built yet (Task 15)");
+  // P2 landing covers every region: no backlog for an RM (DDR-116 (10)).
+  await expect(page.getByRole("heading", { name: "P2 event landing (outbox → raw)" })).toHaveCount(0);
   await expect(page).toHaveScreenshot("pipelines-overview.png", {
     fullPage: true,
     mask: [page.getByRole("region", { name: "Data" }).locator("li").first()],
   });
+});
+
+test("Central Administrator sees the live P2 outbox backlog (DDR-116 (10), (12))", async ({ page }) => {
+  await signIn(page, "management", SEED.centralAdmin);
+  await page.getByRole("link", { name: "Data & Pipelines" }).first().click();
+  const panel = page.getByRole("region", { name: "P2 event landing (outbox → raw)" });
+  const figures = panel.getByTestId("backlog");
+  await expect(figures).toContainText("Waiting");
+  await expect(figures).toContainText("Oldest waiting");
+  // Events have landed (every order action emits one); the count is persisted, never invented.
+  await expect(figures.getByText("Landed").locator("..")).not.toContainText(/Landed0$/);
+  await expect(panel).toContainText("Warning after 5 min (test default, not a final value)");
+  await expectNoAxeViolations(page);
 });

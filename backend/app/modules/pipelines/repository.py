@@ -236,3 +236,14 @@ def write_audit(
             "after": None if after is None else json.dumps(after, default=str),
         },
     )
+
+
+def backlog(conn: Connection) -> tuple[int, datetime | None, int | None, int, int]:
+    """(waiting, oldest waiting time, its age in seconds, landed, rejected) from `ops.outbox_backlog()`."""
+    waiting, oldest, landed, rejected, age = conn.execute(
+        text(
+            "SELECT b.waiting, b.oldest_waiting_at, b.landed, b.rejected, "
+            "CAST(extract(epoch FROM now() - b.oldest_waiting_at) AS integer) FROM ops.outbox_backlog() b"
+        )
+    ).one()
+    return waiting, oldest, age, landed, rejected

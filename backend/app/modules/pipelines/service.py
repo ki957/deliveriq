@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
+from datetime import datetime
 
 from sqlalchemy import Connection
 from sqlalchemy.exc import IntegrityError
@@ -102,6 +103,27 @@ def available_inputs(pipeline: str) -> list[str]:
         allowed = allowed - FAULT_INPUTS
     default = DEFAULT_INPUT.get(pipeline)
     return sorted(allowed, key=lambda ref: (ref != default, ref))
+
+
+# DDR-116 (12): outbox backlog age above this is a warning (labelled test default, not a business value).
+BACKLOG_WARN_SECONDS = 300
+
+
+@dataclass(frozen=True)
+class Backlog:
+    waiting: int
+    oldest_waiting_at: datetime | None
+    oldest_age_seconds: int | None
+    landed: int
+    rejected: int
+
+
+def backlog(principal: Principal) -> Backlog:
+    """P2 outbox backlog (DATA_PIPELINE §12). P2 covers every region, so only a global viewer (CA) sees it."""
+    if view_scope(principal) is not None:
+        raise Forbidden
+    with get_engine().connect() as conn:
+        return Backlog(*repo.backlog(conn))
 
 
 def list_pipelines(principal: Principal) -> list[PipelineSummary]:
