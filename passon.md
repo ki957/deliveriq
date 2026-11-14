@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is merged (PR #18, `main` at `8e297cb`); 10B is merged (PR #19, `main` at `7da6731`): **Task 10 is complete.** **Task 11 is planned and approved (DDR-115); 11A is merged (PR #20, `main` at `09997f0`); 11B is built and verified on `task-11b-notifications`, report in review.**
+`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is merged (PR #18, `main` at `8e297cb`); 10B is merged (PR #19, `main` at `7da6731`): **Task 10 is complete.** **Task 11 is planned and approved (DDR-115); 11A is merged (PR #20, `main` at `09997f0`); 11B is merged (PR #21, `main` at `8deb9fc`): **Task 11 is complete.** **Task 12 is planned and approved (DDR-116); 12A is in progress on `task-12a-p2-landing`.**
 
 | Task | Scope | State |
 |---|---|---|
@@ -51,7 +51,9 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | **10A** | Management backend (DDR-114) | ✅ merged (PR #18) |
 | 10B | Management UI | ✅ merged (PR #19) |
 | 11A | Realtime (DDR-115) | ✅ merged (PR #20) |
-| **11B** | In-app notifications, purge jobs | 🟡 **built and verified on `task-11b-notifications`; report in review** |
+| 11B | In-app notifications, purge jobs | ✅ merged (PR #21) |
+| **12A** | P2 landing, backlog, pseudonymous key (DDR-116) | 🟡 **in progress on `task-12a-p2-landing`; plan approved** |
+| **12B** | dbt models, P2 run, tests, freshness, schedule | ⬜ after 12A |
 | 9 – 22 | See §6 | ⬜ not started |
 
 **Milestones** (plan §4.1):
@@ -59,7 +61,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 - **M2 Core order flow (5–9): only Task 9 (9A, 9B) remains.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** if 11B is not merged yet, check `git log --oneline main..task-11b-notifications` and wait for the owner. Once merged, sync `main`, check CI, and plan Task 12 (ELT P2) with a decision sheet (plan "### Task 12", DATA_PIPELINE §6, DDR-66/67).
+**First thing to do:** Task 12 is approved (DDR-116, 14 points): `git checkout task-12a-p2-landing`, check `git log --oneline main..` and `git status`, then build 12A per DDR-116 (no new plan or sheet). Local `.env` needs `PSEUDONYM_KEY` (see `.env.example`).
 
 ---
 
@@ -292,7 +294,8 @@ Rules:
 | 2026-11-12 | 9 plan | DDR-113 | Approved |
 | 2026-11-12 | 10 plan | DDR-114 | Approved; 10A started |
 | 2026-11-12 | 11 plan | DDR-115 | Approved; 11A started |
-| 2026-11-12 | 11B / branch | DDR-115 (10)–(12) | Migration 0013 (`app.notifications` by triggers; `purge_notifications`, `purge_auth` for the worker); `/api/v1/me/notifications`; bell + page (customer, KM, agent); `reset-shared` closes pending TEST dish requests; E2E helpers retry superseded OTP sign-ins and taken TEST numbers; mutations refetch in the background and hints refetch once per 250 ms burst |
+| 2026-11-12 | 12 plan | DDR-116 | Approved; 12A started |
+| 2026-11-12 | 11B / #21 | DDR-115 (10)–(12) | Migration 0013 (`app.notifications` by triggers; `purge_notifications`, `purge_auth` for the worker); `/api/v1/me/notifications`; bell + page (customer, KM, agent); `reset-shared` closes pending TEST dish requests; E2E helpers retry superseded OTP sign-ins and taken TEST numbers; mutations refetch in the background and hints refetch once per 250 ms burst |
 | 2026-11-12 | 11A / #20 | DDR-115 | Migration 0012 (`app.rt_notify` triggers); `modules/realtime` (listener → Redis → hub); `/api/v1/realtime` hints `{topic, kind, id}`; `shared/realtime` + `useLiveRefresh`; pages poll only while the socket is down; only `delivery.spec` puts an agent online in E2E (two online agents take each other's offers) |
 | 2026-11-12 | 10B / #19 | DDR-114 | Management UI (`features/management`); placeholders say why; `KitchenSettingsPanel` reused by `kitchen_id`; `PollNote` moved to `shared/ui`; 4xx never retried (`shouldRetry`); E2E `load-e2e-region` (REG-ETE-001 + RM `+91-00000-00008`); integration world picks a free REG-TST code |
 | 2026-11-12 | 10A / #18 | DDR-114 (1) updated | Management API (`/api/v1/management`); no migration; new code-only permission `management.inventory.view`; staff changes revoke sessions and devices at once |
