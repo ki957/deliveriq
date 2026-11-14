@@ -22,10 +22,15 @@ from app.modules.pipelines import repository as repo
 
 # Pipelines that can be queued now, with the inputs each accepts. Later tasks add their pipelines
 # here when their code lands (P2 Task 12, P3 Task 14, K3 Task 15, K2 Task 16, K1 Task 17).
-TRIGGERABLE: dict[str, frozenset[str]] = {"p1_sop": frozenset({"sop", "fault:records", "fault:structural"})}
-DEFAULT_INPUT: dict[str, str] = {"p1_sop": "sop"}
+# P2 (DDR-116): "run" builds the real models; "fault:reconciliation" (TEST, local/test only) proves that a
+# failed critical dbt test fails the run and leaves the marts not fresh (same rule as DDR-104).
+TRIGGERABLE: dict[str, frozenset[str]] = {
+    "p1_sop": frozenset({"sop", "fault:records", "fault:structural"}),
+    "p2_elt": frozenset({"run", "fault:reconciliation"}),
+}
+DEFAULT_INPUT: dict[str, str] = {"p1_sop": "sop", "p2_elt": "run"}
 # TEST fault-injection inputs (DDR-65, DDR-104): local/test only, always flagged as test runs.
-FAULT_INPUTS = frozenset({"fault:records", "fault:structural"})
+FAULT_INPUTS = frozenset({"fault:records", "fault:structural", "fault:reconciliation"})
 # Runs carry the region of the kitchen they load into (DDR-105).
 RUN_KITCHEN: dict[str, str] = {"p1_sop": "KIT-CHN-001"}
 ERROR_PAGE = 500
@@ -42,6 +47,10 @@ class NotFound(Exception):
 
 
 class Conflict(Exception):
+    pass
+
+
+class Invalid(Exception):
     pass
 
 
@@ -124,6 +133,60 @@ def backlog(principal: Principal) -> Backlog:
         raise Forbidden
     with get_engine().connect() as conn:
         return Backlog(*repo.backlog(conn))
+
+
+SCHEDULE_INTERVALS = (15, 30, 60, 240)  # DDR-116 (9); 60 is the labelled test default
+
+
+@dataclass(frozen=True)
+class P2Status:
+    freshness: repo.FreshnessRow | None
+    schedule: repo.ScheduleRow
+
+
+def p2_status(principal: Principal) -> P2Status:
+    """Freshness and schedule (DATA_PIPELINE §12): every pipeline viewer, RM included (DDR-116 (10))."""
+    view_scope(principal)  # Forbidden without pipelines.view
+    with get_engine().connect() as conn:
+        sched = repo.schedule(conn, "p2_elt")
+        if sched is None:  # pragma: no cover - seeded by migration 0015
+            raise NotFound
+        return P2Status(repo.freshness(conn, "analytics"), sched)
+
+
+def set_p2_schedule(principal: Principal, *, enabled: bool, interval_minutes: int, reason: str) -> P2Status:
+    """CA only (pipelines.operate, global), with a reason; audited (DDR-116 (9))."""
+    text_reason = (reason or "").strip()
+    if not 3 <= len(text_reason) <= 500:
+        raise Invalid("A reason of 3 to 500 characters is required")
+    if interval_minutes not in SCHEDULE_INTERVALS:
+        raise Invalid("Choose 15, 30, 60 or 240 minutes")
+    role = _actor_role(principal, Permission.PIPELINES_OPERATE, None)
+    with get_engine().begin() as conn:
+        before = repo.schedule(conn, "p2_elt", lock=True)
+        repo.set_schedule(
+            conn, "p2_elt", enabled=enabled, interval_minutes=interval_minutes, actor=principal.user_id,
+            reason=text_reason,
+        )  # fmt: skip
+        repo.write_audit(
+            conn,
+            action="pipeline.schedule_changed",
+            outcome="SUCCESS",
+            actor_user_id=principal.user_id,
+            actor_role=role,
+            target_id="p2_elt",
+            region_id=None,
+            correlation_id=current_request_id(),
+            reason=text_reason,
+            after={
+                "enabled": enabled,
+                "interval_minutes": interval_minutes,
+                "before": None
+                if before is None
+                else {"enabled": before.enabled, "interval_minutes": before.interval_minutes},
+            },
+        )
+    return p2_status(principal)
 
 
 def list_pipelines(principal: Principal) -> list[PipelineSummary]:

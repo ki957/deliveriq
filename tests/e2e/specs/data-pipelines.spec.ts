@@ -71,7 +71,7 @@ test("Regional Manager views runs without any action control", async ({ page }) 
 test("unbuilt pipelines are labelled with their task", async ({ page }) => {
   await signIn(page, "management", SEED.regionalManager);
   await page.getByRole("link", { name: "Data & Pipelines" }).first().click();
-  await expect(page.getByRole("region", { name: "Data" })).toContainText("Not built yet (Task 12)");
+  await expect(page.getByRole("region", { name: "Data" })).toContainText("Not built yet (Task 14)");
   await expect(page.getByRole("region", { name: "Knowledge" })).toContainText("Not built yet (Task 15)");
   // P2 landing covers every region: no backlog for an RM (DDR-116 (10)).
   await expect(page.getByRole("heading", { name: "P2 event landing (outbox → raw)" })).toHaveCount(0);
@@ -91,5 +91,40 @@ test("Central Administrator sees the live P2 outbox backlog (DDR-116 (10), (12))
   // Events have landed (every order action emits one); the count is persisted, never invented.
   await expect(figures.getByText("Landed").locator("..")).not.toContainText(/Landed0$/);
   await expect(panel).toContainText("Warning after 5 min (test default, not a final value)");
+  await expectNoAxeViolations(page);
+});
+
+test("Central Administrator runs P2 from the UI: dbt stages, tests and freshness (DDR-116 (14))", async ({ page }) => {
+  await signIn(page, "management", SEED.centralAdmin);
+  await page.getByRole("link", { name: "Data & Pipelines" }).first().click();
+  await page.getByRole("link", { name: "P2 operational ELT" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "P2 operational ELT" })).toBeVisible();
+  await expect(page.getByTestId("real-marts-note")).toContainText("Every order in this POC is a TEST order");
+  await expect(page.getByTestId("schedule")).toContainText("(test default, not a final value)");
+  await expectNoAxeViolations(page);
+  await page.getByLabel("Input").selectOption("run");
+  await page.getByRole("button", { name: "Run pipeline" }).click();
+  await expect(page).toHaveURL(/\/management\/data-pipelines\/runs\/[0-9a-f-]{36}$/);
+  await expect(page.getByTestId("run-status")).toHaveText("Succeeded", { timeout: RUN_DONE });
+  const stages = page.getByRole("region", { name: "Stages" });
+  for (const stage of ["1. land", "2. dbt staging", "3. dbt core", "4. dbt marts", "5. dbt tests", "6. publish freshness"]) {
+    await expect(stages).toContainText(stage);
+  }
+  const quality = page.getByRole("region", { name: "Quality checks" });
+  await expect(quality).toContainText("Reconcile orders (critical)");
+  await expect(quality).toContainText("Zero fixture rows (critical)");
+  await expect(quality).toContainText("Raw freshness (warning)");
+  await expect(page.getByTestId("count-test_events_excluded")).not.toHaveText("0");
+  await expectNoAxeViolations(page);
+});
+
+test("a Regional Manager sees P2 freshness without any control (DDR-116 (10))", async ({ page }) => {
+  await signIn(page, "management", SEED.regionalManager);
+  await page.getByRole("link", { name: "Data & Pipelines" }).first().click();
+  await page.getByRole("link", { name: "P2 operational ELT" }).click();
+  await expect(page.getByTestId("freshness")).toContainText("Real marts fresh as of");
+  await expect(page.getByRole("button", { name: "Run pipeline" })).toHaveCount(0);
+  await expect(page.getByLabel("Run P2 on a timer")).toHaveCount(0);
+  await expect(page.getByText("P2 runs cover every region: only a Central Administrator sees them")).toBeVisible();
   await expectNoAxeViolations(page);
 });

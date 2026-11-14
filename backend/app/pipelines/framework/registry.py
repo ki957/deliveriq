@@ -36,3 +36,4 @@ def implemented() -> frozenset[str]:
 def load_all() -> None:
     """Import every pipeline package so its @register decorators run. Later tasks add P2, P3, K1–K3."""
     from app.pipelines.p1_sop import pipeline as _p1  # noqa: F401
+    from app.pipelines.p2_elt import pipeline as _p2  # noqa: F401

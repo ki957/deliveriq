@@ -56,6 +56,11 @@ class Worker:
                     expired = conn.execute(text("SELECT app.expire_and_reoffer()")).scalar_one()
                 if expired:
                     _log.info("offers expired", extra={"count": expired})
+                # DDR-116 (9): the optional P2 timer (off by default); queues a due run, never two.
+                with get_engine().begin() as conn:
+                    queued = conn.execute(text("SELECT ops.queue_due_schedules()")).scalar_one()
+                if queued:
+                    _log.info("scheduled runs queued", extra={"count": queued})
                 if time.monotonic() >= next_retention:
                     # NULL = the configured GPS_RETENTION_DAYS (30, DDR-43).
                     with get_engine().begin() as conn:

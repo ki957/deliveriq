@@ -1421,6 +1421,31 @@
         "title": "FailureIn",
         "type": "object"
       },
+      "FreshnessOut": {
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "fresh_as_of": {
+            "format": "date-time",
+            "title": "Fresh As Of",
+            "type": "string"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset",
+          "fresh_as_of",
+          "run_id"
+        ],
+        "title": "FreshnessOut",
+        "type": "object"
+      },
       "Fulfilment": {
         "enum": [
           "PLACED",
@@ -3778,6 +3803,38 @@
         "title": "OverviewOut",
         "type": "object"
       },
+      "P2StatusOut": {
+        "description": "DATA_PIPELINE \u00a712, DDR-116 (7)\u2013(10). Real marts exclude TEST rows, so they are empty in this POC.",
+        "properties": {
+          "freshness": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FreshnessOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "intervals": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Intervals",
+            "type": "array"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleOut"
+          }
+        },
+        "required": [
+          "freshness",
+          "schedule",
+          "intervals"
+        ],
+        "title": "P2StatusOut",
+        "type": "object"
+      },
       "PaymentMethod": {
         "enum": [
           "SIM_UPI",
@@ -4680,7 +4737,9 @@
                 "enum": [
                   "sop",
                   "fault:records",
-                  "fault:structural"
+                  "fault:structural",
+                  "run",
+                  "fault:reconciliation"
                 ],
                 "type": "string"
               },
@@ -4897,6 +4956,60 @@
           "has_report"
         ],
         "title": "RunSummaryOut",
+        "type": "object"
+      },
+      "ScheduleIn": {
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "interval_minutes": {
+            "title": "Interval Minutes",
+            "type": "integer"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval_minutes",
+          "reason"
+        ],
+        "title": "ScheduleIn",
+        "type": "object"
+      },
+      "ScheduleOut": {
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "interval_is_test_default": {
+            "title": "Interval Is Test Default",
+            "type": "boolean"
+          },
+          "interval_minutes": {
+            "title": "Interval Minutes",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval_minutes",
+          "interval_is_test_default",
+          "updated_at"
+        ],
+        "title": "ScheduleOut",
         "type": "object"
       },
       "ServiceabilityOut": {
@@ -9493,6 +9606,70 @@
           }
         },
         "summary": "P2 Backlog",
+        "tags": [
+          "pipelines"
+        ]
+      }
+    },
+    "/api/v1/pipelines/p2/schedule": {
+      "put": {
+        "description": "Turn the optional P2 timer on or off and choose its interval (CA only, reason required, audited).",
+        "operationId": "set_p2_schedule_api_v1_pipelines_p2_schedule_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P2StatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set P2 Schedule",
+        "tags": [
+          "pipelines"
+        ]
+      }
+    },
+    "/api/v1/pipelines/p2/status": {
+      "get": {
+        "description": "Freshness of the real marts and the P2 schedule; RM included (view only).",
+        "operationId": "p2_status_api_v1_pipelines_p2_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P2StatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "P2 Status",
         "tags": [
           "pipelines"
         ]

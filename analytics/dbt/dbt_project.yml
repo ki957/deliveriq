@@ -1,0 +1,33 @@
+# P2 operational ELT models (DATA_PIPELINE §8; DDR-74, DDR-75, DDR-116). Runs inside the worker as `p2_elt`
+# (`threads` 2, on demand or by the optional timer). target/ and logs/ go to /tmp (DBT_TARGET_PATH,
+# DBT_LOG_PATH): the worker container is read-only.
+name: deliveriq
+version: "1.0.0"
+config-version: 2
+profile: deliveriq
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+clean-targets: []
+
+vars:
+  # Real models read `raw` into `analytics`; Task 14 sets `dataset: analytics_synthetic` (source `synthetic`).
+  dataset: analytics
+  # TEST fault input `fault:reconciliation` (local/test only, like DDR-104) sets 1 to prove that a failed
+  # critical test fails the run and leaves the marts not fresh. Never set in a real run.
+  reconciliation_offset: 0
+
+models:
+  deliveriq:
+    +materialized: table  # full rebuild every run: deterministic, and replay can never double count
+    staging:
+      +schema: staging
+    core:
+      +schema: analytics  # `analytics_synthetic` when var dataset says so (macros/generate_schema_name.sql)
+    marts:
+      +schema: analytics
+
+data_tests:
+  deliveriq:
+    +severity: error  # every model test is critical (DATA_PIPELINE §7); warnings are recorded by the run

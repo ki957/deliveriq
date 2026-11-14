@@ -54,8 +54,8 @@ const PIPELINES: Pipeline[] = [
     display_name: "P2 operational ELT",
     pipeline_group: "DATA",
     is_heavy: true,
-    implemented: false,
-    inputs: [],
+    implemented: true,
+    inputs: ["run", "fault:reconciliation"],
     last_run: null,
   },
   {
@@ -123,6 +123,70 @@ describe("polling", () => {
   });
 });
 
+describe("P2 page (DDR-116 (7)–(10))", () => {
+  const status = {
+    freshness: { dataset: "analytics", fresh_as_of: "2026-11-12T10:00:00Z", run_id: RUN_ID },
+    schedule: {
+      enabled: false,
+      interval_minutes: 60,
+      interval_is_test_default: true,
+      updated_at: "2026-11-12T09:00:00Z",
+    },
+    intervals: [15, 30, 60, 240],
+  };
+
+  it("lets a Central Administrator turn the timer on with a reason", async () => {
+    const { calls } = mockApi({
+      "GET /api/v1/me": () => json(CA),
+      "GET /api/v1/pipelines": () => json(PIPELINES),
+      "GET /api/v1/pipelines/runs": () => json([]),
+      "GET /api/v1/pipelines/p2/status": () => json(status),
+      "PUT /api/v1/pipelines/p2/schedule": () =>
+        json({ ...status, schedule: { ...status.schedule, enabled: true } }),
+    });
+    renderAt("/management/data-pipelines/p2_elt");
+    expect(await screen.findByTestId("freshness")).toHaveTextContent("Real marts fresh as of:");
+    expect(screen.getByTestId("real-marts-note")).toHaveTextContent(
+      "Every order in this POC is a TEST order",
+    );
+    expect(screen.getByTestId("schedule")).toHaveTextContent(
+      "off, every 60 min (test default, not a final value)",
+    );
+    expect(screen.getByLabelText("Input")).toHaveDisplayValue("Build analytics from landed events");
+    await userEvent.click(screen.getByLabelText("Run P2 on a timer"));
+    await userEvent.selectOptions(screen.getByLabelText("Every"), "30");
+    await userEvent.click(screen.getByRole("button", { name: "Review and save" }));
+    await userEvent.type(
+      screen.getByLabelText("Why are you changing the P2 schedule?"),
+      "Nightly demo refresh",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save schedule" }));
+    expect(await screen.findByText("Schedule saved.")).toBeInTheDocument();
+    const put = calls.find((c) => c.method === "PUT");
+    expect(await put?.json()).toEqual({
+      enabled: true,
+      interval_minutes: 30,
+      reason: "Nightly demo refresh",
+    });
+  });
+
+  it("shows a Regional Manager freshness only: no run controls, schedule form or runs", async () => {
+    mockApi({
+      "GET /api/v1/me": () => json(RM),
+      "GET /api/v1/pipelines": () => json(PIPELINES),
+      "GET /api/v1/pipelines/runs": () => json([]),
+      "GET /api/v1/pipelines/p2/status": () => json(status),
+    });
+    renderAt("/management/data-pipelines/p2_elt");
+    expect(await screen.findByTestId("freshness")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Run P2 on a timer")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Run pipeline" })).not.toBeInTheDocument();
+    expect(
+      await screen.findByText("P2 runs cover every region: only a Central Administrator sees them"),
+    ).toBeInTheDocument();
+  });
+});
+
 describe("P2 outbox backlog (DDR-116 (10), (12))", () => {
   const backlog = {
     waiting: 3,
@@ -171,8 +235,7 @@ describe("Data & Pipelines overview", () => {
     expect(within(data).getByRole("link", { name: "P1 SOP master-data ETL" })).toBeInTheDocument();
     expect(within(data).getByText("Completed with quarantine")).toBeInTheDocument();
     expect(within(data).getByText("Test run")).toBeInTheDocument();
-    expect(within(data).getByText("Not built yet (Task 12)")).toBeInTheDocument();
-    expect(within(data).queryByRole("link", { name: "P2 operational ELT" })).not.toBeInTheDocument();
+    expect(within(data).getByRole("link", { name: "P2 operational ELT" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Knowledge" })).toHaveTextContent("Not built yet (Task 16)");
   });
 

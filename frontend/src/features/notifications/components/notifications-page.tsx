@@ -83,11 +83,13 @@ export function NotificationsPage() {
 export function NotificationsBell({ to }: { to: string }) {
   const inbox = useInbox();
   const unread = inbox.data?.unread ?? 0;
+  // The accessible name contains exactly the visible badge text (WCAG 2.5.3 label in name).
+  const shown = unread > 99 ? "99+" : String(unread);
   return (
     <Link
       to={to}
       className="relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-control hover:bg-white/10"
-      aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
+      aria-label={unread ? `Notifications, ${shown} unread` : "Notifications"}
       data-testid="notifications-bell"
     >
       <Bell className="size-5" aria-hidden="true" />
@@ -96,7 +98,7 @@ export function NotificationsBell({ to }: { to: string }) {
           aria-hidden="true"
           className="absolute right-1 top-1 min-w-5 rounded-full bg-status-danger px-1 text-center text-xs font-semibold text-white"
         >
-          {unread > 99 ? "99+" : unread}
+          {shown}
         </span>
       ) : null}
     </Link>

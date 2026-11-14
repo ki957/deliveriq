@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { inputLabel, usePipelines, useRuns, useTriggerRun, type Pipeline } from "../api";
+import { P2StatusPanel } from "./p2-status";
 import { actionError } from "@/shared/api/errors";
 import { useCan } from "@/shared/auth/require-permission";
 import { Button } from "@/shared/ui/button";
@@ -29,6 +30,7 @@ export function PipelinePage() {
         </Link>
       </p>
       <h1 className="mt-1 text-2xl font-semibold">{pipeline.display_name}</h1>
+      {pipeline.name === "p2_elt" ? <P2StatusPanel /> : null}
       <RunControls pipeline={pipeline} />
       <RunHistory pipeline={pipeline.name} />
     </section>
@@ -80,8 +82,9 @@ function RunControls({ pipeline }: { pipeline: Pipeline }) {
       </div>
       {input.startsWith("fault:") ? (
         <p className="mt-2 text-sm text-text-muted">
-          TEST fault files are written from scratch, run only in local/test, and never load into recipe
-          tables.
+          {pipeline.name === "p2_elt"
+            ? "TEST fault: the reconciliation test is made to fail, so the run fails and the marts stay not fresh. Local/test only."
+            : "TEST fault files are written from scratch, run only in local/test, and never load into recipe tables."}
         </p>
       ) : null}
       {error ? (
@@ -95,6 +98,7 @@ function RunControls({ pipeline }: { pipeline: Pipeline }) {
 
 // DDR-114 (13): run-history filters over the latest 50 runs the API returns (scope enforced there).
 function RunHistory({ pipeline }: { pipeline: string }) {
+  const global = useCan("pipelines.operate");
   const runs = useRuns(pipeline);
   const [status, setStatus] = useState("");
   const [kind, setKind] = useState<"all" | "test" | "real">("all");
@@ -199,7 +203,13 @@ function RunHistory({ pipeline }: { pipeline: string }) {
           </div>
         ) : (
           <EmptyState
-            title={runs.data && runs.data.length > 0 ? "No runs match these filters" : "No runs yet"}
+            title={
+              pipeline === "p2_elt" && !global
+                ? "P2 runs cover every region: only a Central Administrator sees them"
+                : runs.data && runs.data.length > 0
+                  ? "No runs match these filters"
+                  : "No runs yet"
+            }
           />
         ))}
     </section>

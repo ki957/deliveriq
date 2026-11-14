@@ -311,10 +311,10 @@ def test_one_active_run_cancel_queued_and_retry(
 
 def test_unknown_and_unimplemented_pipelines_are_refused(ca: httpx.Client) -> None:
     assert ca.post("/api/v1/pipelines/runs", json={"pipeline": "no_such"}).status_code == 404
-    assert ca.post("/api/v1/pipelines/runs", json={"pipeline": "p2_elt"}).status_code == 409
+    assert ca.post("/api/v1/pipelines/runs", json={"pipeline": "p3_synthetic"}).status_code == 409  # Task 14
     assert ca.post("/api/v1/pipelines/runs", json={"pipeline": "p1_sop", "input_ref": "x"}).status_code == 422
     listed = {p["name"]: p["implemented"] for p in ca.get("/api/v1/pipelines").json()}
-    assert listed["p1_sop"] is True and listed["p2_elt"] is False
+    assert listed["p1_sop"] is True and listed["p2_elt"] is True and listed["p3_synthetic"] is False
     assert ca.get(f"/api/v1/pipelines/runs/{uuid.uuid4()}").status_code == 404
 
 

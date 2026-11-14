@@ -143,8 +143,8 @@ function BacklogFigures({ b }: { b: Backlog }) {
       ) : null}
       <p className="mt-2 text-xs text-text-muted">
         Warning after {age(b.warn_after_seconds)}
-        {b.warn_is_test_default ? " (test default, not a final value)" : ""}. The dbt run (staging, core,
-        marts, tests) comes with Task 12B.
+        {b.warn_is_test_default ? " (test default, not a final value)" : ""}. The P2 run (dbt staging, core,
+        marts, tests) is on the P2 page.
       </p>
     </>
   );

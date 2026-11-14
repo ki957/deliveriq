@@ -49,7 +49,8 @@ class _Conn:
 def test_fault_inputs_are_refused_in_production(monkeypatch: pytest.MonkeyPatch, ref: str) -> None:
     _stub(monkeypatch, "production")
     with pytest.raises(service.FaultInputRefused):
-        service._queue(None, pipeline="p1_sop", input_ref=ref, trigger="ui", actor_user_id=None)  # type: ignore[arg-type]
+        pipeline = "p2_elt" if ref == "fault:reconciliation" else "p1_sop"
+        service._queue(None, pipeline=pipeline, input_ref=ref, trigger="ui", actor_user_id=None)  # type: ignore[arg-type]
 
 
 def test_fault_runs_are_always_test_runs_and_sop_is_the_default(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -77,13 +78,17 @@ def test_fault_files_are_never_copied_into_images() -> None:
 
 @pytest.mark.parametrize(
     ("app_env", "expected"),
-    [("local", ["sop", "fault:records", "fault:structural"]), ("production", ["sop"])],
+    [
+        ("local", (["sop", "fault:records", "fault:structural"], ["run", "fault:reconciliation"])),
+        ("production", (["sop"], ["run"])),
+    ],
 )
 def test_listed_inputs_follow_the_environment(
-    monkeypatch: pytest.MonkeyPatch, app_env: str, expected: list[str]
+    monkeypatch: pytest.MonkeyPatch, app_env: str, expected: tuple[list[str], list[str]]
 ) -> None:
     monkeypatch.setattr(
         service, "get_settings", lambda: SimpleNamespace(is_local_or_test=app_env != "production")
     )
-    assert service.available_inputs("p1_sop") == expected
-    assert service.available_inputs("p2_elt") == []
+    assert service.available_inputs("p1_sop") == expected[0]
+    assert service.available_inputs("p2_elt") == expected[1]  # DDR-116: the P2 fault input is TEST only
+    assert service.available_inputs("p3_synthetic") == []

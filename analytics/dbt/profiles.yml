@@ -1,0 +1,14 @@
+# Connection from the worker's environment only; no secret is ever written to a file (DDR-116 (3)).
+deliveriq:
+  target: worker
+  outputs:
+    worker:
+      type: postgres
+      host: "{{ env_var('DB_HOST') }}"
+      port: "{{ env_var('DB_PORT') | int }}"
+      dbname: "{{ env_var('POSTGRES_DB') }}"
+      user: p2_elt
+      password: "{{ env_var('DBT_P2_ELT_PASSWORD') }}"
+      schema: staging
+      threads: 2
+      connect_timeout: 5

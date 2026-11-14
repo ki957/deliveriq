@@ -9,6 +9,7 @@ export type Pipeline = components["schemas"]["PipelineOut"];
 export type Run = components["schemas"]["RunSummaryOut"];
 export type RunDetail = components["schemas"]["RunDetailOut"];
 export type Backlog = components["schemas"]["BacklogOut"];
+export type P2Status = components["schemas"]["P2StatusOut"];
 
 // Live stage hints (DDR-115 (13)); REST polling every 2 s while a run is active and hints are down (DDR-105).
 export const POLL_MS = 2000;
@@ -26,6 +27,7 @@ export const keys = {
   runs: (pipeline: string) => ["pipelines", "runs", pipeline] as const,
   run: (id: string) => ["pipelines", "run", id] as const,
   backlog: ["pipelines", "backlog"] as const,
+  p2: ["pipelines", "p2-status"] as const,
 };
 
 function usePipelinesLive(): boolean {
@@ -50,6 +52,29 @@ export function useBacklog(enabled: boolean) {
     enabled,
     refetchInterval: live ? false : 10_000,
     refetchIntervalInBackground: false,
+  });
+}
+
+/** P2 freshness and schedule (DDR-116 (8)–(10)): every pipeline viewer, RM included. */
+export function useP2Status(enabled: boolean) {
+  const live = usePipelinesLive();
+  return useQuery({
+    queryKey: keys.p2,
+    queryFn: async () => unwrap(await api.GET("/api/v1/pipelines/p2/status")),
+    enabled,
+    refetchInterval: live ? false : 10_000,
+    refetchIntervalInBackground: false,
+  });
+}
+
+export function useSetP2Schedule() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { enabled: boolean; interval_minutes: number; reason: string }) =>
+      unwrap(await api.PUT("/api/v1/pipelines/p2/schedule", { body })),
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: keys.pipelines });
+    },
   });
 }
 
@@ -123,7 +148,6 @@ export function reportHref(runId: string): string {
 // Pipelines without code yet are shown honestly with the task that builds them (DDR-100;
 // plan Tasks 12 P2, 14 P3, 15 Management knowledge, 16 Kitchen RAG, 17 Customer RAG).
 export const PLANNED_TASK: Record<string, number> = {
-  p2_elt: 12,
   p3_synthetic: 14,
   k1_customer: 17,
   k2_kitchen: 16,
@@ -140,6 +164,10 @@ export function inputLabel(ref: string | null | undefined): string {
       return "TEST – fault file: record faults";
     case "fault:structural":
       return "TEST – fault file: broken structure";
+    case "run":
+      return "Build analytics from landed events";
+    case "fault:reconciliation":
+      return "TEST – fault: reconciliation mismatch";
     default:
       return ref;
   }

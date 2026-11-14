@@ -1,0 +1,28 @@
+version: 2
+
+# DDR-75 marts. Base measures only; any KPI formula is "definition pending approval" (DDR-44 open).
+models:
+  - name: mart_daily_sales
+    description: "Daily sales base measures. KPI definitions pending approval (DDR-44)."
+    data_tests:
+      - unique_combination: {arguments: {columns: [sales_date, kitchen_id]}}
+  - name: mart_menu_performance
+    description: "Dish quantities and paise per day. KPI definitions pending approval (DDR-44)."
+    data_tests:
+      - unique_combination: {arguments: {columns: [sales_date, kitchen_id, menu_item_id]}}
+  - name: mart_kitchen_performance
+    description: "Kitchen counts and summed durations. KPI definitions pending approval (DDR-44)."
+    data_tests:
+      - unique_combination: {arguments: {columns: [service_date, kitchen_id]}}
+  - name: mart_inventory_consumption
+    description: "Ingredient movements per day. KPI definitions pending approval (DDR-44)."
+    data_tests:
+      - unique_combination: {arguments: {columns: [movement_date, kitchen_id, ingredient_id]}}
+  - name: mart_delivery_performance
+    description: "Delivery counts, durations and GPS km. KPI definitions pending approval (DDR-44)."
+    data_tests:
+      - unique_combination: {arguments: {columns: [delivery_date, region_id]}}
+  - name: mart_payment_performance
+    description: "Payment outcomes per day and method. KPI definitions pending approval (DDR-44)."
+    data_tests:
+      - unique_combination: {arguments: {columns: [payment_date, payment_method]}}
