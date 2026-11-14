@@ -15,11 +15,15 @@ from app.modules.pipelines.schemas import (
     BacklogOut,
     CancelOut,
     DqResultOut,
+    FreshnessOut,
     IngestionErrorOut,
+    P2StatusOut,
     PipelineOut,
     RunCreateIn,
     RunDetailOut,
     RunSummaryOut,
+    ScheduleIn,
+    ScheduleOut,
     StageOut,
 )
 
@@ -35,6 +39,8 @@ def _call[T](fn: Callable[[], T]) -> T:
         raise HTTPException(status_code=404, detail="Not found") from None
     except service.Conflict as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
+    except service.Invalid as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
     except service.FaultInputRefused:
         raise HTTPException(
             status_code=403, detail="Fault-injection runs are allowed only in local/test"
@@ -72,6 +78,34 @@ def p2_backlog(principal: CurrentPrincipal) -> BacklogOut:
         landed=b.landed,
         rejected=b.rejected,
         warn_after_seconds=service.BACKLOG_WARN_SECONDS,
+    )
+
+
+def _p2_status(s: service.P2Status) -> P2StatusOut:
+    return P2StatusOut(
+        freshness=None
+        if s.freshness is None
+        else FreshnessOut.model_validate(s.freshness, from_attributes=True),
+        schedule=ScheduleOut.model_validate(s.schedule, from_attributes=True),
+        intervals=list(service.SCHEDULE_INTERVALS),
+    )
+
+
+@router.get("/p2/status", response_model=P2StatusOut)
+def p2_status(principal: CurrentPrincipal) -> P2StatusOut:
+    """Freshness of the real marts and the P2 schedule; RM included (view only)."""
+    return _p2_status(_call(lambda: service.p2_status(principal)))
+
+
+@router.put("/p2/schedule", response_model=P2StatusOut)
+def set_p2_schedule(body: ScheduleIn, principal: CurrentPrincipal) -> P2StatusOut:
+    """Turn the optional P2 timer on or off and choose its interval (CA only, reason required, audited)."""
+    return _p2_status(
+        _call(
+            lambda: service.set_p2_schedule(
+                principal, enabled=body.enabled, interval_minutes=body.interval_minutes, reason=body.reason
+            )
+        )
     )
 
 

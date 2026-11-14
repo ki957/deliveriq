@@ -43,6 +43,33 @@ class BacklogOut(BaseModel):
     warn_is_test_default: bool = True
 
 
+class FreshnessOut(BaseModel):
+    dataset: str
+    fresh_as_of: datetime
+    run_id: uuid.UUID
+
+
+class ScheduleOut(BaseModel):
+    enabled: bool
+    interval_minutes: int
+    interval_is_test_default: bool
+    updated_at: datetime
+
+
+class P2StatusOut(BaseModel):
+    """DATA_PIPELINE §12, DDR-116 (7)–(10). Real marts exclude TEST rows, so they are empty in this POC."""
+
+    freshness: FreshnessOut | None
+    schedule: ScheduleOut
+    intervals: list[int]
+
+
+class ScheduleIn(BaseModel):
+    enabled: bool
+    interval_minutes: int
+    reason: str = Field(min_length=3, max_length=500)
+
+
 class PipelineOut(BaseModel):
     name: str
     display_name: str
@@ -93,7 +120,10 @@ class RunDetailOut(BaseModel):
 class RunCreateIn(BaseModel):
     pipeline: str = Field(pattern=r"^[a-z][a-z0-9_]+$", max_length=40, examples=["p1_sop"])
     # P1 reads the committed SOP; the fault inputs are TEST files, local/test only (DDR-65, DDR-104).
-    input_ref: Literal["sop", "fault:records", "fault:structural"] | None = None
+    # P2: "run"; its TEST fault input "fault:reconciliation" is local/test only (DDR-116).
+    input_ref: Literal["sop", "fault:records", "fault:structural", "run", "fault:reconciliation"] | None = (
+        None
+    )
 
 
 class CancelOut(BaseModel):

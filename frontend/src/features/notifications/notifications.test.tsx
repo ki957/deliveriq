@@ -95,6 +95,17 @@ describe("notifications (DDR-115 (10))", () => {
     expect(list).toHaveTextContent("Low stock: TEST – Ingredient 1.");
   });
 
+  it("names the bell with the visible badge text above 99 unread", async () => {
+    const many = Array.from({ length: 120 }, (_, i) => note({ id: `n${i}` }));
+    mockApi({
+      "GET /api/v1/me": () => json(CUSTOMER),
+      "GET /api/v1/me/notifications": () => json(inbox(many)),
+    });
+    renderAt("/customer/notifications");
+    const bell = await screen.findByRole("link", { name: "Notifications, 99+ unread" });
+    expect(bell).toHaveTextContent("99+");
+  });
+
   it("shows an empty history", async () => {
     mockApi({
       "GET /api/v1/me": () => json(CUSTOMER),

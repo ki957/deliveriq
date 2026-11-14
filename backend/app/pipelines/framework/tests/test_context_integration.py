@@ -44,7 +44,7 @@ def run_id() -> Iterator[uuid.UUID]:
     with _connect("app_migrator", "APP_MIGRATOR_PASSWORD") as db:
         row = db.execute(
             "INSERT INTO ops.pipeline_runs (pipeline, trigger, is_test, status, started_at) "
-            "VALUES ('p2_elt', 'cli', true, 'running', now()) RETURNING id"
+            "VALUES ('p3_synthetic', 'cli', true, 'running', now()) RETURNING id"
         ).fetchone()
         assert row is not None
         value = uuid.UUID(str(row[0]))
@@ -85,7 +85,7 @@ def test_running_run_stops_at_the_next_stage_boundary(
     run_id: uuid.UUID, p1_conns: tuple[Connection, Connection]
 ) -> None:
     records, data = p1_conns
-    ctx = RunContext(run_id, "p2_elt", True, None, records, data)
+    ctx = RunContext(run_id, "p3_synthetic", True, None, records, data)
     with ctx.stage("first"):
         pass
     with _connect("app_api", "APP_API_PASSWORD") as api:

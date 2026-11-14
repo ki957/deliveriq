@@ -18,7 +18,10 @@ api = [
     "sqlalchemy==2.1.8",
     "uvicorn[standard]==0.54.0",
 ]
-worker = []
+worker = [
+    "dbt-core==1.12.7",
+    "dbt-postgres==1.11.0",
+]
 dev = [
     "httpx==0.28.1",
     "import-linter==2.16",

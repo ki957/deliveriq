@@ -1,0 +1,78 @@
+version: 2
+
+# Critical tests (DATA_PIPELINE §7): keys unique and not null, referential integrity. Every model is
+# "definition pending approval" where it feeds a KPI (DDR-44); these tables hold base facts only.
+models:
+  - name: dim_region
+    columns:
+      - name: region_id
+        data_tests: [unique, not_null]
+  - name: dim_kitchen
+    columns:
+      - name: kitchen_id
+        data_tests: [unique, not_null]
+      - name: region_id
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_region'), field: region_id}}
+  - name: dim_menu_item
+    columns:
+      - name: menu_item_id
+        data_tests: [unique, not_null]
+  - name: dim_ingredient
+    columns:
+      - name: ingredient_id
+        data_tests: [unique, not_null]
+  - name: dim_date
+    columns:
+      - name: date_day
+        data_tests: [unique, not_null]
+  - name: fact_orders
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: kitchen_id
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_kitchen'), field: kitchen_id}}
+      - name: region_id
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_region'), field: region_id}}
+      - name: payable_paise
+        data_tests: [not_null]
+  - name: fact_order_items
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fact_orders'), field: order_id}}
+      - name: menu_item_id
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_menu_item'), field: menu_item_id}}
+  - name: fact_payments
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - relationships: {arguments: {to: ref('fact_orders'), field: order_id}}
+  - name: fact_inventory_movements
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [event_id, line_no]}
+    columns:
+      - name: ingredient_id
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_ingredient'), field: ingredient_id}}
+  - name: fact_kitchen_stage_events
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+  - name: fact_deliveries
+    columns:
+      - name: order_id
+        data_tests:
+          - unique
+          - not_null
+          - relationships: {arguments: {to: ref('fact_orders'), field: order_id}}

@@ -1393,6 +1393,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pipelines/p2/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set P2 Schedule
+         * @description Turn the optional P2 timer on or off and choose its interval (CA only, reason required, audited).
+         */
+        put: operations["set_p2_schedule_api_v1_pipelines_p2_schedule_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pipelines/p2/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * P2 Status
+         * @description Freshness of the real marts and the P2 schedule; RM included (view only).
+         */
+        get: operations["p2_status_api_v1_pipelines_p2_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pipelines/runs": {
         parameters: {
             query?: never;
@@ -2136,6 +2176,21 @@ export interface components {
             reason: string;
             /** Refused */
             refused: boolean;
+        };
+        /** FreshnessOut */
+        FreshnessOut: {
+            /** Dataset */
+            dataset: string;
+            /**
+             * Fresh As Of
+             * Format: date-time
+             */
+            fresh_as_of: string;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
         };
         /**
          * Fulfilment
@@ -2939,6 +2994,16 @@ export interface components {
             overdue_incoming: number;
         };
         /**
+         * P2StatusOut
+         * @description DATA_PIPELINE §12, DDR-116 (7)–(10). Real marts exclude TEST rows, so they are empty in this POC.
+         */
+        P2StatusOut: {
+            freshness: components["schemas"]["FreshnessOut"] | null;
+            /** Intervals */
+            intervals: number[];
+            schedule: components["schemas"]["ScheduleOut"];
+        };
+        /**
          * PaymentMethod
          * @enum {string}
          */
@@ -3251,7 +3316,7 @@ export interface components {
         /** RunCreateIn */
         RunCreateIn: {
             /** Input Ref */
-            input_ref?: ("sop" | "fault:records" | "fault:structural") | null;
+            input_ref?: ("sop" | "fault:records" | "fault:structural" | "run" | "fault:reconciliation") | null;
             /**
              * Pipeline
              * @example p1_sop
@@ -3315,6 +3380,29 @@ export interface components {
             status: "queued" | "running" | "succeeded" | "completed_with_quarantine" | "failed" | "cancelled";
             /** Trigger */
             trigger: string;
+        };
+        /** ScheduleIn */
+        ScheduleIn: {
+            /** Enabled */
+            enabled: boolean;
+            /** Interval Minutes */
+            interval_minutes: number;
+            /** Reason */
+            reason: string;
+        };
+        /** ScheduleOut */
+        ScheduleOut: {
+            /** Enabled */
+            enabled: boolean;
+            /** Interval Is Test Default */
+            interval_is_test_default: boolean;
+            /** Interval Minutes */
+            interval_minutes: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** ServiceabilityOut */
         ServiceabilityOut: {
@@ -5987,6 +6075,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BacklogOut"];
+                };
+            };
+        };
+    };
+    set_p2_schedule_api_v1_pipelines_p2_schedule_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["P2StatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    p2_status_api_v1_pipelines_p2_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["P2StatusOut"];
                 };
             };
         };

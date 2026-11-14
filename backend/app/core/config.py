@@ -92,6 +92,8 @@ class PipelineRoleSettings(BaseSettings):
         default="/srv/docs/SOURCE_DOCUMENT_INVENTORY.md", validation_alias="INVENTORY_PATH"
     )
     test_inputs_root: str = Field(default="/srv/test_inputs", validation_alias="TEST_INPUTS_ROOT")
+    # P2 dbt project, mounted read-only into the worker (DDR-116 (3)).
+    dbt_project_dir: str = Field(default="/srv/analytics/dbt", validation_alias="DBT_PROJECT_DIR")
 
     def url_for(self, settings: Settings, role: str) -> URL:
         secret = getattr(self, role, None)

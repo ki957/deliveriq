@@ -247,3 +247,49 @@ def backlog(conn: Connection) -> tuple[int, datetime | None, int | None, int, in
         )
     ).one()
     return waiting, oldest, age, landed, rejected
+
+
+@dataclass(frozen=True)
+class FreshnessRow:
+    dataset: str
+    fresh_as_of: datetime
+    run_id: uuid.UUID
+
+
+@dataclass(frozen=True)
+class ScheduleRow:
+    pipeline: str
+    enabled: bool
+    interval_minutes: int
+    interval_is_test_default: bool
+    updated_at: datetime
+
+
+def freshness(conn: Connection, dataset: str) -> FreshnessRow | None:
+    row = conn.execute(
+        text("SELECT dataset, fresh_as_of, run_id FROM ops.dataset_freshness WHERE dataset = :d"),
+        {"d": dataset},
+    ).first()
+    return FreshnessRow(*row) if row else None
+
+
+def schedule(conn: Connection, pipeline: str, *, lock: bool = False) -> ScheduleRow | None:
+    sql = (
+        "SELECT pipeline, enabled, interval_minutes, interval_is_test_default, updated_at "
+        "FROM ops.pipeline_schedules WHERE pipeline = :p"
+    )
+    row = conn.execute(text(sql + (" FOR UPDATE" if lock else "")), {"p": pipeline}).first()
+    return ScheduleRow(*row) if row else None
+
+
+def set_schedule(
+    conn: Connection, pipeline: str, *, enabled: bool, interval_minutes: int, actor: uuid.UUID, reason: str
+) -> None:
+    conn.execute(
+        text(
+            "UPDATE ops.pipeline_schedules SET enabled = :e, interval_minutes = :i, "
+            "interval_is_test_default = (:i = 60), updated_by = :u, updated_at = now(), reason = :r "
+            "WHERE pipeline = :p"
+        ),
+        {"e": enabled, "i": interval_minutes, "u": actor, "r": reason, "p": pipeline},
+    )

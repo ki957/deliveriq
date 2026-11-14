@@ -357,6 +357,16 @@ def place(
                 "payable_paise": order.payable_paise,
                 "discount_paise": order.discount_paise,
                 "lines": len(lines),
+                # DATA_PIPELINE §8 fact_order_items / mart_menu_performance: dish ids, quantities and the
+                # charged unit price only (no names or PII); additive, envelope version stays 1.
+                "items": [
+                    {
+                        "menu_item_id": str(x.menu_item_id),
+                        "quantity": x.quantity,
+                        "unit_price_paise": charges[x.menu_item_id],
+                    }
+                    for x in lines
+                ],
                 # DDR-116 (5): pseudonymous, never the customer id.
                 "customer_key": customer_key(order.customer_user_id),
             },

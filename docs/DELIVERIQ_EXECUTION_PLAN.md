@@ -424,7 +424,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
   - Critical dbt test failure fails the run and marts are not marked fresh; warning tests are recorded only.
   - Idempotent raw landing (duplicate `event_id` → one row); dbt builds deterministically; replay does not double count; pseudonymous customer keys.
   - `is_test_fixture` and synthetic rows excluded from real models; dbt test asserts zero fixture rows in real marts.
-- **Status:** planned and approved (DDR-116); delivered as 12A (landing thread, rejected rows, backlog API and UI, pseudonymous key; migration 0014; branch `task-12a-p2-landing`, built and verified, in review) and 12B (dbt models, P2 run, tests, freshness, schedule; not started).
+- **Status:** planned and approved (DDR-116); delivered as 12A (landing thread, rejected rows, backlog API and UI, pseudonymous key; migration 0014; PR #22 merged) and 12B (dbt 1.12.7 project, P2 run stages, critical tests and warnings, freshness, CA schedule, P2 page; migration 0015; branch `task-12b-p2-dbt`, built and verified, in review).
 
 ### Task 13 — Marts and management analytics (DE-8, DE-9)
 

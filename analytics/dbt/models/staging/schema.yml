@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: stg_events
+    description: Accepted real events, one per event id and per (type, idempotency key).
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: event_type
+        data_tests: [not_null]
+      - name: order_id
+        data_tests: [not_null]

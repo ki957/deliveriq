@@ -1,6 +1,6 @@
-# P2 operational ELT: landing (outbox → raw)
+# P2 operational ELT: landing and the dbt run
 
-**Purpose and scope:** the continuous first step of P2 (DATA_PIPELINE §2.2, §4, §10, §13; ADR-004; DDR-66, DDR-116 (1), (5), (6), (10), (12)). Every business change writes one event to `app.outbox` in the same transaction (`shared/events.py`); this loop lands them in `raw.events`. The dbt run (staging → core → marts → tests → publish freshness), the schedule and the P2 page are Task 12B.
+**Purpose and scope:** the continuous first step of P2 (DATA_PIPELINE §2.2, §4, §10, §13; ADR-004; DDR-66, DDR-116 (1), (5), (6), (10), (12)). Every business change writes one event to `app.outbox` in the same transaction (`shared/events.py`); this loop lands them in `raw.events`. The P2 run (`pipeline.py`, Task 12B) lands once more, then runs dbt staging → core → marts → tests and publishes freshness; the dbt project is `analytics/dbt` (its README).
 
 | Item | Value |
 | --- | --- |
@@ -8,7 +8,10 @@
 | Code | `landing.py`: `problem(row)` (pure envelope check), `land_batch(conn)` (one transaction) |
 | Tables | Reads and marks `app.outbox`; inserts `raw.events` (append-only). Migration 0014: `ops.outbox_backlog()` (counts and the oldest waiting time only, for the API) and a statement-level realtime `backlog` notice |
 | API / UI | `GET /api/v1/pipelines/p2/backlog` (CA only: waiting, oldest age, landed, rejected, warning threshold); Data & Pipelines overview panel "P2 event landing", live |
-| Tests | `tests/test_landing.py` (envelope check); `modules/pipelines/tests/test_p2_landing_integration.py` (5: lands once with the pseudonymous key and never the customer id; replay lands nothing twice; a malformed event lands rejected with its reason, no location events accepted, raw refuses deletes; an interrupted batch lands nothing and loses nothing; backlog for CA only); E2E `data-pipelines.spec.ts` |
+| P2 run | Stages `land`, `dbt staging`, `dbt core`, `dbt marts`, `dbt tests`, `publish freshness`; every dbt test → `ops.dq_results` (critical); warnings `raw_freshness` (24 h) and `outbox_backlog_age` (5 min), labelled test defaults, recorded only; a failed critical test fails the run (data, never retried) and freshness is not published. Counts: events landed and rejected, real events, TEST events excluded, `fact_orders`, dbt tests. Inputs `run` and the TEST `fault:reconciliation` (local/test only). Runs have no region (CA only, DDR-116 (10)) |
+| Schedule | `ops.pipeline_schedules` (migration 0015): off by default, 15 / 30 / 60 / 240 min, 60 labelled test default; `PUT /api/v1/pipelines/p2/schedule` (CA, reason, audited); the worker calls `ops.queue_due_schedules()` every 10 s and queues one `timer` run when due |
+| Freshness | `ops.dataset_freshness`; `GET /api/v1/pipelines/p2/status` (freshness and schedule; RM included) |
+| Tests | `tests/test_landing.py` (envelope check); `modules/pipelines/tests/test_p2_landing_integration.py` (5: lands once with the pseudonymous key and never the customer id; replay lands nothing twice; a malformed event lands rejected with its reason, no location events accepted, raw refuses deletes; an interrupted batch lands nothing and loses nothing; backlog for CA only); `modules/pipelines/tests/test_p2_run_integration.py` (4: a CA run builds, tests and publishes freshness; a failed critical test fails the run and leaves the marts not fresh; RM sees freshness but no runs or controls; the schedule is CA only, audited, and queues one due timer run); E2E `data-pipelines.spec.ts` (CA runs P2 from the UI; RM sees freshness only) |
 
 ## Rules implemented
 

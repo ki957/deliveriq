@@ -2,7 +2,7 @@
 
 Needs the core stack and the worker (`make up`, `make worker`). Queue transitions are checked inside
 rolled-back transactions, so the running worker never sees them. Runs that are committed are
-flagged as test runs and use `p2_elt`, which has no implementation yet.
+flagged as test runs and use `p3_synthetic`, which has no implementation until Task 14 (P2 is implemented in Task 12).
 """
 
 from __future__ import annotations
@@ -61,7 +61,7 @@ def claimed_run(migrator: psycopg.Connection[tuple[object, ...]], *, attempts: i
     """A running test run whose job is claimed by a fake worker (the real worker skips claimed jobs)."""
     row = migrator.execute(
         "INSERT INTO ops.pipeline_runs (pipeline, trigger, is_test, status, started_at) "
-        "VALUES ('p2_elt', 'cli', true, 'running', now()) RETURNING id"
+        "VALUES ('p3_synthetic', 'cli', true, 'running', now()) RETURNING id"
     ).fetchone()
     assert row is not None
     run_id = row[0]
@@ -150,7 +150,7 @@ def test_worker_fails_a_run_it_has_no_implementation_for(
     migrator: psycopg.Connection[tuple[object, ...]],
 ) -> None:
     row = migrator.execute(
-        "INSERT INTO ops.pipeline_runs (pipeline, trigger, is_test) VALUES ('p2_elt', 'cli', true) RETURNING id"
+        "INSERT INTO ops.pipeline_runs (pipeline, trigger, is_test) VALUES ('p3_synthetic', 'cli', true) RETURNING id"
     ).fetchone()
     assert row is not None
     run_id = uuid.UUID(str(row[0]))
@@ -166,4 +166,4 @@ def test_worker_fails_a_run_it_has_no_implementation_for(
         time.sleep(1)
     close(migrator, run_id)
     assert (status, failure) == ("failed", "structural")
-    assert summary == "Pipeline p2_elt has no implementation"
+    assert summary == "Pipeline p3_synthetic has no implementation"
