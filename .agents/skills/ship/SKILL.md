@@ -1,5 +1,6 @@
 ---
-description: After the owner approves - commit check, push the branch, and print the PR link and text
+name: ship
+description: Use only after the owner says "approve" (push the branch, give the PR link and text) or "merged" (sync main, check CI).
 ---
 Only run this after the owner has said "approve" for the current task.
 
@@ -9,4 +10,5 @@ Only run this after the owner has said "approve" for the current task.
 4. `gh` is not installed. Print this link for the owner:
    `https://github.com/ki957/deliveriq/compare/main...<branch>?expand=1`
 5. Print a PR title (under 70 characters) and a description with the sections **Summary**, **Tested** and **Not done / logged**, in code blocks ready to paste.
-6. Wait for "merged". Then run `git checkout main && git pull --ff-only`, check CI (`passon.md` §7 "CI failures"), and delete the local branch with `git branch -d <branch>`.
+6. Wait for "merged". Then run `git checkout main && git pull --ff-only`, check CI (`passon.md` §7 "CI failures"), and delete the local branch with `git branch -d <branch>`. After a squash merge `-d` may refuse; leave the branch and tell the owner (the hook blocks `-D`).
+7. Update `passon.md` §2 (state and `main` commit) and the §10 changelog row with the PR number, in the next task's branch.
