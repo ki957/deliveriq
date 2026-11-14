@@ -87,7 +87,9 @@ export function useAddAddress() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (body: S["AddressIn"]) => unwrap(await api.POST("/api/v1/me/addresses", { body })),
-    onSuccess: () => client.invalidateQueries({ queryKey: ["ordering"] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["ordering"] });
+    },
   });
 }
 
@@ -139,7 +141,9 @@ function useCartMutation<A>(run: (arg: A) => Promise<{ data?: Cart; error?: unkn
       if (!result.response.ok || !result.data) throw refusal(result);
       return result.data;
     },
-    onSuccess: () => client.invalidateQueries({ queryKey: ["ordering", "cart"] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["ordering", "cart"] });
+    },
   });
 }
 
@@ -184,7 +188,9 @@ export function usePlaceOrder() {
       if (!result.response.ok || !result.data) throw refusal(result);
       return result.data;
     },
-    onSettled: () => client.invalidateQueries({ queryKey: ["ordering"] }),
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: ["ordering"] });
+    },
   });
 }
 

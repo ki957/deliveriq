@@ -46,7 +46,7 @@ def test_all_approved_schemas_exist(api: Conn) -> None:
 
 
 def test_migrations_at_head(migrator: Conn) -> None:
-    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0012"
+    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0013"
 
 
 def test_is_test_fixture_on_all_five_tables(api: Conn) -> None:

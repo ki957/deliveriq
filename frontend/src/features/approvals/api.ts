@@ -38,7 +38,9 @@ export function useMenuTransition() {
           body: { action },
         }),
       ),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.menu }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.menu });
+    },
   });
 }
 
@@ -75,6 +77,8 @@ export function useProductOwnerSignoff(id: string) {
       });
       if (!result.response.ok) unwrap(result);
     },
-    onSuccess: () => client.invalidateQueries({ queryKey: ["approvals"] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["approvals"] });
+    },
   });
 }

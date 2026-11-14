@@ -23,6 +23,7 @@ import {
   DeliveryProfilePage,
   PickupPage,
 } from "@/features/delivery";
+import { NotificationsPage } from "@/features/notifications";
 import { RequirePermission } from "@/shared/auth/require-permission";
 import { LoadingState } from "@/shared/ui/states";
 
@@ -80,7 +81,14 @@ export const deliveryConfig: PortalConfig = {
       task: 9,
       element: gate(<DeliveryExceptionsPage />),
     },
-    { to: "/delivery/notifications", label: "Notifications", Icon: Bell, task: 11 },
+    // DL-16, DDR-115 (10): offers, withdrawals and failure decisions, 30-day history.
+    {
+      to: "/delivery/notifications",
+      label: "Notifications",
+      Icon: Bell,
+      task: 11,
+      element: gate(<NotificationsPage />),
+    },
     {
       to: "/delivery/history",
       label: "History",

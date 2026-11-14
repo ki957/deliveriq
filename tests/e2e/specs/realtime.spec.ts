@@ -71,9 +71,21 @@ test("the kitchen board shows a new order live, without a reload", async ({ brow
   await expect(card).toContainText("Incoming", { timeout: HINT_MS });
   await expectNoAxeViolations(ks);
 
+  // The customer's notifications page is open; the kitchen's rejection arrives live (DDR-115 (10)).
+  await customer.goto("/customer/notifications");
+  await expect(customer.getByTestId("notification-channels")).toContainText("SMS: Not configured (DDR-40)");
   const km = await as(browser, info, "kitchen", SEED.kitchenManager);
   await endOrder(km, orderId);
   await expect(card).toHaveCount(0, { timeout: HINT_MS });
+  await expect(customer.getByRole("list", { name: "Notifications" })).toContainText(
+    `The kitchen could not take your order ${orderId.slice(0, 8)}.`,
+    { timeout: HINT_MS },
+  );
+  await expect(customer.getByTestId("notifications-bell")).toHaveAccessibleName(/Notifications, \d+ unread/);
+  await expectNoAxeViolations(customer);
+  // The Kitchen Manager has a Notifications page (low stock, KI-23).
+  await km.goto("/kitchen/notifications");
+  await expect(km.getByRole("heading", { level: 1, name: "Notifications" })).toBeVisible();
   await context.close();
 });
 

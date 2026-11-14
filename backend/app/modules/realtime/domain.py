@@ -23,7 +23,7 @@ MAX_TOPICS = 50
 
 @dataclass(frozen=True)
 class Topic:
-    """`order:<id>`, `kitchen:<id>`, `region:<id>`, `agent:<user id>` or `pipelines`."""
+    """`order:<id>`, `kitchen:<id>`, `region:<id>`, `agent:<user id>`, `user:<user id>` or `pipelines`."""
 
     kind: str
     ref: uuid.UUID | None = None
@@ -32,7 +32,7 @@ class Topic:
         return self.kind if self.ref is None else f"{self.kind}:{self.ref}"
 
 
-SCOPED_TOPICS = frozenset({"order", "kitchen", "region", "agent"})
+SCOPED_TOPICS = frozenset({"order", "kitchen", "region", "agent", "user"})
 
 
 class BadTopic(ValueError):
@@ -40,15 +40,17 @@ class BadTopic(ValueError):
 
 
 def parse_topic(raw: object, *, me: uuid.UUID) -> Topic:
-    """Client topic names; `agent:me` is the caller's own agent topic (never another agent's)."""
+    """Client topic names; `agent:me` and `me` are always the caller's own (never another person's)."""
     if not isinstance(raw, str) or len(raw) > 60:
         raise BadTopic(str(raw)[:60])
     if raw == "pipelines":
         return Topic("pipelines")
     if raw == "agent:me":
         return Topic("agent", me)
+    if raw == "me":
+        return Topic("user", me)  # the caller's notifications (DDR-115 (10))
     kind, _, ref = raw.partition(":")
-    if kind not in SCOPED_TOPICS - {"agent"}:
+    if kind not in SCOPED_TOPICS - {"agent", "user"}:
         raise BadTopic(raw)
     try:
         return Topic(kind, uuid.UUID(ref))
@@ -113,6 +115,8 @@ def hints(n: Notice) -> list[Hint]:
     """Which topics a notice concerns. Control notices (session, user) produce no hints."""
     if n.kind in CONTROL_KINDS or n.id is None:
         return []
+    if n.kind == "notification":
+        return [Hint(Topic("user", n.user), n.kind, n.id)] if n.user is not None else []
     out: list[Hint] = []
     if n.kind in ORDER_KINDS and n.order is not None:
         out.append(Hint(Topic("order", n.order), n.kind, n.id))

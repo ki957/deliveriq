@@ -10,6 +10,7 @@ import { Wordmark } from "@/shared/ui/wordmark";
 import { cn } from "@/shared/utils/cn";
 
 import type { NavItem, PortalConfig } from "./portal-config";
+import { NotificationsBell } from "@/features/notifications";
 
 const ROLE_LABELS: Record<string, string> = {
   CUSTOMER: "Customer",
@@ -75,6 +76,7 @@ export function PortalShell({ config }: { config: PortalConfig }) {
 
   const signedIn = me.data ?? null;
   const items = visibleNav(config.nav, (p) => hasPermission(signedIn, p));
+  const notificationsPath = `/${config.portal}/notifications`;
   const bottomItems = items.filter((item) => config.bottom?.includes(item.to));
   const roles = (signedIn?.roles ?? [])
     .filter((g) => PORTAL_ROLES[config.portal].includes(g.role))
@@ -94,7 +96,7 @@ export function PortalShell({ config }: { config: PortalConfig }) {
       >
         Skip to content
       </a>
-      <header className="on-nav flex min-h-16 items-center gap-3 border-b border-border bg-nav px-4 text-nav-foreground">
+      <header className="on-nav flex min-h-16 items-center gap-2 border-b border-border bg-nav px-2 text-nav-foreground sm:gap-3 sm:px-4">
         <Button
           variant="ghost"
           className="text-nav-foreground hover:bg-white/10 lg:hidden"
@@ -111,9 +113,12 @@ export function PortalShell({ config }: { config: PortalConfig }) {
         </Button>
         <Wordmark />
         <span className="hidden text-sm font-medium sm:inline">{config.title}</span>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-1 sm:gap-3">
           {signedIn ? (
             <>
+              {items.some((i) => i.to === notificationsPath) ? (
+                <NotificationsBell to={notificationsPath} />
+              ) : null}
               <span className="hidden text-right text-sm leading-tight md:block">
                 <span className="block font-semibold">{signedIn.display_name}</span>
                 <span className="block opacity-80" data-testid="account-roles">
@@ -122,7 +127,8 @@ export function PortalShell({ config }: { config: PortalConfig }) {
               </span>
               <Button variant="ghost" className="text-nav-foreground hover:bg-white/10" onClick={logout}>
                 <LogOut className="size-4" aria-hidden="true" />
-                Sign out
+                {/* Icon only on phones so the header fits 360 px with the notifications bell. */}
+                <span className="sr-only sm:not-sr-only">Sign out</span>
               </Button>
             </>
           ) : (

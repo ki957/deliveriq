@@ -25,6 +25,7 @@ HEARTBEAT_SECONDS = 10
 # Delivery jobs (DDR-113 (2), (11), (17)): narrow database functions, the worker role holds EXECUTE only.
 OFFER_SWEEP_SECONDS = 10
 RETENTION_SECONDS = 24 * 60 * 60
+PURGE_DAYS = 30  # DL-16 history; DDR-115 (11), (12)
 
 _log = logging.getLogger("app.worker")
 
@@ -59,6 +60,13 @@ class Worker:
                     with get_engine().begin() as conn:
                         deleted = conn.execute(text("SELECT app.purge_delivery_locations(NULL)")).scalar_one()
                     _log.info("gps retention", extra={"deleted": deleted})
+                    # DDR-115 (11), (12): notification history and OTP/session records, 30 days.
+                    with get_engine().begin() as conn:
+                        notes = conn.execute(
+                            text("SELECT app.purge_notifications(:d)"), {"d": PURGE_DAYS}
+                        ).scalar_one()
+                        auth = conn.execute(text("SELECT app.purge_auth(:d)"), {"d": PURGE_DAYS}).scalar_one()
+                    _log.info("retention", extra={"notifications": notes, **auth})
                     next_retention = time.monotonic() + RETENTION_SECONDS
             except Exception:
                 _log.warning("delivery job failed", exc_info=True)

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import Connection, text
+from sqlalchemy import Connection, bindparam, text
 
 from app.core.db import get_engine
 from app.core.permissions import Principal
@@ -242,7 +242,8 @@ def reset_shared() -> dict[str, int]:
     """Put shared TEST state back to the fixture baseline so tests never depend on earlier runs.
 
     Touches only fixture rows and the kitchen's labelled test defaults: kitchen mode NORMAL, the three
-    test defaults, TEST Dishes A–C PUBLISHED, TEST stock 10,000 g with no threshold. Stock that is
+    test defaults, TEST Dishes A–C PUBLISHED with no pending availability request, TEST stock 10,000 g
+    with no threshold. Stock that is
     still reserved by a held order is left alone (reported), never forced. Every stock change is a
     reasoned ledger entry.
     """
@@ -252,6 +253,7 @@ def reset_shared() -> dict[str, int]:
         "stock_reset": 0,
         "stock_skipped_reserved": 0,
         "live_assignments": 0,
+        "requests_closed": 0,
     }
     with get_engine().begin() as conn:
         _system(conn)
@@ -275,6 +277,17 @@ def reset_shared() -> dict[str, int]:
             ),
             {"u": str(ca.user_id)},
         )
+        # A pending request left by an interrupted run would block the next "Request unavailable"
+        # (one pending request per dish, DDR-111 (7)); close it as rejected, with a reason.
+        live_dishes = [_id("menu_item", letter) for letter, _p, _n, live in DISHES if live]
+        result["requests_closed"] = conn.execute(
+            text(
+                "UPDATE app.dish_availability_requests SET status = 'REJECTED', decided_by = :u, "
+                "decided_role = 'CENTRAL_ADMIN', decided_at = now(), decision_reason = 'Fixture reset' "
+                "WHERE status = 'PENDING' AND is_test_fixture AND menu_item_id IN :ids"
+            ).bindparams(bindparam("ids", expanding=True)),
+            {"u": ca.user_id, "ids": live_dishes},
+        ).rowcount
         for letter, _price, _numbers, live in DISHES:
             if not live:
                 continue

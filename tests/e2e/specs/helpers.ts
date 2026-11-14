@@ -19,11 +19,20 @@ export const MOCK_OTP = "123456"; // MOCK_OTP fixed test code, local/test only (
 
 /** Sign in through the real login page with the mock OTP. */
 export async function signIn(page: Page, portal: string, mobile: string): Promise<void> {
-  await page.goto(`/${portal}/login`);
-  await requestCode(page, mobile);
-  await page.getByLabel("6-digit code").fill(MOCK_OTP);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(new RegExp(`/${portal}$`));
+  // Parallel projects sign in the same seed numbers: a newer code request replaces an older one, so
+  // the older verify is refused ("invalid or has expired"). That is the correct rule; retry with a new code.
+  for (let attempt = 1; ; attempt++) {
+    await page.goto(`/${portal}/login`);
+    await requestCode(page, mobile);
+    await page.getByLabel("6-digit code").fill(MOCK_OTP);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    const home = new RegExp(`/${portal}$`);
+    const refused = page.getByRole("alert").filter({ hasText: "invalid or has expired" });
+    await expect.poll(async () => home.test(page.url()) || (await refused.isVisible())).toBe(true);
+    if (home.test(page.url())) return;
+    expect(attempt, "sign-in kept being superseded by a parallel sign-in").toBeLessThan(5);
+    await page.waitForTimeout(200 * attempt);
+  }
 }
 
 /**
@@ -34,12 +43,27 @@ export function newTestMobile(): string {
   return `+91-00000-${10000 + Math.floor(Math.random() * 90000)}`;
 }
 
-/** On an open customer login page: register a new customer with the mock OTP (DDR-97). */
+/**
+ * On an open customer login page: register a new customer with the mock OTP (DDR-97). Random TEST
+ * numbers accumulate in local/test databases; if the number already has an account, that sign-in is
+ * ended and a fresh number is tried, so every caller gets a brand-new customer.
+ */
 export async function registerCustomer(page: Page, mobile: string, name: string): Promise<void> {
-  await requestCode(page, mobile);
-  await page.getByLabel("6-digit code").fill(MOCK_OTP);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  // Fails if the random number already belongs to an account (the flow would differ).
+  const loginUrl = page.url();
+  let number = mobile;
+  for (let attempt = 1; ; attempt++) {
+    await requestCode(page, number);
+    await page.getByLabel("6-digit code").fill(MOCK_OTP);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    const askName = page.getByLabel("Your name");
+    await expect.poll(async () => (await askName.isVisible()) || !page.url().includes("/login")).toBe(true);
+    if (await askName.isVisible()) break;
+    expect(attempt, "kept drawing TEST numbers that already have accounts").toBeLessThan(5);
+    const out = await page.request.post("/api/v1/auth/logout", { headers: { "X-DeliverIQ-CSRF": "1" } });
+    expect(out.status()).toBe(204);
+    await page.goto(loginUrl);
+    number = newTestMobile();
+  }
   await page.getByLabel("Your name").fill(name);
   await page.getByRole("button", { name: "Sign in" }).click();
 }

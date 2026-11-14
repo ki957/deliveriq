@@ -104,7 +104,9 @@ export function useKitchenAction() {
       }
     },
     // Refresh at once after every action (DDR-112 (5)); stock and alerts may have changed too.
-    onSettled: () => client.invalidateQueries({ queryKey: ["kitchen"] }),
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: ["kitchen"] });
+    },
   });
 }
 
@@ -131,7 +133,9 @@ export function useUpdateSettings(kitchenId?: string) {
           body,
         }),
       ),
-    onSuccess: () => client.invalidateQueries({ queryKey: ["kitchen"] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["kitchen"] });
+    },
   });
 }
 
@@ -172,7 +176,9 @@ export function useAdjustStock() {
           body: { delta, reason },
         }),
       ),
-    onSuccess: () => client.invalidateQueries({ queryKey: ["kitchen"] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["kitchen"] });
+    },
   });
 }
 
@@ -194,7 +200,9 @@ export function useSetThreshold() {
           body: { low_stock_threshold: threshold, reason },
         }),
       ),
-    onSuccess: () => client.invalidateQueries({ queryKey: ["kitchen"] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["kitchen"] });
+    },
   });
 }
 
@@ -229,7 +237,9 @@ export function useRequestAvailability() {
   return useMutation({
     mutationFn: async (body: S["AvailabilityRequestIn"]) =>
       call(api.POST("/api/v1/menu/availability/requests", { body })),
-    onSuccess: () => client.invalidateQueries({ queryKey: ["kitchen"] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["kitchen"] });
+    },
   });
 }
 
@@ -243,6 +253,8 @@ export function useDecideAvailability() {
           body: { approve, reason },
         }),
       ),
-    onSuccess: () => client.invalidateQueries({ queryKey: ["kitchen"] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["kitchen"] });
+    },
   });
 }

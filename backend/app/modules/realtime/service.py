@@ -59,6 +59,8 @@ def authorize(principal: Principal, topic: Topic) -> Access | None:
                 for g in principal.grants
             )
             return Access() if ok else None
+        case "user" if topic.ref == principal.user_id:
+            return Access()  # own notifications; parse_topic never builds another person's
         case "pipelines":
             try:
                 return Access(pipelines.view_scope(principal))
