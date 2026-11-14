@@ -61,7 +61,9 @@ export function useRunDetail(runId: string) {
 
 function useInvalidate() {
   const client = useQueryClient();
-  return () => client.invalidateQueries({ queryKey: keys.pipelines });
+  return () => {
+    void client.invalidateQueries({ queryKey: keys.pipelines });
+  };
 }
 
 export function useTriggerRun() {

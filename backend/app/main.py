@@ -29,6 +29,7 @@ from app.modules.management.api import router as management_router
 from app.modules.menu.api import availability_router as menu_availability_router
 from app.modules.menu.api import manage_router as menu_manage_router
 from app.modules.menu.api import public_router as menu_public_router
+from app.modules.notifications.api import router as notifications_router
 from app.modules.orders.api import cart_router
 from app.modules.orders.api import kitchen_router as kitchen_orders_router
 from app.modules.orders.api import router as orders_router
@@ -63,6 +64,7 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(delivery_router)
     app.include_router(delivery_manage_router)
     app.include_router(management_router)
+    app.include_router(notifications_router)
     return app
 
 

@@ -1091,6 +1091,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inbox
+         * @description The last 30 days, newest first (at most 100), and the unread count.
+         */
+        get: operations["inbox_api_v1_me_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Read
+         * @description Mark the given notifications (or all, without ids) read; others' ids are ignored.
+         */
+        post: operations["mark_read_api_v1_me_notifications_read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/menu/availability/dishes": {
         parameters: {
             query?: never;
@@ -2097,6 +2137,21 @@ export interface components {
             /** Picked Up At */
             picked_up_at: string | null;
         };
+        /** InboxOut */
+        InboxOut: {
+            /** History Days */
+            history_days: number;
+            /** Rows */
+            rows: components["schemas"]["NotificationOut"][];
+            /**
+             * Sms
+             * @default Not configured (DDR-40)
+             * @constant
+             */
+            sms: "Not configured (DDR-40)";
+            /** Unread */
+            unread: number;
+        };
         /** IngestOut */
         IngestOut: {
             /** Accepted */
@@ -2493,6 +2548,11 @@ export interface components {
             /** Unit */
             unit: string;
         };
+        /** MarkReadIn */
+        MarkReadIn: {
+            /** Ids */
+            ids?: string[] | null;
+        };
         /** MeOut */
         MeOut: {
             /** Display Name */
@@ -2596,6 +2656,32 @@ export interface components {
         NameOut: {
             /** Display Name */
             display_name: string;
+        };
+        /** NotificationOut */
+        NotificationOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Ingredient Name */
+            ingredient_name: string | null;
+            /** Is Test Fixture */
+            is_test_fixture: boolean;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "order.accepted" | "order.preparing" | "order.ready_for_pickup" | "order.out_for_delivery" | "order.delivered" | "order.cancelled" | "order.rejected" | "order.delivery_failed" | "order.agent_assigned" | "delivery.offered" | "delivery.withdrawn" | "delivery.failure_returned" | "delivery.failure_approved" | "stock.low";
+            /** Order Id */
+            order_id: string | null;
+            /** Read At */
+            read_at: string | null;
         };
         /** OptionalReasonIn */
         OptionalReasonIn: {
@@ -5310,6 +5396,57 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inbox_api_v1_me_notifications_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOut"];
+                };
+            };
+        };
+    };
+    mark_read_api_v1_me_notifications_read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkReadIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             204: {

@@ -26,4 +26,4 @@
 ## Assumptions and integration points
 
 - Staff accounts come from the local/test fixture loader (`make fixtures`) until the Management staff screens (Task 10).
-- Expired OTP challenges and sessions are kept. A daily worker job purges them 30 days after expiry or revocation in Task 11B (DDR-115 (12), closing DDR-107 (8)). Realtime sockets re-validate the session without counting as activity (`principal_for_session(touch=False)`, DDR-115 (7)).
+- Expired OTP challenges and sessions are kept. A daily worker job (`app.purge_auth(30)`, `notifications` module README) deletes them 30 days after expiry or revocation, audited (DDR-115 (12), closing DDR-107 (8)). Realtime sockets re-validate the session without counting as activity (`principal_for_session(touch=False)`, DDR-115 (7)).

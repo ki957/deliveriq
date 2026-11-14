@@ -55,7 +55,9 @@ function useAction<A, T>(run: (arg: A) => Promise<T>) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: run,
-    onSettled: () => client.invalidateQueries({ queryKey: ["delivery"] }),
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: ["delivery"] });
+    },
   });
 }
 

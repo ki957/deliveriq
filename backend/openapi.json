@@ -1503,6 +1503,38 @@
         "title": "HistoryOut",
         "type": "object"
       },
+      "InboxOut": {
+        "properties": {
+          "history_days": {
+            "title": "History Days",
+            "type": "integer"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "sms": {
+            "const": "Not configured (DDR-40)",
+            "default": "Not configured (DDR-40)",
+            "title": "Sms",
+            "type": "string"
+          },
+          "unread": {
+            "title": "Unread",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rows",
+          "unread",
+          "history_days"
+        ],
+        "title": "InboxOut",
+        "type": "object"
+      },
       "IngestOut": {
         "properties": {
           "accepted": {
@@ -2643,6 +2675,28 @@
         "title": "ManagedStockOut",
         "type": "object"
       },
+      "MarkReadIn": {
+        "properties": {
+          "ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "maxItems": 100,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ids"
+          }
+        },
+        "title": "MarkReadIn",
+        "type": "object"
+      },
       "MeOut": {
         "properties": {
           "display_name": {
@@ -2956,6 +3010,90 @@
           "display_name"
         ],
         "title": "NameOut",
+        "type": "object"
+      },
+      "NotificationOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "ingredient_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ingredient Name"
+          },
+          "is_test_fixture": {
+            "title": "Is Test Fixture",
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "order.accepted",
+              "order.preparing",
+              "order.ready_for_pickup",
+              "order.out_for_delivery",
+              "order.delivered",
+              "order.cancelled",
+              "order.rejected",
+              "order.delivery_failed",
+              "order.agent_assigned",
+              "delivery.offered",
+              "delivery.withdrawn",
+              "delivery.failure_returned",
+              "delivery.failure_approved",
+              "stock.low"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "order_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Id"
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read At"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "order_id",
+          "ingredient_name",
+          "is_test_fixture",
+          "created_at",
+          "read_at"
+        ],
+        "title": "NotificationOut",
         "type": "object"
       },
       "OptionalReasonIn": {
@@ -8473,6 +8611,63 @@
         "summary": "Revoke My Device",
         "tags": [
           "me"
+        ]
+      }
+    },
+    "/api/v1/me/notifications": {
+      "get": {
+        "description": "The last 30 days, newest first (at most 100), and the unread count.",
+        "operationId": "inbox_api_v1_me_notifications_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Inbox",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/me/notifications/read": {
+      "post": {
+        "description": "Mark the given notifications (or all, without ids) read; others' ids are ignored.",
+        "operationId": "mark_read_api_v1_me_notifications_read_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkReadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mark Read",
+        "tags": [
+          "notifications"
         ]
       }
     },

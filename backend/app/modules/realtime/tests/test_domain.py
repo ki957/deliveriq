@@ -29,7 +29,18 @@ def test_topics_parse_strictly_and_agent_me_is_always_the_caller() -> None:
     assert d.parse_topic(f"order:{ORD}", me=ME) == d.Topic("order", ORD)
     assert d.parse_topic("agent:me", me=ME) == d.Topic("agent", ME)
     assert str(d.parse_topic("pipelines", me=ME)) == "pipelines"
-    for bad in (f"agent:{A}", "order:not-a-uuid", "orders", "", 7, None, "x" * 61, f"customer:{C}"):
+    assert d.parse_topic("me", me=ME) == d.Topic("user", ME)
+    for bad in (
+        f"agent:{A}",
+        "order:not-a-uuid",
+        "orders",
+        "",
+        7,
+        None,
+        "x" * 61,
+        f"customer:{C}",
+        f"user:{C}",
+    ):
         with pytest.raises(d.BadTopic):
             d.parse_topic(bad, me=ME)
 
@@ -61,6 +72,11 @@ def test_kitchen_agent_and_pipeline_notices() -> None:
     assert topics(notice(k="agent", id=A, a=A, r=R)) == {f"agent:{A}", f"region:{R}"}
     [run] = d.hints(notice(k="run", id=ORD, r=R))
     assert (str(run.topic), run.region) == ("pipelines", R)
+
+
+def test_a_notification_reaches_only_its_owner() -> None:
+    [hint] = d.hints(notice(k="notification", id=ORD, u=C))
+    assert (str(hint.topic), hint.kind) == (f"user:{C}", "notification")
 
 
 def test_hint_frames_carry_only_topic_kind_and_id() -> None:

@@ -25,4 +25,4 @@
 
 - Quantities use the ingredient's unit (g, ml, piece); no purchase-unit conversion (DDR-111 (8)).
 - Adjustments, thresholds and low stock have no approved event type; they are audit-only (DDR-109 (6)).
-- Shortage notifications to the KM wait for Task 11B (DDR-115 (10)); the UI shows persisted low-stock state.
+- The KM is notified in-app when available stock falls to the threshold (KI-23; `notifications` module); the UI shows persisted low-stock state.

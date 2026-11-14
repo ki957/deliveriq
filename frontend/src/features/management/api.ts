@@ -216,7 +216,9 @@ function useManagementMutation<V, R>(fn: (vars: V) => Promise<R>) {
   return useMutation({
     mutationFn: fn,
     // Refresh every management view at once after an action.
-    onSettled: () => client.invalidateQueries({ queryKey: keys.all }),
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: keys.all });
+    },
   });
 }
 

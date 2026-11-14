@@ -1,4 +1,5 @@
 import {
+  Bell,
   AlertTriangle,
   BookOpen,
   ListChecks,
@@ -18,6 +19,7 @@ import {
   LiveOrdersPage,
   PreparationPage,
 } from "@/features/kitchen";
+import { NotificationsPage } from "@/features/notifications";
 import { RecipePage, RecipesPage, ReviewQueuePage } from "@/features/recipes";
 import { RequirePermission } from "@/shared/auth/require-permission";
 
@@ -113,6 +115,15 @@ export const kitchenConfig: PortalConfig = {
       task: 8,
       permission: "kitchen.mode.change",
       element: gate("kitchen.mode.change", <KitchenSettingsPage />),
+    },
+    // KI-23, DDR-115 (10): the Kitchen Manager hears of low stock (kitchen.inventory.view is KM only).
+    {
+      to: "/kitchen/notifications",
+      label: "Notifications",
+      Icon: Bell,
+      task: 11,
+      permission: "kitchen.inventory.view",
+      element: gate("kitchen.inventory.view", <NotificationsPage />),
     },
   ],
 };

@@ -20,6 +20,8 @@ FIXTURE_TABLES = (
     # Delivery codes and GPS points of TEST orders (DDR-113).
     "delivery_otps",
     "delivery_locations",
+    # Notifications about TEST orders and TEST stock (DDR-115 (10)).
+    "notifications",
 )
 
 

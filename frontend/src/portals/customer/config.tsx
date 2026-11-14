@@ -1,7 +1,8 @@
-import { Home, LifeBuoy, Settings, ShoppingCart, User, UtensilsCrossed, Receipt } from "lucide-react";
+import { Bell, Home, LifeBuoy, Settings, ShoppingCart, User, UtensilsCrossed, Receipt } from "lucide-react";
 
 import type { PortalConfig } from "@/app/portal-config";
 
+import { NotificationsPage } from "@/features/notifications";
 import { CartPage, DishPage, MenuPage, OrderPage, OrdersPage } from "@/features/ordering";
 import { RequirePortal } from "@/shared/auth/require-portal";
 import { CustomerHome } from "./home";
@@ -47,6 +48,14 @@ export const customerConfig: PortalConfig = {
           ),
         },
       ],
+    },
+    // CU-25, DDR-115 (10): order lifecycle in-app (no SMS, DDR-40).
+    {
+      to: "/customer/notifications",
+      label: "Notifications",
+      Icon: Bell,
+      requiresLogin: true,
+      element: <NotificationsPage />,
     },
     { to: "/customer/support", label: "Support", Icon: LifeBuoy, requiresLogin: true },
     { to: "/customer/profile", label: "Profile", Icon: User, requiresLogin: true },

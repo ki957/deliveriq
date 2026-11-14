@@ -412,7 +412,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 - **Depends on:** Tasks 9, 10.
 - **Acceptance criteria:** Authenticated sockets; subscriptions checked server-side; revocation stops events; reconnect refetches REST state; payloads contain no PII beyond the authorized minimum; labels come from the canonical mapping; assignment events update the customer's "Agent Assigned" indicator without changing the fulfilment label; pipeline stage updates stream to authorized viewers.
-- **Status:** planned and approved (DDR-115); delivered as 11A (realtime: migration 0012, triggers → Redis → socket hints, polling fallback; branch `task-11a-realtime`, built and verified, in review) and 11B (in-app notifications, purge jobs; not started).
+- **Status:** planned and approved (DDR-115); delivered as 11A (realtime: migration 0012, triggers → Redis → socket hints, polling fallback; branch `task-11a-realtime`, PR #20 merged) and 11B (in-app notifications with 30-day history, daily 30-day purges of notifications, OTP challenges and sessions; migration 0013; branch `task-11b-notifications`, built and verified, in review).
 
 ### Task 12 — ELT backbone, P2 (DE-5…DE-7)
 

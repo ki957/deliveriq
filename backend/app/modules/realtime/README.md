@@ -1,12 +1,12 @@
 # Realtime module (change notices → Redis → WebSocket hints)
 
-**Purpose and scope:** live screen updates for every portal (plan Task 11; PL-04, PL-06, PL-14; ADR-004, ADR-006; DDR-115). Sockets carry invalidate hints only; every screen still reads its REST view, so labels (Matrix §7.3), PII rules and scope stay as REST has them. In-app notifications and the purge jobs are Task 11B.
+**Purpose and scope:** live screen updates for every portal (plan Task 11; PL-04, PL-06, PL-14; ADR-004, ADR-006; DDR-115). Sockets carry invalidate hints only; every screen still reads its REST view, so labels (Matrix §7.3), PII rules and scope stay as REST has them. In-app notifications (the `me` topic) and the purge jobs are in the `notifications` module (Task 11B).
 
 | Item | Value |
 | --- | --- |
 | UI | `frontend/src/shared/realtime` (one socket per tab, `useLiveRefresh`, `useRealtimeStatus`); `PollNote` and the customer tracking note say "Live" or "Live updates paused · updates every 10 s" |
 | Endpoint | WebSocket `/api/v1/realtime` (not in OpenAPI). Client → `{"type": "subscribe"\|"unsubscribe", "topics": [...]}` (≤ 50). Server → `{"type": "ready"}`, `{"type": "subscribed"\|"denied", "topic"}`, hints `{topic, kind, id}`. Close 4401 signed out or revoked, 1013 realtime unavailable; a foreign Origin is refused at the handshake |
-| Topics | `order:{id}` (owning customer), `kitchen:{id}` (that kitchen's staff, RM of its region, CA), `region:{id}` (management views; RM own regions, CA), `agent:me` (the agent's own offers, deliveries and their order progress), `pipelines` (CA all runs; RM own-region runs only) |
+| Topics | `order:{id}` (owning customer), `kitchen:{id}` (that kitchen's staff, RM of its region, CA), `region:{id}` (management views; RM own regions, CA), `agent:me` (the agent's own offers, deliveries and their order progress), `me` (the caller's own notifications), `pipelines` (CA all runs; RM own-region runs only) |
 | Code | `domain.py` (pure: topics, notice → hints, frames), `service.py` (subscription checks with `can()`, session re-validation), `hub.py` (Postgres LISTEN → Redis PUBLISH; Redis SUBSCRIBE → sockets), `api.py` (handshake, per-socket writer queue, 60 s re-validation) |
 | Tables | Migration 0012: `app.rt_notify()` triggers on orders, order items (prep status), delivery assignments, delivery locations, kitchens, ingredient stock, dish availability requests, agent availability, `ops.pipeline_runs`, `ops.pipeline_stage_runs`, sessions (revoked) and users (deactivated); `app.rt_live_agent(order)`. Notices carry ids and scope only (`k, id, o, c, a, ki, r, st, s, u`) |
 | Permissions | Same as the REST views: `customer.orders.read` (own), `kitchen.orders.view` (own kitchen), `management.operations.view` (region), `delivery.assignments.view` (agent), `pipelines.view` (`view_scope`) |
