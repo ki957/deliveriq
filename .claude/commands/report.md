@@ -21,4 +21,4 @@ What could not be checked and why.
 ## Next
 Open items, and the next task proposed.
 
-Then update `passon.md`: §2 status table, §5 next-task brief, and a §10 changelog line.
+Then update `passon.md`: §2 status table, §3.5 README card list (new modules or features), §4/§9 "last DDR", §5 next-task brief, §7 (migration head, new gotchas, memory figures) and a §10 changelog line (newest last). If the workflow changed, update the matching `.claude/commands/` file too.

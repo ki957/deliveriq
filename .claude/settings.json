@@ -3,6 +3,9 @@
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
+      "Read(./**/.env)",
+      "Bash(cat .env)",
+      "Bash(cat ./.env)",
       "Edit(/home/k/Downloads/task1/**)",
       "Write(/home/k/Downloads/task1/**)",
       "Edit(./data/source/**)",
