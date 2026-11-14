@@ -123,6 +123,7 @@ e2e-setup: env-check
 	$(COMPOSE) exec -T api python -m app.cli.pipelines run p1_sop --wait
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-recipe
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-agent
+	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-region
 e2e: e2e-setup
 	$(COMPOSE) --profile e2e run --rm e2e
 

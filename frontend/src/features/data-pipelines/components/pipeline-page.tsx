@@ -93,16 +93,63 @@ function RunControls({ pipeline }: { pipeline: Pipeline }) {
   );
 }
 
+// DDR-114 (13): run-history filters over the latest 50 runs the API returns (scope enforced there).
 function RunHistory({ pipeline }: { pipeline: string }) {
   const runs = useRuns(pipeline);
+  const [status, setStatus] = useState("");
+  const [kind, setKind] = useState<"all" | "test" | "real">("all");
   const state = queryState(runs, { loading: "Loading run history…" });
+  const statuses = [...new Set((runs.data ?? []).map((r) => r.status))].sort();
+  const shown = (runs.data ?? []).filter(
+    (r) => (!status || r.status === status) && (kind === "all" || (kind === "test" ? r.is_test : !r.is_test)),
+  );
   return (
     <section aria-labelledby="history" className="mt-6">
       <h2 id="history" className="text-lg font-semibold">
         Run history
       </h2>
+      {runs.data && runs.data.length > 0 ? (
+        <div className="mt-2 flex flex-wrap items-end gap-3" data-testid="run-filters">
+          <div>
+            <label htmlFor="run-status" className="block text-sm font-medium">
+              Status
+            </label>
+            <select
+              id="run-status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="mt-1 min-h-11 rounded-control border border-border bg-surface px-3"
+            >
+              <option value="">Any</option>
+              {statuses.map((s) => (
+                <option key={s} value={s}>
+                  {runStatus(s)[1]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="run-kind" className="block text-sm font-medium">
+              Runs
+            </label>
+            <select
+              id="run-kind"
+              value={kind}
+              onChange={(e) => setKind(e.target.value as "all" | "test" | "real")}
+              className="mt-1 min-h-11 rounded-control border border-border bg-surface px-3"
+            >
+              <option value="all">All</option>
+              <option value="test">Test runs only</option>
+              <option value="real">Real runs only</option>
+            </select>
+          </div>
+          <p className="text-xs text-text-muted">
+            Filters the latest {runs.data.length} runs · showing {shown.length}
+          </p>
+        </div>
+      ) : null}
       {state ??
-        (runs.data && runs.data.length > 0 ? (
+        (shown.length > 0 ? (
           <div className="mt-2 overflow-x-auto rounded-panel border border-border bg-surface">
             <table className="w-full text-left text-sm">
               <thead className="bg-muted">
@@ -128,7 +175,7 @@ function RunHistory({ pipeline }: { pipeline: string }) {
                 </tr>
               </thead>
               <tbody>
-                {runs.data.map((run) => (
+                {shown.map((run) => (
                   <tr key={run.id} className="border-t border-border">
                     <td className="p-2">
                       <span className="flex flex-wrap gap-1">
@@ -151,7 +198,9 @@ function RunHistory({ pipeline }: { pipeline: string }) {
             </table>
           </div>
         ) : (
-          <EmptyState title="No runs yet" />
+          <EmptyState
+            title={runs.data && runs.data.length > 0 ? "No runs match these filters" : "No runs yet"}
+          />
         ))}
     </section>
   );

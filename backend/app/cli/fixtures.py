@@ -36,6 +36,13 @@ SEED_USERS: tuple[tuple[str, str, str, str | None, str | None], ...] = (
 # competes with the seed agent used by the read-only screen checks. Local/test only.
 E2E_AGENT = ("TEST – E2E Delivery Agent", "+910000000007", "REG-CHN-001")
 
+# E2E only (DDR-114 (14)): a second TEST region with one kitchen and its own Regional Manager, so the
+# Management scope specs can prove an RM sees nothing of REG-CHN-001. Codes use the `ETE` block, which
+# never collides with the integration world's random `REG-TST-nnn` regions. Local/test only.
+E2E_REGION = ("REG-ETE-001", "TEST – E2E Region")
+E2E_KITCHEN = ("KIT-ETE-001", "TEST – E2E Kitchen")
+E2E_REGIONAL_MANAGER = ("TEST – E2E Regional Manager", "+910000000008")
+
 # #15 §5 ADR-CUS-001 (address line, latitude, longitude): synthetic test values.
 SEED_ADDRESS = ("Synthetic Test Address, Chennai, Tamil Nadu, India", 13.0835, 80.2710)
 
@@ -104,6 +111,47 @@ def load_e2e_agent() -> None:
         )
 
 
+def load_e2e_region() -> None:
+    """Idempotent: the region, its kitchen (synthetic location) and the RM with one live grant."""
+    region_code, region_name = E2E_REGION
+    kitchen_code, kitchen_name = E2E_KITCHEN
+    rm_name, rm_mobile = E2E_REGIONAL_MANAGER
+    with get_engine().begin() as conn:
+        region_id = conn.execute(
+            text(
+                "INSERT INTO app.regions (code, name, city, state, country, timezone, status) "
+                "VALUES (:c, :n, 'Test', 'Test', 'India', 'Asia/Kolkata', 'ACTIVE') "
+                "ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name RETURNING id"
+            ),
+            {"c": region_code, "n": region_name},
+        ).scalar_one()
+        conn.execute(
+            text(
+                "INSERT INTO app.kitchens (code, region_id, name, address, location, location_is_synthetic, "
+                "status) VALUES (:c, :r, :n, 'Synthetic Test Address', "
+                "ST_SetSRID(ST_MakePoint(80.20, 13.00), 4326)::geography, true, 'ACTIVE') "
+                "ON CONFLICT (code) DO NOTHING"
+            ),
+            {"c": kitchen_code, "r": region_id, "n": kitchen_name},
+        )
+        user_id = conn.execute(
+            text(
+                "INSERT INTO app.users (display_name, mobile_e164) VALUES (:n, :m) "
+                "ON CONFLICT (mobile_e164) DO UPDATE SET display_name = EXCLUDED.display_name, "
+                "status = 'ACTIVE' RETURNING id"
+            ),
+            {"n": rm_name, "m": rm_mobile},
+        ).scalar_one()
+        conn.execute(
+            text(
+                "INSERT INTO app.role_assignments (user_id, role, region_id) "
+                "SELECT :u, 'REGIONAL_MANAGER', :r WHERE NOT EXISTS (SELECT 1 FROM app.role_assignments "
+                "WHERE user_id = :u AND role = 'REGIONAL_MANAGER' AND revoked_at IS NULL)"
+            ),
+            {"u": user_id, "r": region_id},
+        )
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Load local/test fixtures")
     parser.add_argument(
@@ -115,6 +163,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "load-all",
             "load-e2e-recipe",
             "load-e2e-agent",
+            "load-e2e-region",
             "reset-shared",
         ],
     )
@@ -129,6 +178,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "load-e2e-agent":
         load_e2e_agent()
         print("E2E delivery agent ready (TEST, offline)")
+        return 0
+    if args.command == "load-e2e-region":
+        load_e2e_region()
+        print(f"E2E second region ready ({E2E_REGION[0]}, {E2E_KITCHEN[0]}, its Regional Manager)")
         return 0
     if args.command == "reset-shared":
         from app.cli.fixtures_menu import reset_shared

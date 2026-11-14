@@ -2,9 +2,10 @@ import { useState } from "react";
 
 import { useKitchenAction, useKitchenQueue, type KitchenOrder } from "../api";
 import { refusalText } from "../format";
-import { AgentNote, OrderCard, PollNote } from "./order-card";
+import { AgentNote, OrderCard } from "./order-card";
 import { IntakeSummary } from "./overview-page";
 import { Button } from "@/shared/ui/button";
+import { PollNote } from "@/shared/ui/poll-note";
 import { queryState } from "@/shared/ui/query-state";
 import { ReasonForm } from "@/shared/ui/reason-form";
 import { EmptyState } from "@/shared/ui/states";

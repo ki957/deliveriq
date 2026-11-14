@@ -15,15 +15,23 @@ const MODES: { value: KitchenMode; label: string; hint: string }[] = [
 
 // KI-12–KI-15, DDR-111 (14): mode and capacity, KM only, with a reason; DDR-42 test defaults labelled.
 export function KitchenSettingsPage() {
-  const settings = useKitchenSettings();
+  return <KitchenSettingsPanel />;
+}
+
+/**
+ * The same form for the KM (own kitchen) and, with `kitchenId`, for RM/CA in Management Kitchen
+ * Operations (DDR-114 (2)); the backend decides who may change what (`can_change`).
+ */
+export function KitchenSettingsPanel({ kitchenId }: { kitchenId?: string }) {
+  const settings = useKitchenSettings(kitchenId);
   const state = queryState(settings, { loading: "Loading settings…" });
   if (state) return state;
   if (!settings.data) return null;
-  return <SettingsForm key={settings.dataUpdatedAt} current={settings.data} />;
+  return <SettingsForm key={settings.dataUpdatedAt} current={settings.data} kitchenId={kitchenId} />;
 }
 
-function SettingsForm({ current }: { current: KitchenSettings }) {
-  const update = useUpdateSettings();
+function SettingsForm({ current, kitchenId }: { current: KitchenSettings; kitchenId?: string | undefined }) {
+  const update = useUpdateSettings(kitchenId);
   const [mode, setMode] = useState<KitchenMode>(current.mode);
   const [normal, setNormal] = useState(String(current.normal_capacity.value));
   const [busy, setBusy] = useState(String(current.busy_capacity.value));
@@ -53,7 +61,11 @@ function SettingsForm({ current }: { current: KitchenSettings }) {
 
   return (
     <section className="max-w-2xl space-y-4">
-      <h1 className="text-2xl font-semibold">Settings · {current.kitchen_name}</h1>
+      {kitchenId ? (
+        <h2 className="text-xl font-semibold">Settings · {current.kitchen_name}</h2>
+      ) : (
+        <h1 className="text-2xl font-semibold">Settings · {current.kitchen_name}</h1>
+      )}
       <fieldset className="rounded-panel border border-border bg-surface p-4">
         <legend className="px-1 font-semibold">Mode</legend>
         {MODES.map((m) => (
@@ -123,7 +135,7 @@ function SettingsForm({ current }: { current: KitchenSettings }) {
           </Button>
         )
       ) : (
-        <p className="text-sm">Only the Kitchen Manager can change these settings.</p>
+        <p className="text-sm">You can view these settings but not change them.</p>
       )}
       {error ? (
         <p role="alert" className="text-sm">

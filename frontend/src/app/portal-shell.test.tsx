@@ -44,7 +44,7 @@ describe("route guards", () => {
 
 describe("portal shell", () => {
   it("renders a labelled placeholder, the placeholder logo and the user's role", async () => {
-    // Task 8B built every Kitchen screen; Management → Kitchen Operations is still Task 10.
+    // Task 10B built the Management sections of DDR-114 (2); Reports & Analytics is still Task 13.
     const admin = me({
       display_name: "Demo Central Administrator",
       roles: [{ role: "CENTRAL_ADMIN", region_id: null, kitchen_id: null }],
@@ -52,10 +52,10 @@ describe("portal shell", () => {
       portals: ["management"],
     });
     mockApi({ "GET /api/v1/me": () => json(admin) });
-    renderAt("/management/kitchen");
-    const page = await screen.findByRole("heading", { name: "Kitchen Operations" });
+    renderAt("/management/reports");
+    const page = await screen.findByRole("heading", { name: "Reports & Analytics" });
     expect(page.closest("section")).toHaveTextContent("Not built yet");
-    expect(page.closest("section")).toHaveTextContent("Task 10");
+    expect(page.closest("section")).toHaveTextContent("Task 13");
     expect(screen.getAllByText("Placeholder logo").length).toBeGreaterThan(0);
     expect(screen.getByTestId("account-roles")).toHaveTextContent("Central Administrator");
   });

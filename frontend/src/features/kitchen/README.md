@@ -17,5 +17,5 @@
 - **Cards** show items with the pinned recipe version, instructions, payment method, and "Offered to …", "Agent assigned: …" or "Awaiting agent" (agents simulated until Task 9). No customer name, phone or address.
 - **Inventory:** the KM sees on hand, reserved, available, threshold and the dishes using each ingredient; adjusts and sets thresholds with a reason. Kitchen Staff see low-stock alerts only. All opening stock carries a "Test stock" badge (DDR-37).
 - **Dish availability:** the kitchen requests "unavailable" or "available again" with a reason; the RM (own region) or CA approves or rejects with a reason. Only an approval changes the customer menu.
-- **Settings (KM):** mode and capacities; the DDR-42 test defaults are labelled; a reason is required and audited.
+- **Settings (KM):** mode and capacities; the DDR-42 test defaults are labelled; a reason is required and audited. The same form is exported as `KitchenSettingsPanel` for Management Kitchen Operations (RM/CA by `kitchen_id`, Task 10B); the backend's `can_change` decides who may save.
 - Every page polls every 10 s while visible, refreshes after each action and shows "Updates every 10 s · last updated …" (Task 11 replaces polling).

@@ -37,23 +37,35 @@ for (const shell of SHELLS) {
       await expect(page.getByText("Placeholder logo").first()).toBeVisible();
       await expect(page.getByTestId("account-roles")).toHaveText(shell.role);
       await expectNoAxeViolations(page);
-      // The kitchen Overview shows live counts and the poll time, which change between runs.
+      // The kitchen and management Overviews show live counts and the poll time, which change between runs.
       const live =
         shell.portal === "kitchen"
           ? [page.getByRole("list", { name: "Kitchen summary" }), page.getByTestId("poll-note"), page.getByTestId("intake")]
-          : [];
-      await expect(page).toHaveScreenshot(`${shell.portal}-shell.png`, { fullPage: true, mask: live });
+          : shell.portal === "management"
+            ? [
+                page.getByTestId("poll-note"),
+                page.getByRole("region", { name: "Active orders by status" }),
+                page.getByRole("region", { name: "Needs attention" }),
+                page.getByRole("region", { name: "Kitchens" }),
+              ]
+            : [];
+      // The CA's management Overview lists every kitchen, so its height depends on the database:
+      // compare the viewport only there.
+      await expect(page).toHaveScreenshot(`${shell.portal}-shell.png`, {
+        fullPage: shell.portal !== "management",
+        mask: live,
+      });
     });
   });
 }
 
 test("unbuilt screens say so honestly", async ({ page }) => {
-  // Every Kitchen screen is built (Task 8B); Management Kitchen Operations is still Task 10.
+  // Task 10B built the Management sections of DDR-114 (2); Reports & Analytics is still Task 13.
   await signIn(page, "management", SEED.centralAdmin);
-  await page.getByRole("link", { name: "Kitchen Operations" }).first().click();
-  const section = page.locator("section", { has: page.getByRole("heading", { name: "Kitchen Operations" }) });
+  await page.getByRole("link", { name: "Reports & Analytics" }).first().click();
+  const section = page.locator("section", { has: page.getByRole("heading", { name: "Reports & Analytics" }) });
   await expect(section).toContainText("Not built yet");
-  await expect(section).toContainText("Task 10");
+  await expect(section).toContainText("Task 13");
   await expectNoAxeViolations(page);
 });
 

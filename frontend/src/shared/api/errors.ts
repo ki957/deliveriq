@@ -18,6 +18,15 @@ export function actionError(error: unknown): string {
   }
 }
 
+/**
+ * React Query retry policy: 401/403/404/409/422 are final answers from the backend (scope, permission,
+ * validation), so they are shown at once; other failures are retried up to 3 times.
+ */
+export function shouldRetry(failureCount: number, error: unknown): boolean {
+  if (error instanceof ApiError && error.status >= 400 && error.status < 500) return false;
+  return failureCount < 3;
+}
+
 export function isForbidden(error: unknown): boolean {
   return error instanceof ApiError && error.status === 403;
 }

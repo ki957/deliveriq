@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 
 import { useKitchenQueue, useLowStock, type KitchenQueue } from "../api";
-import { PollNote } from "./order-card";
+import { PollNote } from "@/shared/ui/poll-note";
 import { queryState } from "@/shared/ui/query-state";
 import { StatusBadge } from "@/shared/ui/status-badge";
 

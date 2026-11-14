@@ -406,7 +406,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
   - **Full Data Pipelines UI (DDR-63, DDR-64):** Data and Knowledge groups; stage timeline, counts, errors, quarantine and run history; RM sees only own-region runs and has no trigger/cancel/retry controls; backend scope tests for API and WebSocket.
   - Exceptional-refund approval works only when a threshold is configured; with none configured the rule is disabled and stated as such.
   - axe; screenshots.
-- **Status:** delivered as 10A (backend: scoped management read views, orders and audit CSV export, read-only refunds and inventory, staff provisioning with session revocation; no migration was needed; branch `task-10a-management-api`, built and verified, in review) and 10B (management UI, not started); decisions DDR-114.
+- **Status:** delivered as 10A (backend: scoped management read views, orders and audit CSV export, read-only refunds and inventory, staff provisioning with session revocation; no migration was needed; PR #18 merged) and 10B (management UI: the DDR-114 (2) sections built, the rest labelled placeholders with reasons, run-history filters, E2E with a second-region RM fixture; branch `task-10b-management-ui`, built and verified, in review); decisions DDR-114.
 
 ### Task 11 — Realtime and notifications
 
