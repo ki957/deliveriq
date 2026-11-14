@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap } from "@/shared/api/client";
 import type { components } from "@/shared/api/generated/schema";
+import { useMe } from "@/shared/auth/use-me";
+import { useLiveRefresh } from "@/shared/realtime/use-live";
 
 type S = components["schemas"];
 export type KitchenQueue = S["KitchenQueueOut"];
@@ -14,8 +16,16 @@ export type KitchenDish = S["KitchenDishOut"];
 export type AvailabilityRequest = S["AvailabilityRequestOut"];
 export type AvailabilityKind = S["AvailabilityRequestIn"]["kind"];
 
-// DDR-111 (13), DDR-112 (5): poll while the tab is visible until realtime (Task 11).
+// DDR-111 (13), DDR-112 (5), DDR-115 (8): live hints for the staff's own kitchen; poll while they are down.
 export const POLL_MS = 10_000;
+
+function useKitchenLive(): boolean {
+  const me = useMe();
+  const topics = (me.data?.roles ?? [])
+    .filter((r) => (r.role === "KITCHEN_STAFF" || r.role === "KITCHEN_MANAGER") && r.kitchen_id)
+    .map((r) => `kitchen:${r.kitchen_id}`);
+  return useLiveRefresh(topics, [["kitchen"]]);
+}
 
 const keys = {
   queue: ["kitchen", "queue"] as const,
@@ -52,10 +62,11 @@ async function call<T>(run: Promise<{ data?: T; error?: unknown; response: Respo
 
 // ---------------------------------------------------------------- queue and preparation
 export function useKitchenQueue() {
+  const live = useKitchenLive();
   return useQuery({
     queryKey: keys.queue,
     queryFn: async () => unwrap(await api.GET("/api/v1/kitchen/orders")),
-    refetchInterval: POLL_MS,
+    refetchInterval: live ? false : POLL_MS,
     refetchIntervalInBackground: false,
   });
 }
@@ -134,10 +145,11 @@ export function useStock(enabled: boolean) {
 }
 
 export function useLowStock() {
+  const live = useKitchenLive();
   return useQuery({
     queryKey: keys.lowStock,
     queryFn: async () => unwrap(await api.GET("/api/v1/kitchen/inventory/low-stock")),
-    refetchInterval: POLL_MS,
+    refetchInterval: live ? false : POLL_MS,
     refetchIntervalInBackground: false,
   });
 }

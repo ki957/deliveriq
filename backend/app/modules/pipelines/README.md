@@ -26,4 +26,4 @@
 ## Assumptions and integration points
 
 - `TRIGGERABLE` in `service.py` lists pipelines that have code; later tasks add P2 (Task 12), P3 (14), K3 (15), K2 (16) and K1 (17).
-- The UI polls run detail every 2 s until WebSockets (Task 11).
+- Stage and run changes reach the UI as live hints (`pipelines` topic, own-region runs for an RM; DDR-115 (13)); while hints are down the UI polls every 2 s.

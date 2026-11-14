@@ -16,4 +16,4 @@
 - Pipelines without code are listed as "Not built yet (Task N)" and cannot be opened.
 - The Run control offers only the inputs the backend lists for this environment; TEST fault inputs appear only in local/test and are labelled.
 - Test runs carry a "Test run" badge everywhere.
-- Polling stops when the run is no longer queued or running (WebSockets replace it in Task 11).
+- Live stage hints refresh the views (DDR-115 (13)); while they are down, polling runs every 2 s and only while a run is queued or running.

@@ -2,13 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap } from "@/shared/api/client";
 import type { components } from "@/shared/api/generated/schema";
+import { useLiveRefresh } from "@/shared/realtime/use-live";
 import { ACTIVE_RUN_STATUSES } from "@/shared/ui/status-tones";
 
 export type Pipeline = components["schemas"]["PipelineOut"];
 export type Run = components["schemas"]["RunSummaryOut"];
 export type RunDetail = components["schemas"]["RunDetailOut"];
 
-// REST polling every 2 s while something is queued or running; WebSockets arrive in Task 11 (DDR-105).
+// Live stage hints (DDR-115 (13)); REST polling every 2 s while a run is active and hints are down (DDR-105).
 export const POLL_MS = 2000;
 
 export function isActive(run: Pick<Run, "status"> | null | undefined): boolean {
@@ -25,29 +26,36 @@ export const keys = {
   run: (id: string) => ["pipelines", "run", id] as const,
 };
 
+function usePipelinesLive(): boolean {
+  return useLiveRefresh(["pipelines"], [keys.pipelines]);
+}
+
 export function usePipelines() {
+  const live = usePipelinesLive();
   return useQuery({
     queryKey: keys.pipelines,
     queryFn: async () => unwrap(await api.GET("/api/v1/pipelines")),
-    refetchInterval: (q) => pollInterval(Boolean(q.state.data?.some((p) => isActive(p.last_run)))),
+    refetchInterval: (q) => !live && pollInterval(Boolean(q.state.data?.some((p) => isActive(p.last_run)))),
   });
 }
 
 export function useRuns(pipeline: string) {
+  const live = usePipelinesLive();
   return useQuery({
     queryKey: keys.runs(pipeline),
     queryFn: async () =>
       unwrap(await api.GET("/api/v1/pipelines/runs", { params: { query: { pipeline, limit: 50 } } })),
-    refetchInterval: (q) => pollInterval(Boolean(q.state.data?.some(isActive))),
+    refetchInterval: (q) => !live && pollInterval(Boolean(q.state.data?.some(isActive))),
   });
 }
 
 export function useRunDetail(runId: string) {
+  const live = usePipelinesLive();
   return useQuery({
     queryKey: keys.run(runId),
     queryFn: async () =>
       unwrap(await api.GET("/api/v1/pipelines/runs/{run_id}", { params: { path: { run_id: runId } } })),
-    refetchInterval: (q) => pollInterval(isActive(q.state.data?.run)),
+    refetchInterval: (q) => !live && pollInterval(isActive(q.state.data?.run)),
   });
 }
 

@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is merged (PR #18, `main` at `8e297cb`); 10B is merged (PR #19, `main` at `7da6731`): **Task 10 is complete.** **Task 11 is planned and approved (DDR-115); 11A is in progress on `task-11a-realtime`.**
+`main` CI is green at PR #15 (8B merged, commit `00dab8f`). **Task 9 is planned and approved (DDR-113).** 9A is merged (PR #16, `main` at `e3cf478`). 9B is merged (PR #17, `main` at `515dbbf`): **M2 is complete.** **Task 10 is planned and approved (DDR-114); 10A is merged (PR #18, `main` at `8e297cb`); 10B is merged (PR #19, `main` at `7da6731`): **Task 10 is complete.** **Task 11 is planned and approved (DDR-115); 11A is built and verified on `task-11a-realtime`, report in review.**
 
 | Task | Scope | State |
 |---|---|---|
@@ -50,7 +50,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 | 9B | Delivery PWA UI | ✅ merged (PR #17) |
 | **10A** | Management backend (DDR-114) | ✅ merged (PR #18) |
 | 10B | Management UI | ✅ merged (PR #19) |
-| **11A** | Realtime (DDR-115) | 🟡 **in progress on `task-11a-realtime`; plan approved** |
+| **11A** | Realtime (DDR-115) | 🟡 **built and verified on `task-11a-realtime`; report in review** |
 | **11B** | In-app notifications, purge jobs | ⬜ after 11A |
 | 9 – 22 | See §6 | ⬜ not started |
 
@@ -59,7 +59,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 - **M2 Core order flow (5–9): only Task 9 (9A, 9B) remains.**
 - M3 Ops & data (10–14), M4 AI (15–17), M5 ML & polish (18–22): not started.
 
-**First thing to do:** Task 11 is approved (DDR-115, 14 points): `git checkout task-11a-realtime`, check `git log --oneline main..` and `git status`, then build 11A per DDR-115 (no new plan or sheet).
+**First thing to do:** if 11A is not merged yet, check `git log --oneline main..task-11a-realtime` and wait for the owner. Once merged, sync `main`, check CI, branch `task-11b-notifications` and build 11B per DDR-115 (10)–(12) (no new plan or sheet).
 
 ---
 
@@ -292,6 +292,7 @@ Rules:
 | 2026-11-12 | 9 plan | DDR-113 | Approved |
 | 2026-11-12 | 10 plan | DDR-114 | Approved; 10A started |
 | 2026-11-12 | 11 plan | DDR-115 | Approved; 11A started |
+| 2026-11-12 | 11A / branch | DDR-115 | Migration 0012 (`app.rt_notify` triggers); `modules/realtime` (listener → Redis → hub); `/api/v1/realtime` hints `{topic, kind, id}`; `shared/realtime` + `useLiveRefresh`; pages poll only while the socket is down; only `delivery.spec` puts an agent online in E2E (two online agents take each other's offers) |
 | 2026-11-12 | 10B / #19 | DDR-114 | Management UI (`features/management`); placeholders say why; `KitchenSettingsPanel` reused by `kitchen_id`; `PollNote` moved to `shared/ui`; 4xx never retried (`shouldRetry`); E2E `load-e2e-region` (REG-ETE-001 + RM `+91-00000-00008`); integration world picks a free REG-TST code |
 | 2026-11-12 | 10A / #18 | DDR-114 (1) updated | Management API (`/api/v1/management`); no migration; new code-only permission `management.inventory.view`; staff changes revoke sessions and devices at once |
 | 2026-11-12 | 9B / #17 | DDR-113 (19)–(20) | Delivery PWA; Leaflet pinned (lazy chunk); E2E agent fixture `load-e2e-agent`; full flow on phone-390, screens `@devices`. M2 complete |

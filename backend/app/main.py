@@ -5,6 +5,9 @@ Run with: uvicorn app.main:create_app --factory
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -30,6 +33,8 @@ from app.modules.orders.api import cart_router
 from app.modules.orders.api import kitchen_router as kitchen_orders_router
 from app.modules.orders.api import router as orders_router
 from app.modules.pipelines.api import router as pipelines_router
+from app.modules.realtime.api import router as realtime_router
+from app.modules.realtime.hub import hub
 from app.modules.recipes.api import router as recipes_router
 from app.shared.fixture_guard import assert_no_fixtures
 
@@ -61,6 +66,16 @@ def _build(app: FastAPI) -> FastAPI:
     return app
 
 
+@asynccontextmanager
+async def _lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """Realtime relay and hub run for the life of the API process (DDR-115 (3))."""
+    hub.start()
+    try:
+        yield
+    finally:
+        await hub.stop()
+
+
 def create_app() -> FastAPI:
     settings = get_settings()  # fails fast on missing/invalid configuration
     configure_logging(settings.log_level)
@@ -68,7 +83,7 @@ def create_app() -> FastAPI:
         # Leak control 3 (plan §5.2): never serve production with TEST fixture rows present.
         with get_engine().connect() as conn:
             assert_no_fixtures(conn)
-    app = FastAPI(title=API_TITLE, version=API_VERSION)
+    app = FastAPI(title=API_TITLE, version=API_VERSION, lifespan=_lifespan)
     if settings.cors_origin_list:
         app.add_middleware(
             CORSMiddleware,
@@ -79,6 +94,8 @@ def create_app() -> FastAPI:
         )
     app.add_middleware(RequestContextMiddleware)
     _build(app)
+    # WebSocket only; not part of the REST/OpenAPI contract (DDR-115 (6)).
+    app.include_router(realtime_router)
     if settings.is_local_or_test:
         # Never mounted in production; excluded from the committed OpenAPI contract.
         from app.modules.identity.testing_api import router as testing_router

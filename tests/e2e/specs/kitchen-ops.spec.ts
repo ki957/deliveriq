@@ -63,7 +63,7 @@ test("@kitchen kitchen staff take a TEST order from Incoming to Ready; the manag
   const incoming = card(ks, orderId);
   await expect(incoming).toContainText("Incoming");
   await expect(incoming.getByText("Test order")).toBeVisible();
-  await expect(ks.getByTestId("poll-note")).toContainText("Updates every 10 s");
+  await expect(ks.getByTestId("poll-note")).toContainText("Live ·");
   await expectNoAxeViolations(ks);
 
   await incoming.getByRole("button", { name: "Accept" }).click();

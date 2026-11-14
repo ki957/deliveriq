@@ -22,5 +22,5 @@
 
 ## Assumptions and integration points
 
-- The acceptance timeout only drives an on-screen "Overdue" warning (KI-02); the alert channel is Task 11.
+- The acceptance timeout only drives an on-screen "Overdue" warning (KI-02); screens update live (Task 11A); notifications are Task 11B.
 - Equipment failure (KI-16) is covered by switching to Paused; no separate workflow (DDR-111 (12)).

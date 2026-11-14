@@ -1,6 +1,6 @@
 # Delivery feature (Delivery PWA)
 
-**Purpose and scope:** the delivery agent's app (#7, #8; DL-01–DL-19, DL-G1–DL-G6, DL-U1–DL-U7; DDR-15, DDR-52, DDR-113). Backend: `delivery` and `orders` modules. Notifications are Task 11; the manager's delivery screens are Task 10; road routing (OSRM) is deferred (DDR-55).
+**Purpose and scope:** the delivery agent's app (#7, #8; DL-01–DL-19, DL-G1–DL-G6, DL-U1–DL-U7; DDR-15, DDR-52, DDR-113). Backend: `delivery` and `orders` modules. Offers and order progress arrive live on the `agent:me` topic (polling every 5 s while it is down, DDR-115); notifications are Task 11B; the manager's delivery screens are Task 10; road routing (OSRM) is deferred (DDR-55).
 
 | Item          | Value                                                                                                                                                                                                                                                                                                                       |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
