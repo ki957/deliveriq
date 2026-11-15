@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // Runs inside the pinned Playwright container (`make e2e`), so screenshots are reproducible
-// locally and in CI. Chromium only, headless, 2 workers (DDR-62).
+// locally and in CI. Chromium only, headless, one worker to avoid CPU contention.
 const snapshotDir = process.env.E2E_SNAPSHOT_DIR ?? "./__screenshots__";
 
 export default defineConfig({
@@ -9,7 +9,7 @@ export default defineConfig({
   outputDir: process.env.E2E_OUTPUT_DIR ?? "./test-results",
   snapshotPathTemplate: `${snapshotDir}/{projectName}/{testFilePath}/{arg}{ext}`,
   fullyParallel: false,
-  workers: 2,
+  workers: 1,
   retries: 0,
   forbidOnly: Boolean(process.env.CI),
   reporter: [["list"]],

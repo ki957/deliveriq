@@ -1,6 +1,6 @@
 # passon.md: DeliverIQ handover guide for Codex
 
-**Written:** 2026-11-12 by Kiro; **last updated:** 2026-11-15 after the Task 16 CI fix. **For:** OpenAI Codex (CLI or IDE extension), continuing the build.
+**Written:** 2026-11-12 by Kiro; **last updated:** 2026-11-15 after Task 17 E2E verification. **For:** OpenAI Codex (CLI or IDE extension), continuing the build.
 **Read this file first.** It tells you where the project stands, what to read, how to work, and what to build next. `AGENTS.md` points Codex to it and to `.kiro/steering/rules.md` (the binding rules) at every start.
 
 > ## ⛔ Do not (each of these has broken something, or would)
@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. The tooling handover branch is merged. Task 16A, 16B and 16C are merged on `main` at `778a863` (DDR-121, DDR-122), and the CI fix is merged in PR #30 at `9dc6871`; the owner confirmed MiniLM L6 v2 as the 16B winner. Task 17A/17B are built on `task-17-customer-assistant`; the Customer Assistant UI remains gated by CD-18. The last registered decision is **DDR-123**; migration head is **0028**.
+Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. The tooling handover branch is merged. Task 16A, 16B and 16C are merged on `main` at `778a863` (DDR-121, DDR-122), and the CI fix is merged in PR #30 at `9dc6871`; the owner confirmed MiniLM L6 v2 as the 16B winner. Task 17A/17B are built and locally verified on `task-17-customer-assistant`; its E2E timeout fix uses one Playwright worker and is awaiting the new PR CI result and owner review. The Customer Assistant UI remains gated by CD-18. The last registered decision is **DDR-123**; migration head is **0028**.
 
 | Task | Scope | State |
 |---|---|---|
@@ -61,7 +61,7 @@ Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Ta
 | 15B | Builder Agent sandbox (DDR-70) | ⬜ not started |
 | 15C | Builder Agent harness (DDR-71, DDR-80, Task 21 dependency) | ⬜ not started; Task 21 depends on 15C |
 | 16A / 16B / 16C | Kitchen RAG, embedding winner, hybrid retrieval, KM approval and golden-set gate | ✅ merged on `main` (`778a863`); CI fix merged in PR #30 (`9dc6871`) |
-| 17A / 17B | Customer RAG/K1, Customer Assistant guard/tools, CA approval UI and golden-set draft | ✅ built on `task-17-customer-assistant`; awaiting report/owner review |
+| 17A / 17B | Customer RAG/K1, Customer Assistant guard/tools, CA approval UI and golden-set draft | ✅ built and locally verified on `task-17-customer-assistant`; E2E fix committed, awaiting PR CI and owner review |
 | tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | ✅ merged |
 | 17–22 | See plan | 17 built; 18–22 not started |
 
@@ -72,7 +72,7 @@ Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Ta
 - M4 AI (15–17): Task 15 and 15A are merged; Task 16A–16C are merged. Task 17 remains.
 - M5 ML & polish (18–22): not started.
 
-**Next:** Task 18 Demand Forecast after Task 17 is reviewed and merged. Task 17 adds Customer-only K1 staging, approved Customer RAG retrieval, read-only live-fact adapters, Prompt Guard, CA approval and the draft Customer golden set; the chat UI stays hidden until CD-18 is opened.
+**Next:** Task 18 Demand Forecast after Task 17 is reviewed and merged. Task 17 adds Customer-only K1 staging, approved Customer RAG retrieval, read-only live-fact adapters, Prompt Guard, CA approval and the draft Customer golden set; the chat UI stays hidden until CD-18 is opened. The Task 17 PR E2E timeout was traced to CPU contention; setting one Playwright worker passed the full suite twice without changing the test timeout or assertions.
 
 ---
 
@@ -123,6 +123,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 ### 3.5 Per-module "README cards" (current behaviour, kept up to date)
 - `backend/app/modules/*/README.md`: identity, menu, recipes, pipelines, knowledge, customers, pricing, orders, payments, kitchen_ops, inventory, delivery, management, realtime, notifications, reports, health.
 - AI harness cards: `backend/app/modules/ai/kitchen_copilot/README.md` (read-only Kitchen Copilot, hybrid retrieval with reduced-retrieval fallback, KM-approved knowledge only) and `backend/app/modules/ai/customer_assistant/README.md` (Customer-only, read-only Assistant with Prompt Guard).
+- Customer ingestion card: `backend/app/pipelines/k1_customer/README.md` (Customer-only K1 staging; source documents remain DRAFT pending CA approval).
 - `backend/app/pipelines/README.md` (framework), `backend/app/pipelines/p2_elt/README.md`; `analytics/dbt/README.md` (models, tests, grants, the `dataset` var).
 - `frontend/src/features/*/README.md`: auth, ordering, recipes, approvals, data-pipelines, kitchen (including Kitchen Copilot), customer-assistant (gated approval card), delivery, management, notifications, reports.
 - These are the fastest way to learn what a module already does.
@@ -167,9 +168,9 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Completed task: 16C (Hybrid retrieval, KM approval and golden set)
+## 5. Current task: 17 Customer Assistant (DDR-123)
 
-Task 16C is built and verified. Migration 0027 adds `vector(384)` MiniLM index metadata, HNSW cosine indexing, hybrid RRF retrieval, SHA-keyed Kitchen knowledge versions and audited KM approval functions. The Copilot preserves SQL scope, recipe-version pinning, production fixture refusal and reduced-retrieval fallback. Task 17 extends the same pattern with migration 0028, `customer_rag`, K1 DRAFT-only ingestion, Customer-only retrieval, Prompt Guard and CA approval. The last decision is DDR-123; next is Task 18.
+Task 16C is merged and verified. Migration 0027 adds `vector(384)` MiniLM index metadata, HNSW cosine indexing, hybrid RRF retrieval, SHA-keyed Kitchen knowledge versions and audited KM approval functions. Task 17A/17B are built on `task-17-customer-assistant`, locally verified, and awaiting PR CI and owner review. Migration 0028 adds `customer_rag`, K1 DRAFT-only ingestion, Customer-only retrieval, Prompt Guard and CA approval. The P2 E2E timeout was caused by CPU contention with two Playwright workers; one worker passed the full 70-test suite twice, preserving the 30-second test timeout and assertions. K-C1–C3 source files remain DRAFT; no Customer chunks are published. The Customer golden-set row is DRAFT (60 cases, 0 leaks). The last decision is DDR-123; Task 18 follows after Task 17 merges.
 
 ## 6. Remaining tasks after 15A (full criteria in plan §7)
 
@@ -188,7 +189,7 @@ Task 16C is built and verified. Migration 0027 adds `vector(384)` MiniLM index m
 
 ## 7. Technical cheat-sheet
 
-Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Task 17 migration head is **0028**. K1 runs as `rag_customer`, mounts `knowledge/customer` read-only, stages three Customer documents as DRAFT and publishes none. Customer retrieval calls only `app.retrieve_customer_chunks_hybrid`; live menu/order facts are read-only and session-scoped. Prompt Guard is controlled by `AI_PROMPT_GUARD_ENABLED`; the chat UI is API-only until CD-18. Final CI-fix verification memory sample: worker **76.54 MiB**, API **119.7 MiB**, Postgres **126.8 MiB**, Redis **5.39 MiB**, host **8.6 GiB available**. CI gotcha: `uv sync --locked` installs only `api` and `dev` by default; the pinned worker group must remain in `tool.uv.default-groups` because backend type-checking imports the embedding dependencies.
+Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Task 17 migration head is **0028**. K1 runs as `rag_customer` and mounts `knowledge/customer` read-only; the three source cards remain DRAFT and no Customer chunks are published before CA approval. Customer retrieval calls only `app.retrieve_customer_chunks_hybrid`; live menu/order facts are read-only and session-scoped. Prompt Guard is controlled by `AI_PROMPT_GUARD_ENABLED`; the chat UI is API-only until CD-18. This verification sample: worker **95.32 MiB**, API **106.7 MiB**, Postgres **157.8 MiB**, Redis **4.61 MiB**, host **9.2 GiB available**. CI gotcha: `uv sync --locked` installs only `api` and `dev` by default; the pinned worker group must remain in `tool.uv.default-groups` because backend type-checking imports the embedding dependencies.
 
 ### Stack
 - **Backend:** FastAPI modular monolith; **sync** SQLAlchemy 2 + psycopg 3 (async only for WS/Redis/HTTP); PostgreSQL + PostGIS + pgvector (Kitchen vector index migration 0027); Redis; Python with `uv`.
@@ -199,7 +200,7 @@ Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE *
 
 ### Repo map
 - `backend/app/{core,shared,modules,pipelines,worker,cli}`
-- `backend/migrations/versions/0001–0027` (**head = 0027**; migration 0026 persists DDR-89 evaluation runs/results and migration 0027 adds Kitchen vector/index metadata, SHA-keyed approvals and golden-set gate)
+- `backend/migrations/versions/0001–0028` (**head = 0028**; migration 0026 persists DDR-89 evaluation runs/results, migration 0027 adds Kitchen vector/index metadata and approvals, and migration 0028 adds Customer RAG/K1 and CA approval)
 - `analytics/dbt/` (P2 models: staging, core, marts; tests; `generate_schema_name` macro)
 - `frontend/src/{app,portals,features,shared}`
 - `tests/e2e/{specs,__screenshots__}`
@@ -319,5 +320,6 @@ Rules:
 | 2026-11-12 | tooling / branch `tooling-handover-refresh` | rules v1.2 | Handover refresh (status, Task 14 brief, gotchas, memory); builder switched from Claude Code to Codex: `CLAUDE.md` → `AGENTS.md`, `.claude/commands` → `.agents/skills`, guard hook → `.codex/hooks.json` (now also guards `apply_patch` and `.env` reads) |
 | 2026-11-15 | 16A / 16B / 16C / #29 + CI fix / #30 | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121–122 | Merged on main `778a863`; migration 0026 persists benchmark evidence; migration 0027 adds MiniLM 384 vector metadata/HNSW hybrid retrieval, SHA-keyed KM approval and the in-app DDR-90 gate; CI fix adds the pinned worker dependency group to uv defaults; all four CI jobs green on `9dc6871`; owner confirmed MiniLM L6 v2; draft benchmark set remains non-golden |
 | 2026-11-15 | 17 Customer Assistant | DDR-123 | Migration 0028 adds Customer RAG/index isolation, K1 DRAFT-only staging, CA approval/golden-set API/UI, Prompt Guard and read-only Customer Assistant API; worker mounts `knowledge/customer`; host checks, frontend checks and 68/70 E2E passed (2 expected skips); chat UI remains gated by CD-18 |
+| 2026-11-15 | Task 17 E2E fix | — | CI P2 timeout traced to CPU contention with two Playwright workers; one worker preserves timeout/assertions and passed full E2E twice (68 passed, 2 expected skips); K-C1–C3 remain DRAFT and Customer golden set has 0 leaks |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

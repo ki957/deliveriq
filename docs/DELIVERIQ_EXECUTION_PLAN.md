@@ -521,7 +521,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 - **Gated features:** live Customer knowledge (A, DDR-46).
 - **Guidance:** English only; Customer RAG ingestion on the pipeline framework. Ships the harness `README.md` card (DDR-80).
 - **Acceptance criteria:** No Kitchen/Management leakage; other customers' orders denied; allergen answers never guarantee safety; Customer golden set passes with 0 cross-customer leaks (DDR-90); Prompt Guard on input behind its flag, with injection results reported on and off; a classifier outage never blocks customers (DDR-92).
-- **Status:** 17A/17B approved to build under DDR-123. The Customer Assistant UI remains hidden until CD-18 is explicitly opened.
+- **Status:** 17A/17B built under DDR-123 and locally verified; awaiting Task 17 PR CI and owner review. The Customer Assistant UI remains hidden until CD-18 is explicitly opened.
 
 ### Task 18 — Demand forecasting
 
