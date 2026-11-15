@@ -14,6 +14,9 @@ from app.modules.reports import domain as d
 from app.modules.reports import service
 from app.modules.reports.schemas import (
     DailyOut,
+    DemandForecastOut,
+    ForecastPointOut,
+    IngredientDemandForecastOut,
     IngredientOut,
     KitchenRefOut,
     KpiOut,
@@ -109,4 +112,33 @@ def report_csv(
     )
     return Response(
         body, media_type="text/csv", headers={"Content-Disposition": 'attachment; filename="report.csv"'}
+    )
+
+
+@router.get("/reports/forecast", response_model=DemandForecastOut)
+def demand_forecast(
+    principal: CurrentPrincipal,
+    kitchen_id: uuid.UUID | None = None,
+) -> DemandForecastOut:
+    """Seven-day ingredient-demand advisory from the ready P3 ML profile (DDR-124)."""
+    result = _call(lambda: service.demand_forecast(principal, kitchen_id))
+    return DemandForecastOut(
+        available=result.available,
+        unavailable_reason=result.unavailable_reason,
+        trained_on="simulated data",
+        advisory_only=True,
+        profile_from=result.profile_from,
+        profile_to=result.profile_to,
+        backtest_model_mae=result.backtest_model_mae,
+        backtest_baseline_mae=result.backtest_baseline_mae,
+        backtest_passed=result.backtest_passed,
+        forecasts=[
+            IngredientDemandForecastOut(
+                ingredient_id=uuid.UUID(item.ingredient_id),
+                name=item.name,
+                unit=item.unit,
+                daily=[ForecastPointOut(day=day, quantity=quantity) for day, quantity in item.daily],
+            )
+            for item in result.forecasts
+        ],
     )

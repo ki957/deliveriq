@@ -93,6 +93,29 @@ def test_csv_export_is_scoped_labelled_and_audited(world: World, team: Team) -> 
     assert audited is not None and isinstance(audited[0], int) and audited[0] >= 1
 
 
+def test_demand_forecast_is_advisory_scoped_and_only_uses_a_ready_ml_profile(
+    world: World, team: Team
+) -> None:
+    endpoint = f"{R}/forecast"
+    assert team.km.get(endpoint).status_code == 403
+    assert team.other_rm.get(endpoint, params={"kitchen_id": str(world.kitchen_a)}).status_code == 404
+    response = team.ca.get(endpoint)
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["trained_on"] == "simulated data" and result["advisory_only"] is True
+    if result["profile_from"]:
+        assert result["available"] is True, result
+    if result["available"]:
+        assert result["backtest_passed"] is True
+        assert result["backtest_model_mae"] < result["backtest_baseline_mae"]
+        assert len(result["forecasts"]) > 0
+        assert all(len(item["daily"]) == 7 for item in result["forecasts"])
+        assert result["profile_from"] and result["profile_to"]
+    else:
+        assert result["forecasts"] == []
+        assert result["unavailable_reason"]
+
+
 def test_the_api_role_reads_marts_and_dimensions_only() -> None:
     with psycopg.connect(
         host="127.0.0.1", port=int(os.environ.get("INTEGRATION_DB_PORT", "5433")), dbname=os.environ["POSTGRES_DB"],

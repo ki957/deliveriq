@@ -1595,6 +1595,106 @@
         "title": "DeliveryOut",
         "type": "object"
       },
+      "DemandForecastOut": {
+        "properties": {
+          "advisory_only": {
+            "const": true,
+            "title": "Advisory Only",
+            "type": "boolean"
+          },
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "backtest_baseline_mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backtest Baseline Mae"
+          },
+          "backtest_model_mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backtest Model Mae"
+          },
+          "backtest_passed": {
+            "title": "Backtest Passed",
+            "type": "boolean"
+          },
+          "forecasts": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientDemandForecastOut"
+            },
+            "title": "Forecasts",
+            "type": "array"
+          },
+          "profile_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile From"
+          },
+          "profile_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile To"
+          },
+          "trained_on": {
+            "const": "simulated data",
+            "title": "Trained On",
+            "type": "string"
+          },
+          "unavailable_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unavailable Reason"
+          }
+        },
+        "required": [
+          "available",
+          "unavailable_reason",
+          "trained_on",
+          "advisory_only",
+          "profile_from",
+          "profile_to",
+          "backtest_model_mae",
+          "backtest_baseline_mae",
+          "backtest_passed",
+          "forecasts"
+        ],
+        "title": "DemandForecastOut",
+        "type": "object"
+      },
       "DeviceOut": {
         "properties": {
           "created_at": {
@@ -1819,6 +1919,25 @@
           "reason"
         ],
         "title": "FailureIn",
+        "type": "object"
+      },
+      "ForecastPointOut": {
+        "properties": {
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          }
+        },
+        "required": [
+          "day",
+          "quantity"
+        ],
+        "title": "ForecastPointOut",
         "type": "object"
       },
       "FreshnessOut": {
@@ -2182,6 +2301,38 @@
           "message"
         ],
         "title": "IngestionErrorOut",
+        "type": "object"
+      },
+      "IngredientDemandForecastOut": {
+        "properties": {
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastPointOut"
+            },
+            "title": "Daily",
+            "type": "array"
+          },
+          "ingredient_id": {
+            "format": "uuid",
+            "title": "Ingredient Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ingredient_id",
+          "name",
+          "unit",
+          "daily"
+        ],
+        "title": "IngredientDemandForecastOut",
         "type": "object"
       },
       "IngredientLineOut": {
@@ -10518,6 +10669,57 @@
           }
         },
         "summary": "Report Csv",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/management/reports/forecast": {
+      "get": {
+        "description": "Seven-day ingredient-demand advisory from the ready P3 ML profile (DDR-124).",
+        "operationId": "demand_forecast_api_v1_management_reports_forecast_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kitchen_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kitchen Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemandForecastOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Demand Forecast",
         "tags": [
           "reports"
         ]

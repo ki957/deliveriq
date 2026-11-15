@@ -5,6 +5,7 @@ import type { components } from "@/shared/api/generated/schema";
 
 export type Report = components["schemas"]["ReportOut"];
 export type Kpi = components["schemas"]["KpiOut"];
+export type DemandForecast = components["schemas"]["DemandForecastOut"];
 export type Dataset = Report["dataset"];
 
 export type ReportQuery = {
@@ -27,6 +28,14 @@ export function useReport(q: ReportQuery) {
     queryKey: ["reports", q],
     queryFn: async () => unwrap(await api.GET("/api/v1/management/reports", { params: { query: clean(q) } })),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useDemandForecast(kitchenId?: string) {
+  const query = kitchenId ? { kitchen_id: kitchenId } : {};
+  return useQuery({
+    queryKey: ["demand-forecast", query],
+    queryFn: async () => unwrap(await api.GET("/api/v1/management/reports/forecast", { params: { query } })),
   });
 }
 

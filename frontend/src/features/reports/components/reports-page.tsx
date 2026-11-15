@@ -5,6 +5,7 @@ import {
   change,
   csvHref,
   formatKpi,
+  useDemandForecast,
   useReport,
   type Dataset,
   type Kpi,
@@ -160,6 +161,9 @@ export function ReportsPage() {
       ) : null}
 
       {state ?? (r ? <Body r={r} /> : null)}
+      {dataset === "analytics_synthetic" ? (
+        <DemandForecastCard kitchenId={applied.kitchen || undefined} />
+      ) : null}
     </section>
   );
 }
@@ -216,9 +220,11 @@ function Body({ r }: { r: Report }) {
           real figures are empty. Use the Simulated tab for generated demo figures.
         </p>
       ) : (
-        <p className="text-sm font-medium" data-testid="simulated-note">
-          Simulated data: generated for the demo, not real orders.
-        </p>
+        <>
+          <p className="text-sm font-medium" data-testid="simulated-note">
+            Simulated data: generated for the demo, not real orders.
+          </p>
+        </>
       )}
       <p className="text-sm text-text-muted">
         {r.date_from} to {r.date_to}, compared with {r.previous_from} to {r.previous_to}.
@@ -299,6 +305,73 @@ function Body({ r }: { r: Report }) {
         </ul>
       </section>
     </div>
+  );
+}
+
+function DemandForecastCard({ kitchenId }: { kitchenId?: string | undefined }) {
+  const query = useDemandForecast(kitchenId);
+  const forecast = query.data;
+  return (
+    <section
+      aria-labelledby="demand-forecast"
+      className="space-y-3 rounded-panel border border-border bg-surface p-4"
+    >
+      <div>
+        <h2 id="demand-forecast" className="text-lg font-semibold">
+          Ingredient demand forecast
+        </h2>
+        <p className="text-sm">
+          Trained on simulated data · Advisory only. No purchases or inventory changes.
+        </p>
+      </div>
+      {query.isLoading ? <p className="text-sm">Loading forecast…</p> : null}
+      {query.isError ? (
+        <p className="text-sm" role="alert">
+          Forecast could not be loaded.
+        </p>
+      ) : null}
+      {forecast && !forecast.available ? (
+        <p className="text-sm" data-testid="forecast-unavailable">
+          {forecast.unavailable_reason}
+        </p>
+      ) : null}
+      {forecast?.available ? (
+        <>
+          <p className="text-sm" data-testid="forecast-backtest">
+            Rolling 14-day backtest: model MAE {forecast.backtest_model_mae?.toFixed(3)} {"<"} baseline MAE{" "}
+            {forecast.backtest_baseline_mae?.toFixed(3)}.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm" aria-label="Seven-day ingredient demand forecast">
+              <thead>
+                <tr>
+                  <th scope="col" className="p-2">
+                    Ingredient
+                  </th>
+                  <th scope="col" className="p-2">
+                    Forecast by day
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {forecast.forecasts.map((item) => (
+                  <tr key={item.ingredient_id} className="border-t border-border">
+                    <th scope="row" className="p-2 font-medium">
+                      {item.name} ({item.unit})
+                    </th>
+                    <td className="p-2">
+                      {item.daily
+                        .map((point) => `${point.day}: ${Number(point.quantity.toFixed(3))}`)
+                        .join(" · ")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
+    </section>
   );
 }
 

@@ -1271,6 +1271,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/management/reports/forecast": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Demand Forecast
+         * @description Seven-day ingredient-demand advisory from the ready P3 ML profile (DDR-124).
+         */
+        get: operations["demand_forecast_api_v1_management_reports_forecast_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/management/staff": {
         parameters: {
             query?: never;
@@ -2645,6 +2665,35 @@ export interface components {
             /** Simulated */
             simulated: boolean | null;
         };
+        /** DemandForecastOut */
+        DemandForecastOut: {
+            /**
+             * Advisory Only
+             * @constant
+             */
+            advisory_only: true;
+            /** Available */
+            available: boolean;
+            /** Backtest Baseline Mae */
+            backtest_baseline_mae: number | null;
+            /** Backtest Model Mae */
+            backtest_model_mae: number | null;
+            /** Backtest Passed */
+            backtest_passed: boolean;
+            /** Forecasts */
+            forecasts: components["schemas"]["IngredientDemandForecastOut"][];
+            /** Profile From */
+            profile_from: string | null;
+            /** Profile To */
+            profile_to: string | null;
+            /**
+             * Trained On
+             * @constant
+             */
+            trained_on: "simulated data";
+            /** Unavailable Reason */
+            unavailable_reason: string | null;
+        };
         /** DeviceOut */
         DeviceOut: {
             /**
@@ -2720,6 +2769,16 @@ export interface components {
             reason: string;
             /** Refused */
             refused: boolean;
+        };
+        /** ForecastPointOut */
+        ForecastPointOut: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Quantity */
+            quantity: number;
         };
         /** FreshnessOut */
         FreshnessOut: {
@@ -2852,6 +2911,20 @@ export interface components {
             record_ref: string | null;
             /** Stage */
             stage: string;
+        };
+        /** IngredientDemandForecastOut */
+        IngredientDemandForecastOut: {
+            /** Daily */
+            daily: components["schemas"]["ForecastPointOut"][];
+            /**
+             * Ingredient Id
+             * Format: uuid
+             */
+            ingredient_id: string;
+            /** Name */
+            name: string;
+            /** Unit */
+            unit: string;
         };
         /** IngredientLineOut */
         IngredientLineOut: {
@@ -6718,6 +6791,37 @@ export interface operations {
                 };
                 content: {
                     "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    demand_forecast_api_v1_management_reports_forecast_get: {
+        parameters: {
+            query?: {
+                kitchen_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemandForecastOut"];
                 };
             };
             /** @description Validation Error */
