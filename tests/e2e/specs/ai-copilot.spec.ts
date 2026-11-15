@@ -9,7 +9,7 @@ test("CA sees the read-only Management Copilot with labelled status", async ({ p
   await expect(page.getByText(/Conversation memory: 6 turns/)).toBeVisible();
   await page.getByLabel("Question").fill("show operational status");
   await page.getByRole("button", { name: "Ask Copilot" }).click();
-  await expect(page.getByText("Simulated data")).toBeVisible();
+  await expect(page.getByText("Simulated data", { exact: true })).toBeVisible();
   await expect(page.getByText("Management Copilot response.")).toBeVisible();
   await expectNoAxeViolations(page);
 });
