@@ -9,3 +9,4 @@ export { PaymentsPage } from "./components/payments-page";
 export { StaffPage } from "./components/staff-page";
 
 export { AiCopilotPage } from "./components/ai-copilot-page";
+export { OperationalActionsPage } from "./components/operational-actions-page";

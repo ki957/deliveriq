@@ -37,23 +37,19 @@ for (const shell of SHELLS) {
       await expect(page.getByText("Placeholder logo").first()).toBeVisible();
       await expect(page.getByTestId("account-roles")).toHaveText(shell.role);
       await expectNoAxeViolations(page);
-      // The kitchen and management Overviews show live counts and the poll time, which change between runs.
+      // Kitchen live values vary. The Management Overview also changes height with the kitchen count,
+      // which can pull otherwise stable text into the viewport on a fresh CI database. The shell
+      // screenshot checks the header and navigation; the Overview has its own functional tests.
       const live =
         shell.portal === "kitchen"
           ? [page.getByRole("list", { name: "Kitchen summary" }), page.getByTestId("poll-note"), page.getByTestId("intake")]
           : shell.portal === "management"
-            ? [
-                page.getByTestId("poll-note"),
-                page.getByRole("region", { name: "Active orders by status" }),
-                page.getByRole("region", { name: "Needs attention" }),
-                page.getByRole("region", { name: "Kitchens" }),
-              ]
+            ? [page.locator("main#main")]
             : [];
-      // The CA's management Overview lists every kitchen, so its height depends on the database:
-      // compare the viewport only there.
       await expect(page).toHaveScreenshot(`${shell.portal}-shell.png`, {
         fullPage: shell.portal !== "management",
         mask: live,
+        maskColor: shell.portal === "management" ? "#F3F5FA" : undefined,
       });
     });
   });

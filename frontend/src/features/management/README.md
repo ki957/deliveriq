@@ -27,3 +27,7 @@
 - CA and RM can open the read-only Copilot; only CA can change the configured logical model.
 - Provider keys and routing configuration never appear in the UI. Knowledge is labelled "pending approval" until DDR-46.
 - Conversations retain six turns; users can delete their own conversations; request logs contain metadata only.
+
+## Operational Actions (Task 15A; DDR-120)
+
+The CA-only `/management/actions` route uses a separate simulated Actions harness. A typed request produces an exact-change dialog; confirmation sends a UUID idempotency key and the backend rejects changed state. Kitchen settings, agent assignment, dish-unavailability decisions and TEST menu publication reuse their owning services. Promotions, review moderation, regional settings and exceptional refunds state why they are unavailable. RM cannot open the page or use the endpoints.

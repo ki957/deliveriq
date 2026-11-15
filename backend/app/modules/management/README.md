@@ -27,3 +27,7 @@
 - The 31-day range and 50-row page are UI bounds (#10 §14), not business values.
 - WebSocket scope (region topics, RM own regions, CA all) is tested in `realtime/tests` (DDR-114 (13), DDR-115 (5)).
 - No migration was needed for 10A (see Tables); DDR-114 (1) was updated to say so (2026-11-12).
+
+## Operational Actions (Task 15A)
+
+The CA-only AI Actions harness lives in `app.modules.ai.actions`; it reuses this portal’s owning kitchen, delivery and menu services. See that harness’s README for the action contract and DDR-120 gates. Management Copilot remains read-only.

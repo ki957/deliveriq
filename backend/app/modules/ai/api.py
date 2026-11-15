@@ -8,7 +8,19 @@ from collections.abc import Callable
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.modules.ai import service
-from app.modules.ai.schemas import AiModelOut, AiSettingsIn, AiSettingsOut, AiStatusOut, CopilotIn, CopilotOut
+from app.modules.ai.actions import service as actions
+from app.modules.ai.schemas import (
+    ActionConfirmIn,
+    ActionProposalOut,
+    ActionRequestIn,
+    ActionResultOut,
+    AiModelOut,
+    AiSettingsIn,
+    AiSettingsOut,
+    AiStatusOut,
+    CopilotIn,
+    CopilotOut,
+)
 from app.modules.identity.dependencies import CurrentPrincipal, csrf_protect
 
 router = APIRouter(
@@ -68,3 +80,30 @@ def ask_copilot(body: CopilotIn, principal: CurrentPrincipal) -> CopilotOut:
 @router.delete("/conversations/{conversation_id}", status_code=204)
 def delete_conversation(conversation_id: uuid.UUID, principal: CurrentPrincipal) -> None:
     _call(lambda: service.delete_conversation(principal, conversation_id))
+
+
+def _action_call[T](fn: Callable[[], T]) -> T:
+    try:
+        return fn()
+    except actions.Forbidden:
+        raise HTTPException(status_code=403, detail="Forbidden") from None
+    except actions.NotFound:
+        raise HTTPException(status_code=404, detail="Not found") from None
+    except actions.Conflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+    except actions.Invalid as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
+
+
+@router.post("/actions/proposals", response_model=ActionProposalOut)
+def propose_action(body: ActionRequestIn, principal: CurrentPrincipal) -> ActionProposalOut:
+    return ActionProposalOut.model_validate(_action_call(lambda: actions.propose(principal, body.request)))
+
+
+@router.post("/actions/proposals/{proposal_id}/confirm", response_model=ActionResultOut)
+def confirm_action(
+    proposal_id: uuid.UUID, body: ActionConfirmIn, principal: CurrentPrincipal
+) -> ActionResultOut:
+    return ActionResultOut(
+        result=_action_call(lambda: actions.confirm(principal, proposal_id, body.idempotency_key))
+    )

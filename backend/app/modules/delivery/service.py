@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import Connection
+from sqlalchemy import Connection, text
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import get_settings
@@ -374,12 +374,17 @@ def ingest(principal: Principal, points: list[Point]) -> IngestResult:
 
 # ---------------------------------------------------------------- manager actions (DDR-113 (5); UI Task 10)
 def manager_assign(
-    principal: Principal, order_id: uuid.UUID, agent_id: uuid.UUID, reason: str
+    principal: Principal,
+    order_id: uuid.UUID,
+    agent_id: uuid.UUID,
+    reason: str,
+    expected: dict[str, object] | None = None,
 ) -> LiveAssignment:
     """DL-02, DL-07: assign an order before pickup to an online agent; any live offer or assignment is
     revoked first (the old agent loses access at once)."""
     text_reason = _reason(reason)
     with get_engine().begin() as conn:
+        conn.execute(text("SELECT id FROM app.orders WHERE id = :id FOR UPDATE"), {"id": order_id})
         a = repo.live_for_order(conn, order_id, lock=True)
         order = repo.work_order(conn, order_id)
         try:
@@ -387,6 +392,13 @@ def manager_assign(
         except LookupError:
             raise NotFound from None
         role = _manager_role(principal, region)
+        if expected is not None and expected != {
+            "order_status": order.fulfilment_status if order else None,
+            "assignment_id": str(a.id) if a else None,
+            "assignment_status": a.status if a else None,
+            "agent_id": str(a.agent_user_id) if a else None,
+        }:
+            raise Conflict("The assignment changed; request a fresh proposal")
         if order is None or order.fulfilment_status not in ("ACCEPTED", "PREPARING", "READY_FOR_PICKUP"):
             raise Conflict("Only orders the kitchen still holds can be assigned")
         if not repo.is_agent_in_region(conn, agent_id, region):

@@ -713,6 +713,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/management/ai/actions/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Propose Action */
+        post: operations["propose_action_api_v1_management_ai_actions_proposals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/ai/actions/proposals/{proposal_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Action */
+        post: operations["confirm_action_api_v1_management_ai_actions_proposals__proposal_id__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/management/ai/conversations/{conversation_id}": {
         parameters: {
             query?: never;
@@ -1843,6 +1877,43 @@ export interface components {
         AcknowledgeIn: {
             /** Note */
             note: string;
+        };
+        /** ActionConfirmIn */
+        ActionConfirmIn: {
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+        };
+        /** ActionProposalOut */
+        ActionProposalOut: {
+            /** Action */
+            action: string | null;
+            /** Exact Change */
+            exact_change: {
+                [key: string]: unknown;
+            } | null;
+            /** Message */
+            message: string;
+            /** Proposal Id */
+            proposal_id: string | null;
+            /** Simulated */
+            simulated: boolean;
+            /** Status */
+            status: string;
+        };
+        /** ActionRequestIn */
+        ActionRequestIn: {
+            /** Request */
+            request: string;
+        };
+        /** ActionResultOut */
+        ActionResultOut: {
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            };
         };
         /** AddressIn */
         AddressIn: {
@@ -5379,6 +5450,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["KitchenSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    propose_action_api_v1_management_ai_actions_proposals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionProposalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_action_api_v1_management_ai_actions_proposals__proposal_id__confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionConfirmIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResultOut"];
                 };
             };
             /** @description Validation Error */

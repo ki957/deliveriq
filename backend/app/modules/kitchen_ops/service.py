@@ -156,6 +156,7 @@ def update_settings(
     normal_capacity: int,
     busy_capacity: int,
     reason: str,
+    expected: dict[str, object] | None = None,
 ) -> Settings:
     with get_engine().begin() as conn:
         kitchen = resolve(conn, principal, kitchen_id)
@@ -176,6 +177,12 @@ def update_settings(
         )
         kitchen = lock(conn, kitchen.id)
         before = _settings(conn, principal, kitchen)
+        if expected is not None and expected != {
+            "mode": before.kitchen.mode,
+            "normal_capacity": int(before.normal_capacity.value),
+            "busy_capacity": int(before.busy_capacity.value),
+        }:
+            raise Invalid("The kitchen changed; request a fresh proposal")
         repo.set_mode(conn, kitchen.id, mode.value)
         # Only a changed value becomes a configured value; untouched test defaults keep their label.
         if int(before.normal_capacity.value) != normal_capacity:

@@ -94,6 +94,7 @@ class Permission(StrEnum):
     # AI platform: CA controls routing; management roles may use the read-only copilot.
     MGMT_AI_COPILOT = "management.ai.copilot"
     MGMT_AI_SETTINGS = "management.ai.settings"
+    MGMT_AI_ACTIONS = "management.ai.actions"
 
 
 P = Permission
@@ -162,6 +163,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
         P.PIPELINES_OPERATE,
         P.RECIPES_PRODUCT_OWNER_SIGNOFF,
         P.MGMT_AI_SETTINGS,
+        P.MGMT_AI_ACTIONS,
     },
 }
 

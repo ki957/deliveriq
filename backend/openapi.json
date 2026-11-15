@@ -16,6 +16,110 @@
         "title": "AcknowledgeIn",
         "type": "object"
       },
+      "ActionConfirmIn": {
+        "properties": {
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key"
+        ],
+        "title": "ActionConfirmIn",
+        "type": "object"
+      },
+      "ActionProposalOut": {
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action"
+          },
+          "exact_change": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exact Change"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "proposal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposal Id"
+          },
+          "simulated": {
+            "title": "Simulated",
+            "type": "boolean"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "proposal_id",
+          "action",
+          "exact_change",
+          "simulated"
+        ],
+        "title": "ActionProposalOut",
+        "type": "object"
+      },
+      "ActionRequestIn": {
+        "properties": {
+          "request": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Request",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "title": "ActionRequestIn",
+        "type": "object"
+      },
+      "ActionResultOut": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "ActionResultOut",
+        "type": "object"
+      },
       "AddressIn": {
         "properties": {
           "address_line": {
@@ -8379,6 +8483,100 @@
         "summary": "Update Settings",
         "tags": [
           "kitchen"
+        ]
+      }
+    },
+    "/api/v1/management/ai/actions/proposals": {
+      "post": {
+        "operationId": "propose_action_api_v1_management_ai_actions_proposals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionRequestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionProposalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Propose Action",
+        "tags": [
+          "management-ai"
+        ]
+      }
+    },
+    "/api/v1/management/ai/actions/proposals/{proposal_id}/confirm": {
+      "post": {
+        "operationId": "confirm_action_api_v1_management_ai_actions_proposals__proposal_id__confirm_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proposal_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Proposal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionConfirmIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResultOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Confirm Action",
+        "tags": [
+          "management-ai"
         ]
       }
     },
