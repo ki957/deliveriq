@@ -119,9 +119,20 @@ def _visible(conn: Connection, principal: Principal, item_id: uuid.UUID) -> repo
     return item
 
 
-def transition(principal: Principal, item_id: uuid.UUID, action: str, reason: str | None) -> repo.MenuItemRow:
+def transition(
+    principal: Principal,
+    item_id: uuid.UUID,
+    action: str,
+    reason: str | None,
+    expected: dict[str, object] | None = None,
+) -> repo.MenuItemRow:
     with get_engine().begin() as conn:
         item = _visible(conn, principal, item_id)
+        if expected is not None and expected != {
+            "publication_status": item.publication_status,
+            "updated_at": item.updated_at.isoformat(),
+        }:
+            raise Conflict("The menu item changed; request a fresh proposal")
         role = _role_for(principal, item.region_id)
         source, target = ACTIONS[action]
         if item.publication_status != source:
@@ -250,7 +261,12 @@ def availability_requests(principal: Principal, *, pending_only: bool) -> list[r
 
 
 def decide_availability(
-    principal: Principal, request_id: uuid.UUID, *, approve: bool, reason: str | None
+    principal: Principal,
+    request_id: uuid.UUID,
+    *,
+    approve: bool,
+    reason: str | None,
+    expected: dict[str, object] | None = None,
 ) -> repo.AvailabilityRequestRow:
     """Approve (the menu changes) or reject with a reason. RM in the dish's region, or CA."""
     text_reason = _reason(reason, required=not approve)
@@ -268,6 +284,12 @@ def decide_availability(
             kitchen_id=request.kitchen_id,
             region_id=request.region_id,
         )
+        if expected is not None and expected != {
+            "request_status": request.status,
+            "publication_status": request.publication_status,
+            "kind": request.kind,
+        }:
+            raise Conflict("The dish request changed; request a fresh proposal")
         if request.status != "PENDING":
             raise Conflict(f"This request is already {request.status.lower()}")
         source, target = AVAILABILITY_KINDS[request.kind]

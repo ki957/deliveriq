@@ -338,3 +338,25 @@ export function useAskCopilot() {
       unwrap(await api.POST("/api/v1/management/ai/copilot", { body })),
   });
 }
+
+export type ActionProposal = S["ActionProposalOut"];
+export type ActionResult = S["ActionResultOut"];
+
+export function useProposeAction() {
+  return useMutation({
+    mutationFn: async (request: string) =>
+      unwrap(await api.POST("/api/v1/management/ai/actions/proposals", { body: { request } })),
+  });
+}
+
+export function useConfirmAction() {
+  return useManagementMutation(
+    async ({ proposalId, idempotencyKey }: { proposalId: string; idempotencyKey: string }) =>
+      unwrap(
+        await api.POST("/api/v1/management/ai/actions/proposals/{proposal_id}/confirm", {
+          params: { path: { proposal_id: proposalId } },
+          body: { idempotency_key: idempotencyKey },
+        }),
+      ),
+  );
+}

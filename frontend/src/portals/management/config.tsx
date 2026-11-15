@@ -27,6 +27,7 @@ import { PipelinePage, PipelinesOverview, RunPage } from "@/features/data-pipeli
 import { AvailabilityDecisionsPage } from "@/features/kitchen";
 import {
   AiCopilotPage,
+  OperationalActionsPage,
   AuditPage,
   DeliveryOpsPage,
   KitchenOpsPage,
@@ -128,6 +129,14 @@ export const managementConfig: PortalConfig = {
       task: 15,
       permission: "management.ai.copilot",
       element: gate("management.ai.copilot", <AiCopilotPage />),
+    },
+    {
+      to: "/management/actions",
+      label: "Operational Actions",
+      Icon: ClipboardCheck,
+      task: 15,
+      permission: "management.ai.actions",
+      element: gate("management.ai.actions", <OperationalActionsPage />),
     },
     {
       to: "/management/menu-publication",

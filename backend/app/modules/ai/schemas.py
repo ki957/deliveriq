@@ -45,3 +45,24 @@ class CopilotOut(BaseModel):
     simulated: bool
     knowledge_status: str
     read_only: bool = True
+
+
+class ActionRequestIn(BaseModel):
+    request: str = Field(min_length=1, max_length=2000)
+
+
+class ActionProposalOut(BaseModel):
+    status: str
+    message: str
+    proposal_id: uuid.UUID | None
+    action: str | None
+    exact_change: dict[str, object] | None
+    simulated: bool
+
+
+class ActionConfirmIn(BaseModel):
+    idempotency_key: uuid.UUID
+
+
+class ActionResultOut(BaseModel):
+    result: dict[str, object]

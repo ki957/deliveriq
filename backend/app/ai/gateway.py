@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
@@ -80,6 +81,14 @@ def complete(
     if model.provider != "mock":
         raise GatewayError("Live AI provider is not configured")
     return MockAdapter().complete(model=model, messages=messages), model.logical_name
+
+
+def structured_proposal[T](harness: str, request: str, mock_handler: Callable[[str], T]) -> tuple[T, str]:
+    """Select by harness capabilities; the mock handler returns a typed proposal, never executes it."""
+    model = select_model(load_catalog(), harness)
+    if model.provider != "mock":
+        raise GatewayError("Live AI provider is not configured")
+    return mock_handler(request), model.logical_name
 
 
 def ai_enabled() -> bool:

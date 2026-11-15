@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from app.ai.gateway import GatewayError, complete, load_catalog, select_model
+from app.ai.gateway import GatewayError, complete, load_catalog, select_model, structured_proposal
 
 
 def test_catalog_has_provider_neutral_harness() -> None:
@@ -21,3 +21,13 @@ def test_mock_gateway_is_deterministic_and_does_not_expose_provider() -> None:
     assert model == "fast"
     assert "show status" in answer
     assert "mock" not in answer.lower()
+
+
+def test_actions_proposal_uses_capability_checked_gateway() -> None:
+    proposal, model = structured_proposal(
+        "management_actions", "requested action", lambda prompt: {"request": prompt}
+    )
+    assert model == "fast"
+    assert proposal == {"request": "requested action"}
+    with pytest.raises(GatewayError, match="does not support"):
+        select_model(load_catalog(Path("backend/config/ai_models.yaml")), "management_actions", "guard")

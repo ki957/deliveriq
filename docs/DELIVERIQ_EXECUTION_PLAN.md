@@ -468,6 +468,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 15A — Management Operational Actions
 
+- **Status:** Four service-backed actions implemented with confirmation, audit, idempotency and stale-state refusal (DDR-120). Promotions, review moderation and regional settings are gated until their services and rules exist; exceptional refunds remain disabled (DDR-44).
 - **Depends on:** Tasks 10, 15. Prompt v1 per `RAG_AI_DESIGN.md` §13.1 (DDR-93).
 - **Gated features:** exceptional-refund approval action (A, DDR-44).
 - **Scope:** typed allowlisted tools per DDR-69, CA only. Ships the harness `README.md` card (DDR-80).
