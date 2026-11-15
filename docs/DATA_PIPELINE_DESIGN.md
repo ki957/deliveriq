@@ -1,6 +1,6 @@
 # DeliverIQ — Data Pipeline Design
 
-**Version:** 1.1 (approved 2026-11-12; v1.1 adds AI maintenance jobs, §14)
+**Version:** 1.2 (approved 2026-11-14; P3 profiles, isolation and validation, DDR-118)
 **Status:** Approved design; implementation not started
 **Related:** `DELIVERIQ_EXECUTION_PLAN.md` v2.6, `RAG_AI_DESIGN.md` (Tasks 3, 5, 9, 10, 12, 13, 14, 15, 16, 18, 20), `DOCKER_DEPLOYMENT_DESIGN.md`, `DESIGN_DECISION_REGISTER.md` (DDR-43, 46, 48, 50, 56, 57, 59, 63–67, 74–78), ETL spec DE-0…DE-11, `KITCHEN_SOURCE_VALIDATION.md`
 
@@ -128,6 +128,10 @@ flowchart LR
 ```
 
 Real and synthetic data never share a table. Only the dbt code is shared.
+
+P3 implementation (DDR-118): `synthetic.events` carries a demo/ML profile, immutable generation manifest and frozen reference snapshot. Synthetic staging, core and marts are built in `analytics_synthetic`; ML relations use `ml_` aliases and never contribute to demo reports. Seed 56 and all distribution/timing values in DDR-118 are labelled test defaults. Demo has 7 days × 10 orders; ML has 90 days × 30 orders, generated explicitly through the CLI once. Replays reuse the persisted date anchor, references and event IDs.
+
+P3 runs as `p3_synth`, reads only approved reference columns, and never reads operational orders, users, recipes, raw events or live GPS. Synthetic rows have database-enforced flags; production refuses generation and detects persisted synthetic fixtures through a counts-only guard. Three full demo tracks live in `synthetic`, not `app.delivery_locations`. API reads of generation metadata and tracks are narrow and region-scoped; reports read demo marts/dimensions only. A failed build withholds freshness and makes synthetic reports unavailable until validation succeeds (DDR-118 (12)).
 
 ### 2.5 K1–K3 knowledge ingestion
 

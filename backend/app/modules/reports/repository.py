@@ -69,6 +69,16 @@ def freshness(conn: Connection, dataset: str) -> datetime | None:
     return value
 
 
+def synthetic_dates(conn: Connection) -> tuple[date, date] | None:
+    row = conn.execute(
+        text(
+            "SELECT date_from, date_to FROM ops.synthetic_status() "
+            "WHERE profile = 'demo' AND build_status = 'ready'"
+        )
+    ).first()
+    return (row[0], row[1]) if row else None
+
+
 def totals(conn: Connection, dataset: str, kitchen_ids: list[uuid.UUID], start: date, end: date) -> Totals:
     s = _schema(dataset)
     p = {"k": kitchen_ids, "s": start, "e": end}

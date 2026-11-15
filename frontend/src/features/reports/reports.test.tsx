@@ -35,6 +35,8 @@ function report(overrides: Partial<Report> = {}): Report {
     available: true,
     unavailable_reason: null,
     fresh_as_of: "2026-11-10T10:00:00Z",
+    generated_from: null,
+    generated_to: null,
     freshness_warn_hours: 24,
     stale: true,
     date_from: "2026-11-06",
@@ -70,6 +72,29 @@ function report(overrides: Partial<Report> = {}): Report {
 }
 
 describe("reports (DDR-117)", () => {
+  it("offers the generated simulated dates without silently changing filters", async () => {
+    mockApi({
+      "GET /api/v1/me": () => json(RM),
+      "GET /api/v1/management/reports": (request) =>
+        json(
+          new URL(request.url).searchParams.get("dataset") === "analytics_synthetic"
+            ? report({
+                dataset: "analytics_synthetic",
+                dataset_label: "Simulated",
+                generated_from: "2026-11-07",
+                generated_to: "2026-11-13",
+              })
+            : report(),
+        ),
+    });
+    renderAt("/management/reports");
+    await userEvent.click(await screen.findByRole("button", { name: "Simulated" }));
+    expect(await screen.findByTestId("demo-dates")).toHaveTextContent("2026-11-07 to 2026-11-13");
+    expect(screen.getByLabelText("From")).toHaveValue("");
+    await userEvent.click(screen.getByRole("button", { name: "Use demo dates" }));
+    expect(screen.getByLabelText("From")).toHaveValue("2026-11-07");
+    expect(screen.getByLabelText("To")).toHaveValue("2026-11-13");
+  });
   it("shows each KPI with its formula, source and pending-approval status, and labels real data", async () => {
     mockApi({ "GET /api/v1/me": () => json(RM), "GET /api/v1/management/reports": () => json(report()) });
     renderAt("/management/reports");

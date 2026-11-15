@@ -11,7 +11,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import Connection
+from sqlalchemy import Connection, text
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import get_settings
@@ -27,12 +27,13 @@ from app.modules.pipelines import repository as repo
 TRIGGERABLE: dict[str, frozenset[str]] = {
     "p1_sop": frozenset({"sop", "fault:records", "fault:structural"}),
     "p2_elt": frozenset({"run", "fault:reconciliation"}),
+    "p3_synthetic": frozenset({"demo", "ml"}),
 }
-DEFAULT_INPUT: dict[str, str] = {"p1_sop": "sop", "p2_elt": "run"}
+DEFAULT_INPUT: dict[str, str] = {"p1_sop": "sop", "p2_elt": "run", "p3_synthetic": "demo"}
 # TEST fault-injection inputs (DDR-65, DDR-104): local/test only, always flagged as test runs.
 FAULT_INPUTS = frozenset({"fault:records", "fault:structural", "fault:reconciliation"})
 # Runs carry the region of the kitchen they load into (DDR-105).
-RUN_KITCHEN: dict[str, str] = {"p1_sop": "KIT-CHN-001"}
+RUN_KITCHEN: dict[str, str] = {"p1_sop": "KIT-CHN-001", "p3_synthetic": "KIT-CHN-001"}
 ERROR_PAGE = 500
 TERMINAL = frozenset({"succeeded", "completed_with_quarantine", "failed", "cancelled"})
 RETRYABLE = frozenset({"failed", "cancelled"})
@@ -110,8 +111,35 @@ def available_inputs(pipeline: str) -> list[str]:
     allowed = TRIGGERABLE.get(pipeline, frozenset())
     if not get_settings().is_local_or_test:
         allowed = allowed - FAULT_INPUTS
+        if pipeline == "p3_synthetic":
+            allowed = frozenset()
+    if pipeline == "p3_synthetic":
+        allowed = allowed - {"ml"}
     default = DEFAULT_INPUT.get(pipeline)
     return sorted(allowed, key=lambda ref: (ref != default, ref))
+
+
+def p3_status(principal: Principal) -> list[dict[str, object]]:
+    regions = view_scope(principal)
+    with get_engine().connect() as conn:
+        rows = conn.execute(text("SELECT * FROM ops.synthetic_status() ORDER BY profile")).mappings().all()
+    return [dict(row) for row in rows if regions is None or row["region_id"] in regions]
+
+
+def p3_tracks(principal: Principal) -> list[dict[str, object]]:
+    regions = view_scope(principal)
+    with get_engine().connect() as conn:
+        rows = conn.execute(text("SELECT * FROM ops.synthetic_tracks()")).mappings().all()
+    return [dict(row) for row in rows if regions is None or row["region_id"] in regions]
+
+
+def p3_track(principal: Principal, order_id: uuid.UUID) -> list[dict[str, object]]:
+    regions = view_scope(principal)
+    with get_engine().connect() as conn:
+        rows = conn.execute(text("SELECT * FROM ops.synthetic_track(:id)"), {"id": order_id}).mappings().all()
+    if not rows or (regions is not None and rows[0]["region_id"] not in regions):
+        raise NotFound
+    return [dict(row) for row in rows]
 
 
 # DDR-116 (12): outbox backlog age above this is a warning (labelled test default, not a business value).
@@ -246,6 +274,10 @@ def _queue(
     ref = input_ref or DEFAULT_INPUT[pipeline]
     if ref not in allowed:
         raise Conflict(f"{pipeline} does not accept input {ref}")
+    if pipeline == "p3_synthetic" and (
+        not get_settings().is_local_or_test or (ref == "ml" and trigger != "cli")
+    ):
+        raise Conflict("P3 demo is local/test only; ML requires the CLI")
     if ref in FAULT_INPUTS:
         if not get_settings().is_local_or_test:
             raise FaultInputRefused
@@ -325,6 +357,8 @@ def retry(principal: Principal, run_id: uuid.UUID) -> repo.RunRow:
         role = _actor_role(principal, Permission.PIPELINES_OPERATE, original.region_id)
         if original.status not in RETRYABLE:
             raise Conflict("Only failed or cancelled runs can be retried")
+        if original.pipeline == "p3_synthetic" and original.input_ref == "ml":
+            raise Forbidden
         new_id, region_id = _queue(
             conn,
             pipeline=original.pipeline,

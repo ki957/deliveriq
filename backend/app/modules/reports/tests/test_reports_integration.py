@@ -66,14 +66,18 @@ def test_scope_rm_sees_own_kitchens_ca_all_others_denied(world: World, team: Tea
         assert denied.get(R).status_code == 403
 
 
-def test_ranges_are_bounded_and_the_synthetic_dataset_is_labelled_not_built(team: Team) -> None:
+def test_ranges_are_bounded_and_the_synthetic_dataset_is_labelled(team: Team) -> None:
     long = team.ca.get(R, params={"date_from": "2026-01-01", "date_to": "2026-03-01"})
     assert long.status_code == 422 and "31 days" in long.text
     assert team.ca.get(R, params={"dataset": "staging"}).status_code == 422  # whitelist only
     synthetic = team.ca.get(R, params={"dataset": "analytics_synthetic"}).json()
-    assert (synthetic["available"], synthetic["unavailable_reason"]) == (False, "Not built yet (Task 14)")
-    assert synthetic["kpis"] == [] and synthetic["dataset_label"] == "Simulated"
-    assert team.ca.get(f"{R}.csv", params={"dataset": "analytics_synthetic"}).status_code == 422
+    assert synthetic["dataset_label"] == "Simulated"
+    if synthetic["available"]:
+        assert synthetic["generated_from"] and synthetic["generated_to"]
+        assert team.ca.get(f"{R}.csv", params={"dataset": "analytics_synthetic"}).status_code == 200
+    else:
+        assert synthetic["kpis"] == []
+        assert team.ca.get(f"{R}.csv", params={"dataset": "analytics_synthetic"}).status_code == 422
 
 
 def test_csv_export_is_scoped_labelled_and_audited(world: World, team: Team) -> None:

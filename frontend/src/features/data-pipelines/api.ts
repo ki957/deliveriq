@@ -10,6 +10,9 @@ export type Run = components["schemas"]["RunSummaryOut"];
 export type RunDetail = components["schemas"]["RunDetailOut"];
 export type Backlog = components["schemas"]["BacklogOut"];
 export type P2Status = components["schemas"]["P2StatusOut"];
+export type P3Status = components["schemas"]["P3StatusOut"];
+export type P3Track = components["schemas"]["P3TrackOut"];
+export type P3Point = components["schemas"]["P3PointOut"];
 
 // Live stage hints (DDR-115 (13)); REST polling every 2 s while a run is active and hints are down (DDR-105).
 export const POLL_MS = 2000;
@@ -28,6 +31,9 @@ export const keys = {
   run: (id: string) => ["pipelines", "run", id] as const,
   backlog: ["pipelines", "backlog"] as const,
   p2: ["pipelines", "p2-status"] as const,
+  p3: ["pipelines", "p3-status"] as const,
+  p3Tracks: ["pipelines", "p3-tracks"] as const,
+  p3Track: (id: string) => ["pipelines", "p3-track", id] as const,
 };
 
 function usePipelinesLive(): boolean {
@@ -64,6 +70,31 @@ export function useP2Status(enabled: boolean) {
     enabled,
     refetchInterval: live ? false : 10_000,
     refetchIntervalInBackground: false,
+  });
+}
+
+export function useP3Status(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.p3,
+    queryFn: async () => unwrap(await api.GET("/api/v1/pipelines/p3/status")),
+    enabled,
+  });
+}
+
+export function useP3Tracks(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.p3Tracks,
+    queryFn: async () => unwrap(await api.GET("/api/v1/pipelines/p3/tracks")),
+    enabled,
+  });
+}
+
+export function useP3Track(id: string) {
+  return useQuery({
+    queryKey: keys.p3Track(id),
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/pipelines/p3/tracks/{order_id}", { params: { path: { order_id: id } } })),
+    enabled: Boolean(id),
   });
 }
 
@@ -111,7 +142,7 @@ export function useTriggerRun() {
     mutationFn: async ({ pipeline, inputRef }: { pipeline: string; inputRef: string }) =>
       unwrap(
         await api.POST("/api/v1/pipelines/runs", {
-          body: { pipeline, input_ref: inputRef as "sop" | "fault:records" | "fault:structural" },
+          body: { pipeline, input_ref: inputRef as "sop" | "fault:records" | "fault:structural" | "demo" },
         }),
       ),
     onSuccess: invalidate,
@@ -168,6 +199,10 @@ export function inputLabel(ref: string | null | undefined): string {
       return "Build analytics from landed events";
     case "fault:reconciliation":
       return "TEST – fault: reconciliation mismatch";
+    case "demo":
+      return "Simulated data – 7-day demo (70 orders)";
+    case "ml":
+      return "Simulated data – offline ML set (2,700 orders)";
     default:
       return ref;
   }

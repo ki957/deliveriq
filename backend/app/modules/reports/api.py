@@ -43,6 +43,8 @@ def _out(r: service.Report) -> ReportOut:
         available=r.available,
         unavailable_reason=None if r.available else "Not built yet (Task 14)",
         fresh_as_of=r.fresh_as_of,
+        generated_from=r.generated_from,
+        generated_to=r.generated_to,
         freshness_warn_hours=d.FRESHNESS_WARN_HOURS,
         stale=r.fresh_as_of is None
         or datetime.now(UTC) - r.fresh_as_of > timedelta(hours=d.FRESHNESS_WARN_HOURS),

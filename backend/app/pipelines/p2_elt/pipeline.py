@@ -32,11 +32,11 @@ BACKLOG_WARN_SECONDS = 300
 DATASET = "analytics"
 
 
-def _dbt_env() -> dict[str, str]:
+def _dbt_env(role: str = "p2_elt") -> dict[str, str]:
     settings, roles = get_settings(), get_pipeline_roles()
-    secret = roles.p2_elt
+    secret = roles.p2_elt if role == "p2_elt" else roles.p3_synth
     if secret is None:
-        raise StructuralError("no credentials configured for p2_elt")
+        raise StructuralError(f"no credentials configured for {role}")
     work = Path(tempfile.gettempdir()) / "dbt"
     return {
         "PATH": os.environ.get("PATH", ""),
@@ -44,7 +44,8 @@ def _dbt_env() -> dict[str, str]:
         "DB_HOST": settings.db_host,
         "DB_PORT": str(settings.db_port),
         "POSTGRES_DB": settings.db_name,
-        "DBT_P2_ELT_PASSWORD": secret.get_secret_value(),
+        "DBT_USER": role,
+        "DBT_PASSWORD": secret.get_secret_value(),
         "DBT_PROFILES_DIR": roles.dbt_project_dir,
         "DBT_TARGET_PATH": str(work / "target"),
         "DBT_LOG_PATH": str(work / "logs"),
@@ -53,9 +54,11 @@ def _dbt_env() -> dict[str, str]:
     }
 
 
-def run_dbt(command: str, select: str | None, dbt_vars: dict[str, Any]) -> list[dict[str, Any]]:
+def run_dbt(
+    command: str, select: str | None, dbt_vars: dict[str, Any], *, role: str = "p2_elt"
+) -> list[dict[str, Any]]:
     """Run one dbt command; returns `run_results.json` results. Only node names leave this function."""
-    env = _dbt_env()
+    env = _dbt_env(role)
     args = [sys.executable, "-m", "dbt.cli.main", command, "--vars", json.dumps(dbt_vars)]
     if select:
         args += ["--select", select]

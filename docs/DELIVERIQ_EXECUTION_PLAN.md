@@ -1,6 +1,6 @@
 # DeliverIQ — Execution Plan
 
-**Version:** 2.6 (aligned with `DESIGN_DECISION_REGISTER.md` incl. owner decisions of 2026-11-12: DDR-16 closed, DDR-49–DDR-94)
+**Version:** 2.7 (Task 14 P3 decisions approved 2026-11-14, DDR-118)
 **Status:** Approved sequence; implementation not started. Docker/deployment, data pipeline, code structure and RAG/AI designs approved.
 **Companion documents:** `SOURCE_DOCUMENT_INVENTORY.md`, `PORTAL_REQUIREMENTS_MATRIX.md`, `DESIGN_DECISION_REGISTER.md` (DDR-nn), `KITCHEN_SOURCE_VALIDATION.md`, `DOCKER_DEPLOYMENT_DESIGN.md`, `DATA_PIPELINE_DESIGN.md`, `CODE_STRUCTURE_DESIGN.md`, `RAG_AI_DESIGN.md`
 
@@ -437,6 +437,8 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 ### Task 14 — Labelled synthetic data generator, P3
 
 - **Depends on:** Task 12.
+- **Decisions:** DDR-118 (1)–(12); split 14A backend/dbt and 14B UI. Demo and ML use separate dbt relations within `analytics_synthetic`; generation is local/test only. ML is explicitly CLI-triggered once.
+- **Status:** approved; 14A implementation in progress, 14B UI acceptance pending.
 - **Acceptance criteria:**
   - P3 runs on the pipeline framework and appears in the Data group.
   - P3 writes `synthetic.events`; the same dbt models build `analytics_synthetic` (DDR-74). Real and synthetic never share a table.

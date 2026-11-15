@@ -59,6 +59,15 @@ const PIPELINES: Pipeline[] = [
     last_run: null,
   },
   {
+    name: "p3_synthetic",
+    display_name: "P3 synthetic data",
+    pipeline_group: "DATA",
+    is_heavy: true,
+    implemented: true,
+    inputs: ["demo"],
+    last_run: null,
+  },
+  {
     name: "k2_kitchen",
     display_name: "K2 Kitchen knowledge",
     pipeline_group: "KNOWLEDGE",
@@ -262,6 +271,30 @@ describe("Data & Pipelines overview", () => {
 });
 
 describe("pipeline page", () => {
+  it("shows scoped simulated status and keeps ML out of the UI", async () => {
+    mockApi({
+      "GET /api/v1/me": () => json(CA),
+      "GET /api/v1/pipelines": () => json(PIPELINES),
+      "GET /api/v1/pipelines/runs": () => json([]),
+      "GET /api/v1/pipelines/p3/status": () =>
+        json([
+          {
+            profile: "demo",
+            date_from: "2026-11-07",
+            date_to: "2026-11-13",
+            build_status: "ready",
+            generator_seed: 56,
+            generated_at: "2026-11-14T10:00:00Z",
+          },
+        ]),
+      "GET /api/v1/pipelines/p3/tracks": () => json([]),
+    });
+    renderAt("/management/data-pipelines/p3_synthetic");
+    expect(await screen.findByRole("heading", { name: "Simulated data" })).toBeInTheDocument();
+    expect(await screen.findByText(/2026-11-07 to 2026-11-13/)).toBeInTheDocument();
+    expect(within(screen.getByLabelText("Input")).getAllByRole("option")).toHaveLength(1);
+    expect(screen.getByText(/offline ML set is generated explicitly from the CLI/)).toBeInTheDocument();
+  });
   it("lets a Central Administrator run P1 with a labelled TEST fault input", async () => {
     const api = mockApi({
       "GET /api/v1/me": () => json(CA),

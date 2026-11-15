@@ -1,5 +1,7 @@
 # Pipelines module (Data & Pipelines API)
 
+P3 demo runs are available in local/test (DDR-118); ML is CLI-only. The module exposes scoped, read-only P3 status and GPS track endpoints. RM sees only their region's runs and tracks; CA sees all.
+
 **Purpose and scope:** list pipelines, inspect runs and queue, cancel or retry them (DATA_PIPELINE_DESIGN §11–12; DDR-63, DDR-64, DDR-105). The API only records requests; the worker executes runs (`app/pipelines`). The Data & Pipelines UI is Task 5C.
 
 | Item | Value |

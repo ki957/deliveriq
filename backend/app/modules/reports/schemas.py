@@ -54,6 +54,8 @@ class ReportOut(BaseModel):
     available: bool
     unavailable_reason: str | None
     fresh_as_of: datetime | None
+    generated_from: date | None
+    generated_to: date | None
     freshness_warn_hours: int
     # Freshness older than the warning threshold (labelled test default, DDR-117 (11)).
     stale: bool

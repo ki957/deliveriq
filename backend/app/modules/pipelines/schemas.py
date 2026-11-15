@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -47,6 +47,35 @@ class FreshnessOut(BaseModel):
     dataset: str
     fresh_as_of: datetime
     run_id: uuid.UUID
+
+
+class P3StatusOut(BaseModel):
+    profile: Literal["demo", "ml"]
+    generator_seed: int
+    generator_version: int
+    date_from: date
+    date_to: date
+    region_id: uuid.UUID
+    kitchen_id: uuid.UUID
+    content_sha256: str | None
+    generated_at: datetime | None
+    build_status: str
+    pipeline_run_id: uuid.UUID | None
+    dataset_label: Literal["Simulated data"] = "Simulated data"
+
+
+class P3TrackOut(BaseModel):
+    order_id: uuid.UUID
+    region_id: uuid.UUID
+    kitchen_id: uuid.UUID
+
+
+class P3PointOut(P3TrackOut):
+    rider_key: str
+    sequence: int
+    occurred_at: datetime
+    latitude: float
+    longitude: float
 
 
 class ScheduleOut(BaseModel):
@@ -121,9 +150,10 @@ class RunCreateIn(BaseModel):
     pipeline: str = Field(pattern=r"^[a-z][a-z0-9_]+$", max_length=40, examples=["p1_sop"])
     # P1 reads the committed SOP; the fault inputs are TEST files, local/test only (DDR-65, DDR-104).
     # P2: "run"; its TEST fault input "fault:reconciliation" is local/test only (DDR-116).
-    input_ref: Literal["sop", "fault:records", "fault:structural", "run", "fault:reconciliation"] | None = (
-        None
-    )
+    input_ref: (
+        Literal["sop", "fault:records", "fault:structural", "run", "fault:reconciliation", "demo", "ml"]
+        | None
+    ) = None
 
 
 class CancelOut(BaseModel):

@@ -1,6 +1,10 @@
 version: 2
 
 sources:
+  - name: synthetic
+    tables:
+      - name: events
+      - name: manifests
   - name: raw
     description: Every landed event (append-only; P2 landing, Task 12A).
     tables:

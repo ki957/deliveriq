@@ -4015,6 +4015,184 @@
         "title": "P2StatusOut",
         "type": "object"
       },
+      "P3PointOut": {
+        "properties": {
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "latitude": {
+            "title": "Latitude",
+            "type": "number"
+          },
+          "longitude": {
+            "title": "Longitude",
+            "type": "number"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "region_id": {
+            "format": "uuid",
+            "title": "Region Id",
+            "type": "string"
+          },
+          "rider_key": {
+            "title": "Rider Key",
+            "type": "string"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "order_id",
+          "region_id",
+          "kitchen_id",
+          "rider_key",
+          "sequence",
+          "occurred_at",
+          "latitude",
+          "longitude"
+        ],
+        "title": "P3PointOut",
+        "type": "object"
+      },
+      "P3StatusOut": {
+        "properties": {
+          "build_status": {
+            "title": "Build Status",
+            "type": "string"
+          },
+          "content_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Sha256"
+          },
+          "dataset_label": {
+            "const": "Simulated data",
+            "default": "Simulated data",
+            "title": "Dataset Label",
+            "type": "string"
+          },
+          "date_from": {
+            "format": "date",
+            "title": "Date From",
+            "type": "string"
+          },
+          "date_to": {
+            "format": "date",
+            "title": "Date To",
+            "type": "string"
+          },
+          "generated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At"
+          },
+          "generator_seed": {
+            "title": "Generator Seed",
+            "type": "integer"
+          },
+          "generator_version": {
+            "title": "Generator Version",
+            "type": "integer"
+          },
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "pipeline_run_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pipeline Run Id"
+          },
+          "profile": {
+            "enum": [
+              "demo",
+              "ml"
+            ],
+            "title": "Profile",
+            "type": "string"
+          },
+          "region_id": {
+            "format": "uuid",
+            "title": "Region Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "profile",
+          "generator_seed",
+          "generator_version",
+          "date_from",
+          "date_to",
+          "region_id",
+          "kitchen_id",
+          "content_sha256",
+          "generated_at",
+          "build_status",
+          "pipeline_run_id"
+        ],
+        "title": "P3StatusOut",
+        "type": "object"
+      },
+      "P3TrackOut": {
+        "properties": {
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "region_id": {
+            "format": "uuid",
+            "title": "Region Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "region_id",
+          "kitchen_id"
+        ],
+        "title": "P3TrackOut",
+        "type": "object"
+      },
       "PaymentMethod": {
         "enum": [
           "SIM_UPI",
@@ -4807,6 +4985,30 @@
             "title": "Freshness Warn Hours",
             "type": "integer"
           },
+          "generated_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated From"
+          },
+          "generated_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated To"
+          },
           "ingredients": {
             "items": {
               "$ref": "#/components/schemas/IngredientOut"
@@ -4884,6 +5086,8 @@
           "available",
           "unavailable_reason",
           "fresh_as_of",
+          "generated_from",
+          "generated_to",
           "freshness_warn_hours",
           "stale",
           "date_from",
@@ -5064,7 +5268,9 @@
                   "fault:records",
                   "fault:structural",
                   "run",
-                  "fault:reconciliation"
+                  "fault:reconciliation",
+                  "demo",
+                  "ml"
                 ],
                 "type": "string"
               },
@@ -10189,6 +10395,103 @@
           }
         },
         "summary": "P2 Status",
+        "tags": [
+          "pipelines"
+        ]
+      }
+    },
+    "/api/v1/pipelines/p3/status": {
+      "get": {
+        "operationId": "p3_status_api_v1_pipelines_p3_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/P3StatusOut"
+                  },
+                  "title": "Response P3 Status Api V1 Pipelines P3 Status Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "P3 Status",
+        "tags": [
+          "pipelines"
+        ]
+      }
+    },
+    "/api/v1/pipelines/p3/tracks": {
+      "get": {
+        "operationId": "p3_tracks_api_v1_pipelines_p3_tracks_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/P3TrackOut"
+                  },
+                  "title": "Response P3 Tracks Api V1 Pipelines P3 Tracks Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "P3 Tracks",
+        "tags": [
+          "pipelines"
+        ]
+      }
+    },
+    "/api/v1/pipelines/p3/tracks/{order_id}": {
+      "get": {
+        "operationId": "p3_track_api_v1_pipelines_p3_tracks__order_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/P3PointOut"
+                  },
+                  "title": "Response P3 Track Api V1 Pipelines P3 Tracks  Order Id  Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "P3 Track",
         "tags": [
           "pipelines"
         ]

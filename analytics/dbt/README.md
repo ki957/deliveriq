@@ -1,11 +1,13 @@
 # dbt project: P2 staging, core and marts
 
+P3 (DDR-118) reuses these models with `dataset: analytics_synthetic` and a `profile` of `demo` or `ml`. Its source is `synthetic.events`; synthetic staging, dimensions, facts and marts all land in `analytics_synthetic`. The ML relations use `ml_` aliases. The `p3_synth` role runs dbt for P3, and the same critical tests apply with synthetic flags required. Demo relations alone feed Reports.
+
 **Purpose and scope:** the transformations of P2 (DATA_PIPELINE §5, §7, §8; DDR-74, DDR-75, DDR-116 (2)–(4), (7), (11), (12); ADR-DATA-002). dbt Core 1.12.7 with dbt-postgres 1.11.0 (worker group only), run by the P2 pipeline inside the worker as `p2_elt`, `threads` 2. The management reports (Task 13, `backend/app/modules/reports`) read the marts and dimensions; Task 14 builds `analytics_synthetic` with `--vars '{dataset: analytics_synthetic}'`.
 
 | Item | Value |
 | --- | --- |
 | Run by | `backend/app/pipelines/p2_elt/pipeline.py` (stages dbt staging, core, marts, tests); mounted read-only at `/srv/analytics/dbt`; `target/` and `logs/` under `/tmp` |
-| Connection | `profiles.yml` reads `DB_HOST`, `DB_PORT`, `POSTGRES_DB` and `DBT_P2_ELT_PASSWORD` from the environment; no secret in any file |
+| Connection | `profiles.yml` reads `DB_HOST`, `DB_PORT`, `POSTGRES_DB`, `DBT_USER` and `DBT_PASSWORD` from the worker subprocess environment; no secret in any file |
 | Sources | `raw.events` (accepted, non-TEST events only); `app` reference tables by column (regions, kitchens without address or location, menu categories, menu items, ingredients) |
 | Staging (`staging`) | `stg_events`: typed, one row per event id and per (type, idempotency key) |
 | Core (`analytics`) | `dim_date`, `dim_region`, `dim_kitchen`, `dim_menu_item`, `dim_ingredient`; `fact_orders` (with `customer_key`), `fact_order_items`, `fact_payments`, `fact_inventory_movements`, `fact_kitchen_stage_events`, `fact_deliveries` |

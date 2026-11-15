@@ -219,7 +219,9 @@ test("staff access: an RM adds and removes an agent; only a CA may grant Regiona
 
   const name = `TEST – E2E Agent ${Date.now() % 100000}`;
   await rm.getByLabel("Name").fill(name);
-  await rm.getByLabel("Mobile number").fill(newTestMobile());
+  // Staff uses 01000–09999; concurrent customer tests use 10000–99999.
+  const staffMobile = `+91-00000-${String(1000 + Math.floor(Math.random() * 9000)).padStart(5, "0")}`;
+  await rm.getByLabel("Mobile number").fill(staffMobile);
   await roles.selectOption("DELIVERY_AGENT");
   await rm.getByLabel("Reason").fill("E2E: new agent for the evening shift");
   await rm.getByRole("button", { name: "Add role" }).click();

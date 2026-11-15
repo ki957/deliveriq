@@ -257,6 +257,7 @@ Note: #4 grants Kitchen Staff "view low-stock alerts", while #6 §15.1 lists `ge
 | MG-10 | Navigation: shared modules + RM-only + CA-only sections; permission-derived | #10 §13 |
 | MG-11 | Management Copilot: read-only; region-scoped; evidence + time window + uncertainty | #10 §11, #9 |
 | MG-12 | Data Pipelines area: groups Data and Knowledge; CA triggers, cancels, retries and views all; RM views own-region runs only; others denied | DDR-63, DDR-64 |
+| MG-12-P3 | P3 demo runs and GPS previews labelled "Simulated data"; RM read-only in assigned regions; ML generation explicitly CLI-only; Simulated reports use validated demo marts and existing pending-definition labels | DDR-118 (9)–(12) |
 | MG-13 | Management Operational Actions: CA only; typed allowlisted tools with confirmation, same backend RBAC, idempotent, audited | DDR-68, DDR-69 |
 | MG-14 | Builder Agent: CA only; sandboxed code changes delivered as PRs; never merges or pushes to `main` | DDR-68, DDR-70, DDR-71 |
 | MG-15 | AI settings: CA only; move a harness to a model already in config; capability-checked; audited; applies without restart; reset to default; UI never adds providers or keys. AI health panel (CA only) | #10 §12, DDR-87 |

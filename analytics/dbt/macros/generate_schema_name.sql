@@ -3,7 +3,7 @@
     so real and synthetic rows never share a table (DDR-74). -#}
 {% macro generate_schema_name(custom_schema_name, node) -%}
     {%- set name = (custom_schema_name or target.schema) | trim -%}
-    {%- if name == 'analytics' and var('dataset', 'analytics') == 'analytics_synthetic' -%}
+    {%- if var('dataset', 'analytics') == 'analytics_synthetic' and name in ['analytics', 'staging'] -%}
         analytics_synthetic
     {%- else -%}
         {{ name }}

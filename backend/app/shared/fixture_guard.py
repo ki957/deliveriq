@@ -45,7 +45,10 @@ def fixture_counts(conn: Connection) -> dict[str, int]:
 
 
 def assert_no_fixtures(conn: Connection) -> None:
-    present = {table: n for table, n in fixture_counts(conn).items() if n}
+    synthetic = conn.execute(text("SELECT ops.synthetic_fixture_counts()")).scalar_one()
+    counts = fixture_counts(conn)
+    counts.update(synthetic)
+    present = {table: n for table, n in counts.items() if n}
     if present:
         detail = ", ".join(f"{table}={n}" for table, n in sorted(present.items()))
         raise FixtureRowsPresent(f"Refusing to start in production: TEST fixture rows present ({detail})")
