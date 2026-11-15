@@ -122,9 +122,9 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 
 ### 3.5 Per-module "README cards" (current behaviour, kept up to date)
 - `backend/app/modules/*/README.md`: identity, menu, recipes, pipelines, knowledge, customers, pricing, orders, payments, kitchen_ops, inventory, delivery, management, realtime, notifications, reports, health.
-- AI harness card: `backend/app/modules/ai/kitchen_copilot/README.md` (read-only Kitchen Copilot, hybrid retrieval with reduced-retrieval fallback, KM-approved knowledge only).
+- AI harness cards: `backend/app/modules/ai/kitchen_copilot/README.md` (read-only Kitchen Copilot, hybrid retrieval with reduced-retrieval fallback, KM-approved knowledge only) and `backend/app/modules/ai/customer_assistant/README.md` (Customer-only, read-only Assistant with Prompt Guard).
 - `backend/app/pipelines/README.md` (framework), `backend/app/pipelines/p2_elt/README.md`; `analytics/dbt/README.md` (models, tests, grants, the `dataset` var).
-- `frontend/src/features/*/README.md`: auth, ordering, recipes, approvals, data-pipelines, kitchen (including Kitchen Copilot), delivery, management, notifications, reports.
+- `frontend/src/features/*/README.md`: auth, ordering, recipes, approvals, data-pipelines, kitchen (including Kitchen Copilot), customer-assistant (gated approval card), delivery, management, notifications, reports.
 - These are the fastest way to learn what a module already does.
 
 ---
@@ -148,7 +148,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 1. Inspect the task (plan §7), the DDRs and the code it touches.
 2. Present a **plan + a decision sheet** in the §9 template: every value or behaviour the sources leave undefined, each with options and a ✔ recommendation. **Never invent** prices, thresholds, rules or formulas. Undefined values go on the sheet.
 3. Wait for the owner. Typical replies are "go + approve all" or "will do as u recommend".
-4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-122**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
+4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-123**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
 5. Build one task at a time on branch `task-NN-short-name`. Large tasks split into **A (backend)** and **B (UI)**.
 6. Verify (below), self-review against `CODE_STRUCTURE_DESIGN.md` §13 plus security, scope and leak controls, and grade findings Blocker/High/Medium/Low. Blocker and High must be fixed; Medium and Low are fixed or logged.
 7. Commit (stage **files by name**, never `git add .`; check no `.env` is staged) and report.
@@ -292,7 +292,7 @@ Rules:
 - One sheet per task, at the plan step.
 - Mark exactly one ✔ per item.
 - Name the class when it applies (B = don't build, A = build behind a disabled flag or labelled test default, P = label, G = gate; plan §5).
-- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-122**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
+- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-123**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
 
 ---
 
