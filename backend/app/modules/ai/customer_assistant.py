@@ -15,7 +15,6 @@ from app.core.permissions import Principal, Role
 from app.modules.ai.customer_rag import retrieve
 
 HARNESS = "customer_assistant"
-_INJECTION_MARKERS = ("ignore previous", "system prompt", "jailbreak", "developer message")
 
 
 class Invalid(Exception):
@@ -31,7 +30,7 @@ def _guard(question: str) -> tuple[bool, str]:
         return False, "off"
     # The mock classifier is deterministic in local/test; a classifier outage is non-blocking.
     try:
-        flagged = any(marker in question.lower() for marker in _INJECTION_MARKERS)
+        flagged, _model = gateway.classify("customer_assistant", question, "guard")
         return flagged, "blocked" if flagged else "clear"
     except Exception:
         return False, "unavailable"

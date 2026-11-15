@@ -92,6 +92,15 @@ def complete(
     return MockAdapter().complete(model=model, messages=messages), model.logical_name
 
 
+def classify(harness: str, text: str, logical_model: str = "guard") -> tuple[bool, str]:
+    """Provider-neutral classifier hook used by Prompt Guard; the local adapter is deterministic."""
+    model = select_model(load_catalog(), harness, logical_model)
+    if model.provider != "mock" or "classification" not in model.capabilities:
+        raise GatewayError("Prompt Guard classifier is not configured")
+    markers = ("ignore previous", "system prompt", "jailbreak", "developer message")
+    return any(marker in text.lower() for marker in markers), model.logical_name
+
+
 def structured_proposal[T](harness: str, request: str, mock_handler: Callable[[str], T]) -> tuple[T, str]:
     """Select by harness capabilities; the mock handler returns a typed proposal, never executes it."""
     model = select_model(load_catalog(), harness)
