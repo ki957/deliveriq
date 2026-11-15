@@ -117,9 +117,15 @@ def confirm_action(
 @kitchen_router.post("/copilot", response_model=KitchenCopilotOut)
 def ask_kitchen_copilot(body: KitchenCopilotIn, principal: CurrentPrincipal) -> KitchenCopilotOut:
     try:
-        answer, citations = kitchen_copilot.ask(
+        answer, citations, retrieval_mode = kitchen_copilot.ask_with_mode(
             principal, body.question, str(body.recipe_version_id) if body.recipe_version_id else None
         )
     except kitchen_copilot.Forbidden:
         raise HTTPException(status_code=403, detail="Forbidden") from None
-    return KitchenCopilotOut(answer=answer, citations=citations, grounded=bool(citations), simulated=True)
+    return KitchenCopilotOut(
+        answer=answer,
+        citations=citations,
+        grounded=bool(citations),
+        retrieval_mode=retrieval_mode,
+        simulated=True,
+    )

@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. Task 16A and 16B are built and verified on `task-16-kitchen-rag-copilot`; the owner confirmed MiniLM L6 v2 as the 16B winner. The last registered decision is **DDR-121**; migration head is **0026**.
+Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. Task 16A, 16B and 16C are built and verified on `task-16c-kitchen-rag-copilot`; the owner confirmed MiniLM L6 v2 as the 16B winner. The last registered decision is **DDR-122**; migration head is **0027**.
 
 | Task | Scope | State |
 |---|---|---|
@@ -60,17 +60,17 @@ Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Ta
 | 15A | Management Operational Actions (DDR-120) | ✅ merged (PR #28) |
 | 16A | Kitchen RAG text retrieval, K2 drafts, Kitchen Copilot | ✅ built and verified on `task-16-kitchen-rag-copilot` |
 | tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | 🟡 on `tooling-handover-refresh` |
-| 16B / 16C | Embedding winner, hybrid retrieval, KM approval and golden set | 16B ✅ benchmark verified; MiniLM L6 v2 confirmed as winner; 16C not started |
+| 16B / 16C | Embedding winner, hybrid retrieval, KM approval and golden set | ✅ built and verified; MiniLM L6 v2 confirmed; migration 0027 and KM approval APIs/UI landed |
 | 17–22 | See plan | ⬜ not started |
 
 **Milestones** (plan §4.1):
 - M1 Foundation (0–4): done.
 - M2 Core order flow (5–9): done.
 - M3 Ops & data (10–14): done; Task 14 is merged.
-- M4 AI (15–17): Task 15 and 15A are merged; Task 16A and 16B are built and verified. 16C remains the next task.
+- M4 AI (15–17): Task 15 and 15A are merged; Task 16A–16C are built and verified. Task 17 remains.
 - M5 ML & polish (18–22): not started.
 
-**Next:** plan Task 16C for hybrid retrieval, KM approval and the DDR-90 golden set. The confirmed winner is MiniLM L6 v2; no vector schema or index has been changed yet.
+**Next:** Task 17 Customer Assistant. Task 16C added the versioned MiniLM vector metadata/index, hybrid retrieval SQL, KM-scoped knowledge approval and the in-app DDR-90 golden-set gate. The draft benchmark file remains non-golden until approved cases are loaded.
 
 ---
 
@@ -95,7 +95,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 | File | What it is | Read when |
 |---|---|---|
 | `DELIVERIQ_EXECUTION_PLAN.md` | **The task list.** §5 decision classes (B/A/P/G) and §5.1 matrix; §5.2 TEST fixtures + the **8 leak controls**; §6 cross-cutting acceptance criteria for every UI task; §7 every task with Depends on / Gated features / Acceptance criteria / Status line; §8 dependency map | Start of every task |
-| `DESIGN_DECISION_REGISTER.md` | Every decision, DDR-01 → **DDR-121**. Part A Decided (owner tables and per-task rows through DDR-121), Part B former proposals (all decided), **Part C open items** (DDR-06, 15, 41, 42, 43, 44, 45, 46), out-of-scope list | Before any design choice; add a new DDR row per task's decisions |
+| `DESIGN_DECISION_REGISTER.md` | Every decision, DDR-01 → **DDR-122**. Part A Decided (owner tables and per-task rows through DDR-122), Part B former proposals (all decided), **Part C open items** (DDR-06, 15, 41, 42, 43, 44), out-of-scope list | Before any design choice; add a new DDR row per task's decisions |
 | `PORTAL_REQUIREMENTS_MATRIX.md` | Requirement IDs per portal: CU-*, KI-*, DL-*, MG-*, SH-*, PL-*; role-permission tables (§3.1 Kitchen, §5 Management); **§7 canonical status machines + display labels per portal**; §10 AI guardrails | Writing any feature or label |
 | `CODE_STRUCTURE_DESIGN.md` | Repo layout, module template (api/schemas/service/domain/repository), dependency rules, frontend feature layout, testing layers, **§13 review checklist** | Writing code; end-of-task review |
 | `DOCKER_DEPLOYMENT_DESIGN.md` | Compose profiles (`core`, `worker`, `e2e`, `osrm`, `agent`), RAM budget, which profiles may run together, §17 approved deviations | Touching infra or starting profiles |
@@ -119,8 +119,8 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 - **Never touch `/home/k/Downloads/task1/`** (the originals).
 
 ### 3.5 Per-module "README cards" (current behaviour, kept up to date)
-- `backend/app/modules/*/README.md`: identity, menu, recipes, pipelines, customers, pricing, orders, payments, kitchen_ops, inventory, delivery, management, realtime, notifications, reports, health.
-- AI harness card: `backend/app/modules/ai/kitchen_copilot/README.md` (read-only Kitchen Copilot, reduced full-text retrieval, no approved live knowledge yet).
+- `backend/app/modules/*/README.md`: identity, menu, recipes, pipelines, knowledge, customers, pricing, orders, payments, kitchen_ops, inventory, delivery, management, realtime, notifications, reports, health.
+- AI harness card: `backend/app/modules/ai/kitchen_copilot/README.md` (read-only Kitchen Copilot, hybrid retrieval with reduced-retrieval fallback, KM-approved knowledge only).
 - `backend/app/pipelines/README.md` (framework), `backend/app/pipelines/p2_elt/README.md`; `analytics/dbt/README.md` (models, tests, grants, the `dataset` var).
 - `frontend/src/features/*/README.md`: auth, ordering, recipes, approvals, data-pipelines, kitchen (including Kitchen Copilot), delivery, management, notifications, reports.
 - These are the fastest way to learn what a module already does.
@@ -146,7 +146,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 1. Inspect the task (plan §7), the DDRs and the code it touches.
 2. Present a **plan + a decision sheet** in the §9 template: every value or behaviour the sources leave undefined, each with options and a ✔ recommendation. **Never invent** prices, thresholds, rules or formulas. Undefined values go on the sheet.
 3. Wait for the owner. Typical replies are "go + approve all" or "will do as u recommend".
-4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-121**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
+4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-122**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
 5. Build one task at a time on branch `task-NN-short-name`. Large tasks split into **A (backend)** and **B (UI)**.
 6. Verify (below), self-review against `CODE_STRUCTURE_DESIGN.md` §13 plus security, scope and leak controls, and grade findings Blocker/High/Medium/Low. Blocker and High must be fixed; Medium and Low are fixed or logged.
 7. Commit (stage **files by name**, never `git add .`; check no `.env` is staged) and report.
@@ -165,9 +165,9 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Next task: 16C (Hybrid retrieval, KM approval and golden set)
+## 5. Completed task: 16C (Hybrid retrieval, KM approval and golden set)
 
-Task 16B is verified. The corrected DDR-89 run passes GTE and MiniLM; the Recall@5 tie and lower-RSS tie-break select MiniLM L6 v2, confirmed by the owner as DDR-121 point (7). No vector schema or index has been changed. The 90-case set remains draft, not the DDR-90 golden set; KM approval and in-app golden-set work remain in 16C under DDR-46.
+Task 16C is built and verified. Migration 0027 adds `vector(384)` MiniLM index metadata, HNSW cosine indexing, hybrid RRF retrieval, SHA-keyed Kitchen knowledge versions and audited KM approval functions. The Copilot preserves SQL scope, recipe-version pinning, production fixture refusal and reduced-retrieval fallback. The draft 90-case file remains labelled non-golden; the in-app DDR-90 gate refuses approval until approved cases exist. The last decision is DDR-122; next is Task 17.
 
 ## 6. Remaining tasks after 15A (full criteria in plan §7)
 
@@ -175,21 +175,21 @@ Task 16B is verified. The corrected DDR-89 run passes GTE and MiniLM; the Recall
 |---|---|---|
 | 14 Synthetic P3 | Labelled deterministic synthetic data and separate marts | ✅ merged (#26), DDR-74 separation |
 | 15 / 15A / 15B / 15C | AI gateway + Management Copilot; Operational Actions merged; Builder Agent sandbox and harness pending | DDR-46 content approval; DDR-68–71, 85–87 |
-| 16 | 16A verified; 16B benchmark and 16C after winner choice | DDR-45; DDR-46; no live knowledge before KM approval |
+| 16 | 16A–16C verified | DDR-121, DDR-122; no live knowledge before KM approval |
 | 17 Customer Assistant | Only after all portals complete | DDR-46 |
 | 18 / 19 | Demand forecast; ETA + assignment optimisation (advisory) | — |
 | 20 / 21 / 22 | Monitoring & reconciliation; E2E hardening; demo handover + runbooks + known limitations | — |
 
-**Still-open decisions** (register Part C): DDR-06 food-card Add (B, Task 6), DDR-15 background GPS (B), DDR-41 lost-mobile recovery (B), DDR-42 final kitchen defaults (A, test defaults in use), DDR-43 GPS interval (A), DDR-44 refund thresholds/KPIs/audit/YAML (B/A), DDR-45 embedding winner (B), DDR-46 knowledge approval (A). Follow plan §5: don't build B items, keep A items behind a disabled flag or labelled test default, and label P items.
+**Still-open decisions** (register Part C): DDR-06 food-card Add (B, Task 6), DDR-15 background GPS (B), DDR-41 lost-mobile recovery (B), DDR-42 final kitchen defaults (A, test defaults in use), DDR-43 GPS interval (A), DDR-44 refund thresholds/KPIs/audit/YAML (B/A). DDR-45 and DDR-46 are closed by DDR-121 and DDR-122. Follow plan §5: don't build B items, keep A items behind a disabled flag or labelled test default, and label P items.
 
 ---
 
 ## 7. Technical cheat-sheet
 
-Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Last host sample before benchmark work: **7.6 GiB available**.
+Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Task 16C migration head is **0027**. Last host sample before benchmark work: **7.6 GiB available**.
 
 ### Stack
-- **Backend:** FastAPI modular monolith; **sync** SQLAlchemy 2 + psycopg 3 (async only for WS/Redis/HTTP); PostgreSQL + PostGIS (+ pgvector later); Redis; Python with `uv`.
+- **Backend:** FastAPI modular monolith; **sync** SQLAlchemy 2 + psycopg 3 (async only for WS/Redis/HTTP); PostgreSQL + PostGIS + pgvector (Kitchen vector index migration 0027); Redis; Python with `uv`.
 - **Frontend:** React + TypeScript strict + Vite + Tailwind + TanStack Query + react-router; **API client generated from OpenAPI, never hand-written**.
 - **Realtime:** WebSocket `/api/v1/realtime` sends hints `{topic, kind, id}` (Postgres triggers → listener → Redis → hub); pages refetch REST and poll only while the socket is down (DDR-115).
 - **Data:** dbt-core 1.12.7 + dbt-postgres 1.11.0 (worker dependency group only), run by P2 as `p2_elt` (DDR-116); reports read marts and dims only (DDR-117).
@@ -197,7 +197,7 @@ Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE *
 
 ### Repo map
 - `backend/app/{core,shared,modules,pipelines,worker,cli}`
-- `backend/migrations/versions/0001–0026` (**head = 0026**; migration 0026 persists DDR-89 evaluation runs/results through worker-executable SECURITY DEFINER functions)
+- `backend/migrations/versions/0001–0027` (**head = 0027**; migration 0026 persists DDR-89 evaluation runs/results and migration 0027 adds Kitchen vector/index metadata, SHA-keyed approvals and golden-set gate)
 - `analytics/dbt/` (P2 models: staging, core, marts; tests; `generate_schema_name` macro)
 - `frontend/src/{app,portals,features,shared}`
 - `tests/e2e/{specs,__screenshots__}`
@@ -290,7 +290,7 @@ Rules:
 - One sheet per task, at the plan step.
 - Mark exactly one ✔ per item.
 - Name the class when it applies (B = don't build, A = build behind a disabled flag or labelled test default, P = label, G = gate; plan §5).
-- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-121**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
+- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-122**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
 
 ---
 
@@ -315,6 +315,6 @@ Rules:
 | 2026-11-12 | 12B / #23 | DDR-116 | dbt 1.12.7 + dbt-postgres 1.11.0 (worker group); `analytics/dbt` (staging, 11 core, 6 marts, 45 tests); P2 stages land → dbt → tests → publish freshness; migration 0015 (reference grants by column, `ops.dataset_freshness`, `ops.pipeline_schedules`, `ops.queue_due_schedules()`); `order.placed` carries `items`; P2 page; real marts empty (all TEST); framework integration tests used `p3_synthetic` as the not-yet-built pipeline stand-in |
 | 2026-11-12 | 13 / #24 | DDR-117 | `modules/reports` + `features/reports` (13 ETL §9 KPIs labelled pending DDR-44; Real/Simulated tabs; audited CSV); `management.reports.view`; migration 0016 (schema usage, `ops.operational_totals()`); dbt `grants` to app_api on marts and dims; P2 reconciles operational totals (6 critical checks); payment/delivery marts gain `kitchen_id` |
 | 2026-11-12 | tooling / branch `tooling-handover-refresh` | rules v1.2 | Handover refresh (status, Task 14 brief, gotchas, memory); builder switched from Claude Code to Codex: `CLAUDE.md` → `AGENTS.md`, `.claude/commands` → `.agents/skills`, guard hook → `.codex/hooks.json` (now also guards `apply_patch` and `.env` reads) |
-| 2026-11-15 | 16A / 16B / branch `task-16-kitchen-rag-copilot` | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121 | Migration 0026 persists evaluation evidence; corrected DDR-89 benchmark in the built worker image; owner confirmed MiniLM L6 v2 by the Recall@5/RSS tie-break; no vector schema or index changed and 16C not started |
+| 2026-11-15 | 16A / 16B / 16C / branch `task-16c-kitchen-rag-copilot` | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121–122 | Migration 0026 persists benchmark evidence; migration 0027 adds MiniLM 384 vector metadata/HNSW hybrid retrieval, SHA-keyed KM approval and the in-app DDR-90 gate; owner confirmed MiniLM L6 v2; draft benchmark set remains non-golden |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

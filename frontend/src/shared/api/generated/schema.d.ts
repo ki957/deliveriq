@@ -730,6 +730,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/knowledge/kitchen/golden-set": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Golden Set */
+        get: operations["golden_set_api_v1_knowledge_kitchen_golden_set_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/knowledge/kitchen/golden-set/{set_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Golden Set */
+        post: operations["approve_golden_set_api_v1_knowledge_kitchen_golden_set__set_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/knowledge/kitchen/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Versions */
+        get: operations["list_versions_api_v1_knowledge_kitchen_versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/knowledge/kitchen/versions/{version_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve */
+        post: operations["approve_api_v1_knowledge_kitchen_versions__version_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/knowledge/kitchen/versions/{version_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject */
+        post: operations["reject_api_v1_knowledge_kitchen_versions__version_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/management/ai/actions/proposals": {
         parameters: {
             query?: never;
@@ -2527,6 +2612,45 @@ export interface components {
          * @enum {string}
          */
         Fulfilment: "PLACED" | "PENDING_KITCHEN" | "ACCEPTED" | "PREPARING" | "READY_FOR_PICKUP" | "PICKED_UP" | "OUT_FOR_DELIVERY" | "DELIVERED" | "CANCELLED" | "REJECTED" | "DELIVERY_FAILED";
+        /** GoldenSetOut */
+        GoldenSetOut: {
+            /** Approval Label */
+            approval_label: string;
+            /** Approved At */
+            approved_at: string | null;
+            /** Approved By */
+            approved_by: string | null;
+            /** Case Count */
+            case_count: number;
+            /** Dataset Hash */
+            dataset_hash: string | null;
+            /** Decision Reason */
+            decision_reason: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Leak Count */
+            leak_count: number;
+            /** Name */
+            name: string;
+            /**
+             * Portal
+             * @constant
+             */
+            portal: "KITCHEN";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "DRAFT" | "APPROVED" | "BLOCKED";
+            /**
+             * Suite
+             * @constant
+             */
+            suite: "DDR-90";
+        };
         /** GrantOut */
         GrantOut: {
             /** Kitchen Id */
@@ -2874,6 +2998,48 @@ export interface components {
             region_id: string;
             /** Region Name */
             region_name: string;
+        };
+        /** KnowledgeDecisionIn */
+        KnowledgeDecisionIn: {
+            /** Reason */
+            reason: string;
+        };
+        /** KnowledgeVersionOut */
+        KnowledgeVersionOut: {
+            /** Approved At */
+            approved_at: string | null;
+            /** Approved By */
+            approved_by: string | null;
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Decision Reason */
+            decision_reason: string | null;
+            /** Display Name */
+            display_name: string;
+            /** Doc Id */
+            doc_id: string;
+            /** Doc Version */
+            doc_version: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "DRAFT" | "APPROVED" | "REJECTED";
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
         };
         /** KpiOut */
         KpiOut: {
@@ -5526,6 +5692,151 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["KitchenSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    golden_set_api_v1_knowledge_kitchen_golden_set_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoldenSetOut"];
+                };
+            };
+        };
+    };
+    approve_golden_set_api_v1_knowledge_kitchen_golden_set__set_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                set_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KnowledgeDecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoldenSetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_versions_api_v1_knowledge_kitchen_versions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeVersionOut"][];
+                };
+            };
+        };
+    };
+    approve_api_v1_knowledge_kitchen_versions__version_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KnowledgeDecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeVersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_api_v1_knowledge_kitchen_versions__version_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KnowledgeDecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeVersionOut"];
                 };
             };
             /** @description Validation Error */

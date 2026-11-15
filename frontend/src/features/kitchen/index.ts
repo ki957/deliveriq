@@ -7,3 +7,4 @@ export { PreparationPage } from "./components/preparation-page";
 export { KitchenSettingsPage, KitchenSettingsPanel } from "./components/settings-page";
 
 export { KitchenCopilotPage } from "./components/copilot-page";
+export { KitchenKnowledgePage } from "./components/knowledge-page";

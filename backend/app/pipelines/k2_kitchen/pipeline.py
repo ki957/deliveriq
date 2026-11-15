@@ -26,17 +26,53 @@ def run_k2(ctx: RunContext) -> None:
             if SOURCE_PATTERN not in content:
                 raise DataError(f"{path.name} is missing the required DRAFT marker")
             digest = hashlib.sha256(content.encode()).hexdigest()
+            doc_version = 1
+            if hasattr(ctx.data, "connection"):
+                ctx.data.execute(
+                    text("""
+                        INSERT INTO app.knowledge_documents (portal, doc_id, display_name)
+                        VALUES ('KITCHEN', :doc_id, :display_name)
+                        ON CONFLICT (doc_id) DO UPDATE SET display_name = EXCLUDED.display_name
+                    """),
+                    {"doc_id": path.stem, "display_name": path.name},
+                )
+                document_id = ctx.data.execute(
+                    text("SELECT id FROM app.knowledge_documents WHERE doc_id = :doc_id"),
+                    {"doc_id": path.stem},
+                ).scalar_one()
+                doc_version = ctx.data.execute(
+                    text("""
+                        SELECT coalesce(max(doc_version), 0) + 1
+                        FROM app.knowledge_document_versions
+                        WHERE document_id = :document_id AND content_sha256 <> :digest
+                    """),
+                    {"document_id": document_id, "digest": digest},
+                ).scalar_one()
+                ctx.data.execute(
+                    text("""
+                        INSERT INTO app.knowledge_document_versions
+                            (document_id, doc_version, content, content_sha256, status)
+                        VALUES (:document_id, :doc_version, :content, :digest, 'DRAFT')
+                        ON CONFLICT (document_id, content_sha256) DO NOTHING
+                    """),
+                    {
+                        "document_id": document_id,
+                        "doc_version": doc_version,
+                        "content": content,
+                        "digest": digest,
+                    },
+                )
             ctx.data.execute(
                 text("""
                 INSERT INTO kitchen_rag.chunks
                     (kitchen_id, doc_id, doc_version, section_path, source_ref, audience, visibility,
                      status, content, content_sha256)
-                SELECT k.kitchen_id, :doc_id, 1, 'DRAFT', 'pending KM approval', 'KITCHEN',
+                SELECT k.kitchen_id, :doc_id, :doc_version, 'DRAFT', 'pending KM approval', 'KITCHEN',
                        'ALL', 'DRAFT', :content, :digest
                 FROM kitchen_rag.kitchen_scope k
                 ON CONFLICT (kitchen_id, doc_id, doc_version, section_path) DO NOTHING
             """),
-                {"doc_id": path.stem, "content": content, "digest": digest},
+                {"doc_id": path.stem, "doc_version": doc_version, "content": content, "digest": digest},
             )
             staged += 1
         allow_fixtures = get_settings().app_env in {"local", "test", "demo"}

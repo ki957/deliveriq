@@ -1782,6 +1782,112 @@
         "title": "Fulfilment",
         "type": "string"
       },
+      "GoldenSetOut": {
+        "properties": {
+          "approval_label": {
+            "title": "Approval Label",
+            "type": "string"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "case_count": {
+            "title": "Case Count",
+            "type": "integer"
+          },
+          "dataset_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Hash"
+          },
+          "decision_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Reason"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "leak_count": {
+            "title": "Leak Count",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "portal": {
+            "const": "KITCHEN",
+            "title": "Portal",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "DRAFT",
+              "APPROVED",
+              "BLOCKED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "suite": {
+            "const": "DDR-90",
+            "title": "Suite",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "suite",
+          "portal",
+          "name",
+          "approval_label",
+          "case_count",
+          "leak_count",
+          "status",
+          "dataset_hash",
+          "approved_by",
+          "approved_at",
+          "decision_reason"
+        ],
+        "title": "GoldenSetOut",
+        "type": "object"
+      },
       "GrantOut": {
         "properties": {
           "kitchen_id": {
@@ -2750,6 +2856,115 @@
           "intake"
         ],
         "title": "KitchenStatusOut",
+        "type": "object"
+      },
+      "KnowledgeDecisionIn": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "KnowledgeDecisionIn",
+        "type": "object"
+      },
+      "KnowledgeVersionOut": {
+        "properties": {
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "decision_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Reason"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "doc_id": {
+            "title": "Doc Id",
+            "type": "string"
+          },
+          "doc_version": {
+            "title": "Doc Version",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kitchen_id": {
+            "format": "uuid",
+            "title": "Kitchen Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "DRAFT",
+              "APPROVED",
+              "REJECTED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "submitted_at": {
+            "format": "date-time",
+            "title": "Submitted At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "doc_id",
+          "display_name",
+          "doc_version",
+          "content_sha256",
+          "status",
+          "kitchen_id",
+          "submitted_at",
+          "approved_by",
+          "approved_at",
+          "decision_reason"
+        ],
+        "title": "KnowledgeVersionOut",
         "type": "object"
       },
       "KpiOut": {
@@ -8587,6 +8802,211 @@
         "summary": "Update Settings",
         "tags": [
           "kitchen"
+        ]
+      }
+    },
+    "/api/v1/knowledge/kitchen/golden-set": {
+      "get": {
+        "operationId": "golden_set_api_v1_knowledge_kitchen_golden_set_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoldenSetOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Golden Set",
+        "tags": [
+          "kitchen-knowledge"
+        ]
+      }
+    },
+    "/api/v1/knowledge/kitchen/golden-set/{set_id}/approve": {
+      "post": {
+        "operationId": "approve_golden_set_api_v1_knowledge_kitchen_golden_set__set_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "set_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Set Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeDecisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoldenSetOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve Golden Set",
+        "tags": [
+          "kitchen-knowledge"
+        ]
+      }
+    },
+    "/api/v1/knowledge/kitchen/versions": {
+      "get": {
+        "operationId": "list_versions_api_v1_knowledge_kitchen_versions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/KnowledgeVersionOut"
+                  },
+                  "title": "Response List Versions Api V1 Knowledge Kitchen Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Versions",
+        "tags": [
+          "kitchen-knowledge"
+        ]
+      }
+    },
+    "/api/v1/knowledge/kitchen/versions/{version_id}/approve": {
+      "post": {
+        "operationId": "approve_api_v1_knowledge_kitchen_versions__version_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeDecisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve",
+        "tags": [
+          "kitchen-knowledge"
+        ]
+      }
+    },
+    "/api/v1/knowledge/kitchen/versions/{version_id}/reject": {
+      "post": {
+        "operationId": "reject_api_v1_knowledge_kitchen_versions__version_id__reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeDecisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reject",
+        "tags": [
+          "kitchen-knowledge"
         ]
       }
     },

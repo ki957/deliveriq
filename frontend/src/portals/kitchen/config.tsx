@@ -17,6 +17,7 @@ import {
   InventoryPage,
   KitchenOverviewPage,
   KitchenCopilotPage,
+  KitchenKnowledgePage,
   KitchenSettingsPage,
   LiveOrdersPage,
   PreparationPage,
@@ -134,6 +135,14 @@ export const kitchenConfig: PortalConfig = {
       task: 16,
       permission: "kitchen.orders.view",
       element: gate("kitchen.orders.view", <KitchenCopilotPage />),
+    },
+    {
+      to: "/kitchen/knowledge",
+      label: "Knowledge approval",
+      Icon: BookOpen,
+      task: 16,
+      permission: "kitchen.knowledge.approve",
+      element: gate("kitchen.knowledge.approve", <KitchenKnowledgePage />),
     },
   ],
 };
