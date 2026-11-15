@@ -204,6 +204,121 @@
         "title": "AgentOut",
         "type": "object"
       },
+      "AiModelOut": {
+        "properties": {
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Capabilities",
+            "type": "array"
+          },
+          "logical_name": {
+            "title": "Logical Name",
+            "type": "string"
+          },
+          "selected": {
+            "title": "Selected",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "logical_name",
+          "capabilities",
+          "selected"
+        ],
+        "title": "AiModelOut",
+        "type": "object"
+      },
+      "AiSettingsIn": {
+        "properties": {
+          "logical_model": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Logical Model",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "logical_model",
+          "reason"
+        ],
+        "title": "AiSettingsIn",
+        "type": "object"
+      },
+      "AiSettingsOut": {
+        "properties": {
+          "harness": {
+            "title": "Harness",
+            "type": "string"
+          },
+          "logical_model": {
+            "title": "Logical Model",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "harness",
+          "logical_model",
+          "updated_at"
+        ],
+        "title": "AiSettingsOut",
+        "type": "object"
+      },
+      "AiStatusOut": {
+        "properties": {
+          "conversation_turn_limit": {
+            "title": "Conversation Turn Limit",
+            "type": "integer"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "knowledge_status": {
+            "title": "Knowledge Status",
+            "type": "string"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/AiModelOut"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "request_metadata_retention_days": {
+            "title": "Request Metadata Retention Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "knowledge_status",
+          "models",
+          "conversation_turn_limit",
+          "request_metadata_retention_days"
+        ],
+        "title": "AiStatusOut",
+        "type": "object"
+      },
       "AssignIn": {
         "properties": {
           "agent_user_id": {
@@ -943,6 +1058,72 @@
           "is_test_default"
         ],
         "title": "ConfiguredValueOut",
+        "type": "object"
+      },
+      "CopilotIn": {
+        "properties": {
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "CopilotIn",
+        "type": "object"
+      },
+      "CopilotOut": {
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "conversation_id": {
+            "format": "uuid",
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "knowledge_status": {
+            "title": "Knowledge Status",
+            "type": "string"
+          },
+          "logical_model": {
+            "title": "Logical Model",
+            "type": "string"
+          },
+          "read_only": {
+            "default": true,
+            "title": "Read Only",
+            "type": "boolean"
+          },
+          "simulated": {
+            "title": "Simulated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "answer",
+          "conversation_id",
+          "logical_model",
+          "simulated",
+          "knowledge_status"
+        ],
+        "title": "CopilotOut",
         "type": "object"
       },
       "CustomerMenuItemOut": {
@@ -8198,6 +8379,164 @@
         "summary": "Update Settings",
         "tags": [
           "kitchen"
+        ]
+      }
+    },
+    "/api/v1/management/ai/conversations/{conversation_id}": {
+      "delete": {
+        "operationId": "delete_conversation_api_v1_management_ai_conversations__conversation_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Conversation",
+        "tags": [
+          "management-ai"
+        ]
+      }
+    },
+    "/api/v1/management/ai/copilot": {
+      "post": {
+        "operationId": "ask_copilot_api_v1_management_ai_copilot_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopilotIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CopilotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ask Copilot",
+        "tags": [
+          "management-ai"
+        ]
+      }
+    },
+    "/api/v1/management/ai/settings": {
+      "get": {
+        "operationId": "ai_settings_api_v1_management_ai_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Ai Settings",
+        "tags": [
+          "management-ai"
+        ]
+      },
+      "put": {
+        "operationId": "update_ai_settings_api_v1_management_ai_settings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiSettingsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Ai Settings",
+        "tags": [
+          "management-ai"
+        ]
+      }
+    },
+    "/api/v1/management/ai/status": {
+      "get": {
+        "operationId": "ai_status_api_v1_management_ai_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Ai Status",
+        "tags": [
+          "management-ai"
         ]
       }
     },

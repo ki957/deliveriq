@@ -451,6 +451,8 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 ### Task 15 — AI platform + Management Copilot
 
 - **Depends on:** Task 13; approved `RAG_AI_DESIGN.md`.
+- **Decisions:** DDR-119 (1)–(5); implementation starts with the gateway and read-only Management Copilot.
+- **Status:** Gateway and Management Copilot foundation implemented and verified; Tasks 15A–15C remain.
 - **Gated features:** live provider calls until a key is in `.env` (mock otherwise); live Management knowledge (A, DDR-46).
 - **Guidance:**
   - Follow `RAG_AI_DESIGN.md`. Provider-neutral gateway, `ai_models.yaml`, capability checks, CA "AI settings" runtime switch with audit, AI health panel (DDR-85–87).

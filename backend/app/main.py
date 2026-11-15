@@ -16,6 +16,7 @@ from app.core.db import get_engine
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.request_context import RequestContextMiddleware
+from app.modules.ai.api import router as ai_router
 from app.modules.customers.api import addresses_router
 from app.modules.customers.api import public_router as serviceability_router
 from app.modules.delivery.api import manage_router as delivery_manage_router
@@ -48,6 +49,7 @@ def _build(app: FastAPI) -> FastAPI:
     """Routers and error handlers shared by the runtime app and the OpenAPI export."""
     register_error_handlers(app)
     app.include_router(health_router)
+    app.include_router(ai_router)
     app.include_router(auth_router)
     app.include_router(me_router)
     app.include_router(pipelines_router)

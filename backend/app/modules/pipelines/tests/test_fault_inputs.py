@@ -72,6 +72,7 @@ def test_fault_files_are_never_copied_into_images() -> None:
         or "alembic.ini" in line
         or "--from=" in line
         or "pyproject" in line
+        or "backend/config" in line
         for line in copies
     )
 

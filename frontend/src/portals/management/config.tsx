@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Bot,
   ChefHat,
   ClipboardCheck,
   Database,
@@ -25,6 +26,7 @@ import { MenuPublicationPage, RecipeSignoffDetailPage, RecipeSignoffPage } from 
 import { PipelinePage, PipelinesOverview, RunPage } from "@/features/data-pipelines";
 import { AvailabilityDecisionsPage } from "@/features/kitchen";
 import {
+  AiCopilotPage,
   AuditPage,
   DeliveryOpsPage,
   KitchenOpsPage,
@@ -118,6 +120,14 @@ export const managementConfig: PortalConfig = {
       task: 13,
       permission: "management.reports.view",
       element: gate("management.reports.view", <ReportsPage />),
+    },
+    {
+      to: "/management/ai",
+      label: "Management AI Copilot",
+      Icon: Bot,
+      task: 15,
+      permission: "management.ai.copilot",
+      element: gate("management.ai.copilot", <AiCopilotPage />),
     },
     {
       to: "/management/menu-publication",

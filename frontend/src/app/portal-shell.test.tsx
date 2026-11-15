@@ -98,9 +98,9 @@ describe("management navigation is permission-derived (MG-10)", () => {
     expect(ca).not.toContain("Staff & Access");
   });
 
-  it("does not show later AI features yet", () => {
+  it("shows only the implemented AI feature", () => {
     const all = managementConfig.nav.map((i) => i.label);
-    expect(all).not.toContain("Management AI Copilot");
+    expect(all).toContain("Management AI Copilot");
     expect(all).not.toContain("AI Model Configuration");
   });
 });

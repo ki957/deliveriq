@@ -713,6 +713,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/management/ai/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Conversation */
+        delete: operations["delete_conversation_api_v1_management_ai_conversations__conversation_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/ai/copilot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask Copilot */
+        post: operations["ask_copilot_api_v1_management_ai_copilot_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/ai/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ai Settings */
+        get: operations["ai_settings_api_v1_management_ai_settings_get"];
+        /** Update Ai Settings */
+        put: operations["update_ai_settings_api_v1_management_ai_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/ai/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ai Status */
+        get: operations["ai_status_api_v1_management_ai_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/management/audit": {
         parameters: {
             query?: never;
@@ -1846,6 +1915,44 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** AiModelOut */
+        AiModelOut: {
+            /** Capabilities */
+            capabilities: string[];
+            /** Logical Name */
+            logical_name: string;
+            /** Selected */
+            selected: boolean;
+        };
+        /** AiSettingsIn */
+        AiSettingsIn: {
+            /** Logical Model */
+            logical_model: string;
+            /** Reason */
+            reason: string;
+        };
+        /** AiSettingsOut */
+        AiSettingsOut: {
+            /** Harness */
+            harness: string;
+            /** Logical Model */
+            logical_model: string;
+            /** Updated At */
+            updated_at: string | null;
+        };
+        /** AiStatusOut */
+        AiStatusOut: {
+            /** Conversation Turn Limit */
+            conversation_turn_limit: number;
+            /** Enabled */
+            enabled: boolean;
+            /** Knowledge Status */
+            knowledge_status: string;
+            /** Models */
+            models: components["schemas"]["AiModelOut"][];
+            /** Request Metadata Retention Days */
+            request_metadata_retention_days: number;
+        };
         /** AssignIn */
         AssignIn: {
             /**
@@ -2116,6 +2223,34 @@ export interface components {
             is_test_default: boolean;
             /** Value */
             value: number;
+        };
+        /** CopilotIn */
+        CopilotIn: {
+            /** Conversation Id */
+            conversation_id?: string | null;
+            /** Question */
+            question: string;
+        };
+        /** CopilotOut */
+        CopilotOut: {
+            /** Answer */
+            answer: string;
+            /**
+             * Conversation Id
+             * Format: uuid
+             */
+            conversation_id: string;
+            /** Knowledge Status */
+            knowledge_status: string;
+            /** Logical Model */
+            logical_model: string;
+            /**
+             * Read Only
+             * @default true
+             */
+            read_only: boolean;
+            /** Simulated */
+            simulated: boolean;
         };
         /** CustomerMenuItemOut */
         CustomerMenuItemOut: {
@@ -5253,6 +5388,141 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_conversation_api_v1_management_ai_conversations__conversation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_copilot_api_v1_management_ai_copilot_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CopilotIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CopilotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ai_settings_api_v1_management_ai_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiSettingsOut"];
+                };
+            };
+        };
+    };
+    update_ai_settings_api_v1_management_ai_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ai_status_api_v1_management_ai_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiStatusOut"];
                 };
             };
         };

@@ -28,6 +28,7 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     PYTHONPATH=/srv/backend
 WORKDIR /srv/backend
 COPY --chown=root:root backend/app ./app
+COPY --chown=root:root backend/config ./config
 COPY --chown=root:root backend/migrations ./migrations
 COPY --chown=root:root backend/alembic.ini ./alembic.ini
 USER app
