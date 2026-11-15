@@ -123,8 +123,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 ### 3.5 Per-module "README cards" (current behaviour, kept up to date)
 - `backend/app/modules/*/README.md`: identity, menu, recipes, pipelines, knowledge, customers, pricing, orders, payments, kitchen_ops, inventory, delivery, management, realtime, notifications, reports, health.
 - AI harness cards: `backend/app/modules/ai/kitchen_copilot/README.md` (read-only Kitchen Copilot, hybrid retrieval with reduced-retrieval fallback, KM-approved knowledge only) and `backend/app/modules/ai/customer_assistant/README.md` (Customer-only, read-only Assistant with Prompt Guard).
-- Customer ingestion card: `backend/app/pipelines/k1_customer/README.md` (Customer-only K1 staging; source documents remain DRAFT pending CA approval).
-- `backend/app/pipelines/README.md` (framework), `backend/app/pipelines/p2_elt/README.md`; `analytics/dbt/README.md` (models, tests, grants, the `dataset` var).
+- `backend/app/pipelines/README.md` (framework and Customer-only K1 staging; source documents remain DRAFT pending CA approval), `backend/app/pipelines/p2_elt/README.md`; `analytics/dbt/README.md` (models, tests, grants, the `dataset` var).
 - `frontend/src/features/*/README.md`: auth, ordering, recipes, approvals, data-pipelines, kitchen (including Kitchen Copilot), customer-assistant (gated approval card), delivery, management, notifications, reports.
 - These are the fastest way to learn what a module already does.
 
@@ -170,7 +169,7 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ## 5. Current task: 17 Customer Assistant (DDR-123)
 
-Task 16C is merged and verified. Migration 0027 adds `vector(384)` MiniLM index metadata, HNSW cosine indexing, hybrid RRF retrieval, SHA-keyed Kitchen knowledge versions and audited KM approval functions. Task 17A/17B are built on `task-17-customer-assistant`, locally verified, and awaiting PR CI and owner review. Migration 0028 adds `customer_rag`, K1 DRAFT-only ingestion, Customer-only retrieval, Prompt Guard and CA approval. The P2 E2E timeout was caused by CPU contention with two Playwright workers; one worker passed the full 70-test suite twice, preserving the 30-second test timeout and assertions. K-C1–C3 source files remain DRAFT; no Customer chunks are published. The Customer golden-set row is DRAFT (60 cases, 0 leaks). The last decision is DDR-123; Task 18 follows after Task 17 merges.
+Task 16C is merged and verified. Migration 0027 adds `vector(384)` MiniLM index metadata, HNSW cosine indexing, hybrid RRF retrieval, SHA-keyed Kitchen knowledge versions and audited KM approval functions. Task 17A/17B are built on `task-17-customer-assistant`, locally verified, and awaiting PR CI and owner review. Migration 0028 adds `customer_rag`, K1 DRAFT-only ingestion, Customer-only retrieval, Prompt Guard and CA approval. The P2 E2E timeout was caused by CPU contention with two Playwright workers; one worker passed the full 70-test suite twice, preserving the 30-second test timeout and assertions. K1 staged K-C1–C3 as DRAFT for CA review (`draft_chunks_staged=3`, `published=0`). The Customer golden-set row is DRAFT (60 cases, 0 leaks). The last decision is DDR-123; Task 18 follows after Task 17 merges.
 
 ## 6. Remaining tasks after 15A (full criteria in plan §7)
 
