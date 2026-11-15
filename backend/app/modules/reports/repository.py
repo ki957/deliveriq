@@ -79,6 +79,36 @@ def synthetic_dates(conn: Connection) -> tuple[date, date] | None:
     return (row[0], row[1]) if row else None
 
 
+def ml_profile_dates(conn: Connection) -> tuple[date, date] | None:
+    """Return dates only for the completed immutable ML profile (SECURITY DEFINER status API)."""
+    row = conn.execute(
+        text(
+            "SELECT date_from, date_to FROM ops.synthetic_status() "
+            "WHERE profile = 'ml' AND build_status = 'ready' AND content_sha256 IS NOT NULL"
+        )
+    ).first()
+    return (row[0], row[1]) if row else None
+
+
+def ml_consumption(
+    conn: Connection, kitchen_ids: list[uuid.UUID], start: date, end: date
+) -> list[tuple[date, uuid.UUID, str, str, Decimal]]:
+    """Read the ML-only simulated mart, limited to kitchens already authorized by the caller."""
+    rows = conn.execute(
+        text(
+            "SELECT m.movement_date, m.ingredient_id, coalesce(i.name, 'Unknown ingredient'), "
+            "coalesce(i.unit, ''), coalesce(m.consumed_quantity, 0) "
+            "FROM analytics_synthetic.ml_mart_inventory_consumption m "
+            "LEFT JOIN analytics_synthetic.ml_dim_ingredient i USING (ingredient_id) "
+            "WHERE m.kitchen_id = ANY(:k) AND m.movement_date BETWEEN :s AND :e "
+            "AND coalesce(m.consumed_quantity, 0) >= 0 "
+            "ORDER BY m.ingredient_id, m.movement_date"
+        ),
+        {"k": kitchen_ids, "s": start, "e": end},
+    ).all()
+    return [(r[0], r[1], r[2], r[3], Decimal(r[4])) for r in rows]
+
+
 def totals(conn: Connection, dataset: str, kitchen_ids: list[uuid.UUID], start: date, end: date) -> Totals:
     s = _schema(dataset)
     p = {"k": kitchen_ids, "s": start, "e": end}

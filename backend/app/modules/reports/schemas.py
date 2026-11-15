@@ -71,3 +71,28 @@ class ReportOut(BaseModel):
     not_available: list[NotAvailableOut]
     # DDR-117 (12), class A: always false; KPIs are labelled, never business truth.
     kpis_are_business_truth: Literal[False]
+
+
+class ForecastPointOut(BaseModel):
+    day: date
+    quantity: float
+
+
+class IngredientDemandForecastOut(BaseModel):
+    ingredient_id: uuid.UUID
+    name: str
+    unit: str
+    daily: list[ForecastPointOut]
+
+
+class DemandForecastOut(BaseModel):
+    available: bool
+    unavailable_reason: str | None
+    trained_on: Literal["simulated data"]
+    advisory_only: Literal[True]
+    profile_from: date | None
+    profile_to: date | None
+    backtest_model_mae: float | None
+    backtest_baseline_mae: float | None
+    backtest_passed: bool
+    forecasts: list[IngredientDemandForecastOut]

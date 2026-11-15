@@ -10,13 +10,14 @@ import csv
 import io
 import uuid
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from app.core.db import get_engine
 from app.core.permissions import Grant, Permission, Principal, can
 from app.core.request_context import current_request_id
 from app.modules.reports import domain as d
+from app.modules.reports import forecasting
 from app.modules.reports import repository as repo
 from app.shared.audit import write_event
 
@@ -80,6 +81,73 @@ class Report:
     ingredients: list[repo.IngredientRow]
     generated_from: date | None = None
     generated_to: date | None = None
+
+
+@dataclass(frozen=True)
+class DemandForecast:
+    available: bool
+    unavailable_reason: str | None
+    profile_from: date | None
+    profile_to: date | None
+    backtest_model_mae: float | None
+    backtest_baseline_mae: float | None
+    backtest_passed: bool
+    forecasts: tuple[forecasting.IngredientForecast, ...]
+
+
+def demand_forecast(principal: Principal, kitchen_id: uuid.UUID | None = None) -> DemandForecast:
+    """Generate a read-only forecast from the ready immutable P3 ML profile."""
+    regions = _regions(principal)
+    with get_engine().connect() as conn:
+        in_scope = repo.kitchens(conn, regions)
+        if kitchen_id is not None and kitchen_id not in {k.id for k in in_scope}:
+            raise NotFound
+        kitchen_ids = [kitchen_id] if kitchen_id else [k.id for k in in_scope]
+        profile = repo.ml_profile_dates(conn)
+        if not profile:
+            return DemandForecast(False, "The P3 ML profile is not ready", None, None, None, None, False, ())
+        start, end = profile
+        db_rows = repo.ml_consumption(conn, kitchen_ids, start, end)
+    if not db_rows:
+        return DemandForecast(
+            False,
+            "No ML ingredient-consumption data is available in your scope",
+            start,
+            end,
+            None,
+            None,
+            False,
+            (),
+        )
+    # The mart stores movements; for this daily demand series a missing ingredient/day means zero consumed.
+    observed: dict[tuple[date, uuid.UUID], float] = {}
+    labels: dict[uuid.UUID, tuple[str, str]] = {}
+    for day, ingredient_id, name, unit, quantity in db_rows:
+        key = (day, ingredient_id)
+        observed[key] = observed.get(key, 0.0) + float(quantity)
+        labels[ingredient_id] = (name, unit)
+    dense_rows: list[forecasting.DailyConsumption] = []
+    for ingredient_id, (name, unit) in labels.items():
+        day = start
+        while day <= end:
+            dense_rows.append(
+                forecasting.DailyConsumption(
+                    day, str(ingredient_id), name, unit, observed.get((day, ingredient_id), 0.0)
+                )
+            )
+            day += timedelta(days=1)
+    evaluation = forecasting.evaluate(dense_rows, start, end)
+    predictions = forecasting.forecast(dense_rows, start, end) if evaluation.passed else ()
+    return DemandForecast(
+        evaluation.passed,
+        None if evaluation.passed else "The weekday-seasonal model did not beat the approved baseline",
+        start,
+        end,
+        evaluation.model_mae,
+        evaluation.baseline_mae,
+        evaluation.passed,
+        predictions,
+    )
 
 
 def report(

@@ -354,7 +354,7 @@ Because assignment happens at kitchen acceptance (DDR-51), "Agent Assigned" typi
 | Kitchen | Kitchen Copilot + Kitchen RAG (recipe-version aware) | Second | Yes | #6, #4 §11 |
 | Customer | Customer Assistant + Customer RAG | Third; gated on all portals complete | Yes | #3, #1 §12 |
 | Delivery | None | Excluded | — | #7 §2 |
-| ML | Demand forecasting, then ETA/assignment optimization | Fourth, fifth | Advisory only | Owner decision |
+| ML | Demand forecasting, then ETA/assignment optimization | Fourth, fifth | Advisory only; Task 18 forecast is synthetic and read-only | DDR-124: CA/RM in Management Reports; no inventory actions |
 
 All RAG ingestion, retrieval and evaluation is English only (DDR-58).
 

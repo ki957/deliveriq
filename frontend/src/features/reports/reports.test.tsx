@@ -75,6 +75,19 @@ describe("reports (DDR-117)", () => {
   it("offers the generated simulated dates without silently changing filters", async () => {
     mockApi({
       "GET /api/v1/me": () => json(RM),
+      "GET /api/v1/management/reports/forecast": () =>
+        json({
+          available: false,
+          unavailable_reason: "The P3 ML profile is not ready",
+          trained_on: "simulated data",
+          advisory_only: true,
+          profile_from: null,
+          profile_to: null,
+          backtest_model_mae: null,
+          backtest_baseline_mae: null,
+          backtest_passed: false,
+          forecasts: [],
+        }),
       "GET /api/v1/management/reports": (request) =>
         json(
           new URL(request.url).searchParams.get("dataset") === "analytics_synthetic"
@@ -94,6 +107,53 @@ describe("reports (DDR-117)", () => {
     await userEvent.click(screen.getByRole("button", { name: "Use demo dates" }));
     expect(screen.getByLabelText("From")).toHaveValue("2026-11-07");
     expect(screen.getByLabelText("To")).toHaveValue("2026-11-13");
+  });
+
+  it("shows the forecast only on simulated reports and states its limits", async () => {
+    mockApi({
+      "GET /api/v1/me": () => json(RM),
+      "GET /api/v1/management/reports": (request) =>
+        json(
+          new URL(request.url).searchParams.get("dataset") === "analytics_synthetic"
+            ? report({ dataset: "analytics_synthetic", dataset_label: "Simulated" })
+            : report(),
+        ),
+      "GET /api/v1/management/reports/forecast": () =>
+        json({
+          available: true,
+          unavailable_reason: null,
+          trained_on: "simulated data",
+          advisory_only: true,
+          profile_from: "2026-08-15",
+          profile_to: "2026-11-12",
+          backtest_model_mae: 2.1,
+          backtest_baseline_mae: 2.4,
+          backtest_passed: true,
+          forecasts: [
+            {
+              ingredient_id: "i1",
+              name: "Rice",
+              unit: "g",
+              daily: [
+                { day: "2026-11-13", quantity: 12 },
+                { day: "2026-11-14", quantity: 13 },
+                { day: "2026-11-15", quantity: 14 },
+                { day: "2026-11-16", quantity: 15 },
+                { day: "2026-11-17", quantity: 16 },
+                { day: "2026-11-18", quantity: 17 },
+                { day: "2026-11-19", quantity: 18 },
+              ],
+            },
+          ],
+        }),
+    });
+    renderAt("/management/reports");
+    await userEvent.click(await screen.findByRole("button", { name: "Simulated" }));
+    expect(
+      await screen.findByRole("table", { name: "Seven-day ingredient demand forecast" }),
+    ).toHaveTextContent("Rice (g)");
+    expect(screen.getByTestId("forecast-backtest")).toHaveTextContent("model MAE 2.100 < baseline MAE 2.400");
+    expect(screen.getByText(/Trained on simulated data · Advisory only/)).toBeInTheDocument();
   });
   it("shows each KPI with its formula, source and pending-approval status, and labels real data", async () => {
     mockApi({ "GET /api/v1/me": () => json(RM), "GET /api/v1/management/reports": () => json(report()) });

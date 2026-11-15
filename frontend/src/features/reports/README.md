@@ -1,16 +1,16 @@
 # Reports feature (Reports & Analytics)
 
-P3 (DDR-118) supplies the Simulated tab from validated demo marts. The page shows the generated date range and an explicit "Use demo dates" action, with existing filters, comparison, pending-definition badges and CSV export. CA's run link opens P3; RM has no run control. Tests: `reports.test.tsx` and `tests/e2e/specs/p3-synthetic.spec.ts`.
+P3 (DDR-118) supplies the Simulated tab from validated demo marts. The page shows the generated date range and an explicit "Use demo dates" action, with existing filters, comparison, pending-definition badges and CSV export. Task 18 adds the seven-day ingredient demand advisory from the ready immutable ML profile, including its rolling-origin baseline comparison; it is generated on request and labels simulated data and advisory-only status. CA's run link opens demo P3; RM has no run control. Tests: `reports.test.tsx` and `tests/e2e/specs/p3-synthetic.spec.ts`.
 
 **Purpose and scope:** the Management reports page (#10 §10; MG-07, MG-08, MG-U4; DDR-117). Backend: `reports` module.
 
-| Item          | Value                                                                                                                    |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| UI screens    | `/management/reports`                                                                                                    |
-| API endpoints | `GET /api/v1/management/reports` · `GET /api/v1/management/reports.csv` (generated client; CSV as a same-origin link)    |
-| Permissions   | `management.reports.view` (RM own regions, CA all); hidden from the navigation without it                                |
-| States        | Loading, error, denied, not found (kitchen outside scope), 422 reason (range), "Simulated data: Not built yet (Task 14)" |
-| Tests         | `reports.test.tsx`; E2E `tests/e2e/specs/reports.spec.ts`                                                                |
+| Item          | Value                                                                                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| UI screens    | `/management/reports`                                                                                                                                             |
+| API endpoints | `GET /api/v1/management/reports` · `GET /api/v1/management/reports.csv` · `GET /api/v1/management/reports/forecast` (generated client; CSV as a same-origin link) |
+| Permissions   | `management.reports.view` (RM own regions, CA all); hidden from the navigation without it                                                                         |
+| States        | Loading, error, denied, not found (kitchen outside scope), 422 reason (range), "Simulated data: Not built yet (Task 14)"                                          |
+| Tests         | `reports.test.tsx`; E2E `tests/e2e/specs/reports.spec.ts`                                                                                                         |
 
 ## Behaviour
 
@@ -19,3 +19,4 @@ P3 (DDR-118) supplies the Simulated tab from validated demo marts. The page show
 - Each KPI card shows the value in its unit, the previous period and the change, the formula and source, the badge "Definition pending approval (DDR-44)" and, where chosen, the denominator note. A missing value reads "No value".
 - Orders placed and delivered have a hand-written SVG sparkline with a text alternative (no chart library, DDR-117 (9)).
 - The header shows freshness and, for a Central Administrator, a link to run P2.
+- The Simulated report includes a seven-day per-ingredient forecast only when the immutable ML profile is ready and the model passes its backtest. The forecast is labelled "Trained on simulated data" and "Advisory only"; the interface offers no stock or purchasing actions.

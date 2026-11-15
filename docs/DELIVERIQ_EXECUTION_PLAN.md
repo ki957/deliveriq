@@ -521,12 +521,14 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 - **Gated features:** live Customer knowledge (A, DDR-46).
 - **Guidance:** English only; Customer RAG ingestion on the pipeline framework. Ships the harness `README.md` card (DDR-80).
 - **Acceptance criteria:** No Kitchen/Management leakage; other customers' orders denied; allergen answers never guarantee safety; Customer golden set passes with 0 cross-customer leaks (DDR-90); Prompt Guard on input behind its flag, with injection results reported on and off; a classifier outage never blocks customers (DDR-92).
-- **Status:** 17A/17B built under DDR-123 and locally verified; awaiting Task 17 PR CI and owner review. The Customer Assistant UI remains hidden until CD-18 is explicitly opened.
+- **Status:** Task 17 merged in PR #31 at `7c8e807`; all four CI jobs passed on the merge commit. The Customer Assistant UI remains hidden until CD-18 is explicitly opened.
 
 ### Task 18 — Demand forecasting
 
 - **Depends on:** Task 14.
-- **Acceptance criteria:** Reads `analytics_synthetic` (DDR-74); trained on the ML training set (DDR-56); beats a naive baseline in backtests; every result labelled "trained on simulated data".
+- **Decisions:** DDR-124.
+- **Acceptance criteria:** Forecasts daily consumed quantity per ingredient for the next 7 days from `analytics_synthetic.ml_mart_inventory_consumption`, using only a ready immutable P3 ML profile. A deterministic weekday-seasonal mean model must strictly beat the same-weekday previous-week baseline by macro-averaged MAE in rolling-origin backtests over the final 14 days (two 7-day windows). Forecasts are advisory only, read-only, and shown to CA/RM in Management Reports under existing scope; every result is labelled "trained on simulated data" and "advisory only". No purchases or inventory changes are made.
+- **Status:** Implemented and locally verified on `task-18-demand-forecast`; awaiting owner review before push.
 
 ### Task 19 — ETA prediction and assignment optimization
 
