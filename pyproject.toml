@@ -36,7 +36,7 @@ dev = [
 [tool.uv]
 # The backend is run from source (backend/ on the path); packaging is added when the CLI entry point is.
 package = false
-default-groups = ["api", "dev"]
+default-groups = ["api", "dev", "worker"]
 
 [tool.pytest.ini_options]
 pythonpath = ["backend"]

@@ -1,6 +1,6 @@
 # passon.md: DeliverIQ handover guide for Codex
 
-**Written:** 2026-11-12 by Kiro; **last updated:** 2026-11-15 after Task 16A. **For:** OpenAI Codex (CLI or IDE extension), continuing the build.
+**Written:** 2026-11-12 by Kiro; **last updated:** 2026-11-15 after the Task 16 CI fix. **For:** OpenAI Codex (CLI or IDE extension), continuing the build.
 **Read this file first.** It tells you where the project stands, what to read, how to work, and what to build next. `AGENTS.md` points Codex to it and to `.kiro/steering/rules.md` (the binding rules) at every start.
 
 > ## ⛔ Do not (each of these has broken something, or would)
@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. Task 16A, 16B and 16C are built and verified on `task-16c-kitchen-rag-copilot`; the owner confirmed MiniLM L6 v2 as the 16B winner. The last registered decision is **DDR-122**; migration head is **0027**.
+Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. The tooling handover branch is merged. Task 16A, 16B and 16C are merged on `main` at `778a863` (DDR-121, DDR-122); the owner confirmed MiniLM L6 v2 as the 16B winner. The Task 16 CI fix is on `task-16-ci-fix`; the last registered decision is **DDR-122**; migration head is **0027**.
 
 | Task | Scope | State |
 |---|---|---|
@@ -58,16 +58,17 @@ Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Ta
 | 14 | Labelled synthetic P3 data (DDR-118) | ✅ merged (PR #26) |
 | 15 | AI gateway and Management Copilot (DDR-119) | ✅ merged (PR #27) |
 | 15A | Management Operational Actions (DDR-120) | ✅ merged (PR #28) |
-| 16A | Kitchen RAG text retrieval, K2 drafts, Kitchen Copilot | ✅ built and verified on `task-16-kitchen-rag-copilot` |
-| tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | 🟡 on `tooling-handover-refresh` |
-| 16B / 16C | Embedding winner, hybrid retrieval, KM approval and golden set | ✅ built and verified; MiniLM L6 v2 confirmed; migration 0027 and KM approval APIs/UI landed |
+| 15B | Builder Agent sandbox (DDR-70) | ⬜ not started |
+| 15C | Builder Agent harness (DDR-71, DDR-80, Task 21 dependency) | ⬜ not started; Task 21 depends on 15C |
+| 16A / 16B / 16C | Kitchen RAG, embedding winner, hybrid retrieval, KM approval and golden-set gate | ✅ merged on `main` (`778a863`); CI fix in progress on `task-16-ci-fix` |
+| tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | ✅ merged |
 | 17–22 | See plan | ⬜ not started |
 
 **Milestones** (plan §4.1):
 - M1 Foundation (0–4): done.
 - M2 Core order flow (5–9): done.
 - M3 Ops & data (10–14): done; Task 14 is merged.
-- M4 AI (15–17): Task 15 and 15A are merged; Task 16A–16C are built and verified. Task 17 remains.
+- M4 AI (15–17): Task 15 and 15A are merged; Task 16A–16C are merged. Task 17 remains.
 - M5 ML & polish (18–22): not started.
 
 **Next:** Task 17 Customer Assistant. Task 16C added the versioned MiniLM vector metadata/index, hybrid retrieval SQL, KM-scoped knowledge approval and the in-app DDR-90 golden-set gate. The draft benchmark file remains non-golden until approved cases are loaded.
@@ -186,7 +187,7 @@ Task 16C is built and verified. Migration 0027 adds `vector(384)` MiniLM index m
 
 ## 7. Technical cheat-sheet
 
-Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Task 16C migration head is **0027**. Last host sample before benchmark work: **7.6 GiB available**.
+Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Task 16C migration head is **0027**. Final CI-fix verification memory sample: worker **76.54 MiB**, API **119.7 MiB**, Postgres **126.8 MiB**, Redis **5.39 MiB**, host **8.6 GiB available**. CI gotcha: `uv sync --locked` installs only `api` and `dev` by default; the pinned worker group must remain in `tool.uv.default-groups` because backend type-checking imports the embedding dependencies.
 
 ### Stack
 - **Backend:** FastAPI modular monolith; **sync** SQLAlchemy 2 + psycopg 3 (async only for WS/Redis/HTTP); PostgreSQL + PostGIS + pgvector (Kitchen vector index migration 0027); Redis; Python with `uv`.
@@ -315,6 +316,6 @@ Rules:
 | 2026-11-12 | 12B / #23 | DDR-116 | dbt 1.12.7 + dbt-postgres 1.11.0 (worker group); `analytics/dbt` (staging, 11 core, 6 marts, 45 tests); P2 stages land → dbt → tests → publish freshness; migration 0015 (reference grants by column, `ops.dataset_freshness`, `ops.pipeline_schedules`, `ops.queue_due_schedules()`); `order.placed` carries `items`; P2 page; real marts empty (all TEST); framework integration tests used `p3_synthetic` as the not-yet-built pipeline stand-in |
 | 2026-11-12 | 13 / #24 | DDR-117 | `modules/reports` + `features/reports` (13 ETL §9 KPIs labelled pending DDR-44; Real/Simulated tabs; audited CSV); `management.reports.view`; migration 0016 (schema usage, `ops.operational_totals()`); dbt `grants` to app_api on marts and dims; P2 reconciles operational totals (6 critical checks); payment/delivery marts gain `kitchen_id` |
 | 2026-11-12 | tooling / branch `tooling-handover-refresh` | rules v1.2 | Handover refresh (status, Task 14 brief, gotchas, memory); builder switched from Claude Code to Codex: `CLAUDE.md` → `AGENTS.md`, `.claude/commands` → `.agents/skills`, guard hook → `.codex/hooks.json` (now also guards `apply_patch` and `.env` reads) |
-| 2026-11-15 | 16A / 16B / 16C / branch `task-16c-kitchen-rag-copilot` | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121–122 | Migration 0026 persists benchmark evidence; migration 0027 adds MiniLM 384 vector metadata/HNSW hybrid retrieval, SHA-keyed KM approval and the in-app DDR-90 gate; owner confirmed MiniLM L6 v2; draft benchmark set remains non-golden |
+| 2026-11-15 | 16A / 16B / 16C / #29 + CI fix | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121–122 | Merged on main `778a863`; migration 0026 persists benchmark evidence; migration 0027 adds MiniLM 384 vector metadata/HNSW hybrid retrieval, SHA-keyed KM approval and the in-app DDR-90 gate; CI fix adds the pinned worker dependency group to uv defaults; owner confirmed MiniLM L6 v2; draft benchmark set remains non-golden |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.
