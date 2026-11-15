@@ -66,3 +66,16 @@ class ActionConfirmIn(BaseModel):
 
 class ActionResultOut(BaseModel):
     result: dict[str, object]
+
+
+class KitchenCopilotIn(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+    recipe_version_id: uuid.UUID | None = None
+
+
+class KitchenCopilotOut(BaseModel):
+    answer: str
+    citations: list[str]
+    grounded: bool
+    retrieval_mode: str = "reduced retrieval"
+    simulated: bool = True

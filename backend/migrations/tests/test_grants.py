@@ -186,3 +186,71 @@ def test_signoffs_need_a_real_version(migrator: Conn) -> None:
     # Sign-offs are append-only too.
     with pytest.raises(psycopg.errors.InsufficientPrivilege, match="append-only"):
         migrator.execute(f"UPDATE app.recipe_signoffs SET {APPEND_ONLY['app.recipe_signoffs']}")
+
+
+def test_kitchen_rag_role_and_api_function_are_isolated(migrator: Conn) -> None:
+    assert _has(migrator, "rag_kitchen", "kitchen_rag.chunks", "SELECT")
+    assert not _has(migrator, "app_api", "kitchen_rag.chunks", "SELECT")
+    assert one(
+        migrator,
+        "SELECT has_function_privilege('rag_kitchen', 'kitchen_rag.recipe_draft_sources(boolean)', 'EXECUTE')",
+    )
+    assert one(
+        migrator,
+        "SELECT has_function_privilege('rag_kitchen', 'kitchen_rag.stage_recipe_draft(uuid,uuid,integer,text,text,text,text,boolean)', 'EXECUTE')",
+    )
+    assert not one(
+        migrator,
+        "SELECT has_column_privilege('rag_kitchen', 'kitchen_rag.chunks', 'is_test_fixture', 'INSERT')",
+    )
+    assert (
+        one(
+            migrator,
+            "SELECT has_function_privilege('app_api', 'app.retrieve_kitchen_chunks(text,uuid[],boolean,uuid,text[])', 'EXECUTE')",
+        )
+        is True
+    )
+    assert (
+        one(
+            migrator,
+            "SELECT NOT EXISTS (SELECT 1 FROM aclexplode((SELECT proacl FROM pg_proc WHERE oid = 'app.retrieve_kitchen_chunks(text,uuid[],boolean,uuid,text[])'::regprocedure)) AS acl WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE')",
+        )
+        is True
+    )
+
+
+def test_worker_writes_eval_rows_only_through_definer_functions(
+    migrator: Conn, role_conn: Callable[[str], Conn]
+) -> None:
+    run_fn = "ops.record_ai_eval_run(text,text,text,jsonb)"
+    result_fn = "ops.record_ai_eval_result(uuid,text,text,text,integer,jsonb)"
+    assert one(migrator, "SELECT has_function_privilege('worker', %s, 'EXECUTE')", (run_fn,)) is True
+    assert one(migrator, "SELECT has_function_privilege('worker', %s, 'EXECUTE')", (result_fn,)) is True
+    for table in ("ops.ai_eval_runs", "ops.ai_eval_results"):
+        assert not _has(migrator, "worker", table, "SELECT")
+        assert not _has(migrator, "worker", table, "INSERT")
+        assert not _has(migrator, "worker", table, "UPDATE")
+        assert not _has(migrator, "worker", table, "DELETE")
+
+    worker = role_conn("worker")
+    run_id = one(
+        worker,
+        "SELECT ops.record_ai_eval_run(%s, %s, %s, %s::jsonb)",
+        (
+            "DDR-89",
+            "a" * 64,
+            "approved for benchmark use only; draft, not the DDR-90 golden set",
+            '{"ingestion_batch_size":16}',
+        ),
+    )
+    worker.execute(
+        "SELECT ops.record_ai_eval_result(%s, %s, %s, %s, %s, %s::jsonb)",
+        (
+            run_id,
+            "BAAI/bge-small-en-v1.5",
+            "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+            "b" * 64,
+            384,
+            '{"recall_at_5":0.9,"p95_query_embedding_ms":20,"steady_state_added_rss_mb":200,"ingestion_batch_peak_vmhwm_mb":250,"ingestion_batch_size":16}',
+        ),
+    )

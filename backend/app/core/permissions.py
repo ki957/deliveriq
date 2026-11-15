@@ -67,6 +67,7 @@ class Permission(StrEnum):
     KITCHEN_RECIPES_SIGNOFF = "kitchen.recipes.signoff"
     KITCHEN_REVIEW_VIEW = "kitchen.review.view"
     KITCHEN_REVIEW_ACKNOWLEDGE = "kitchen.review.acknowledge"
+    KITCHEN_KNOWLEDGE_APPROVE = "kitchen.knowledge.approve"
     # Delivery
     DELIVERY_ASSIGNMENTS_VIEW = "delivery.assignments.view"
     # Management (Matrix §5.1)
@@ -152,6 +153,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
         P.KITCHEN_RECIPES_WORKFLOW,
         P.KITCHEN_RECIPES_SIGNOFF,
         P.KITCHEN_REVIEW_ACKNOWLEDGE,
+        P.KITCHEN_KNOWLEDGE_APPROVE,
     },
     Role.REGIONAL_MANAGER: _MGMT_SHARED,
     Role.CENTRAL_ADMIN: _MGMT_SHARED

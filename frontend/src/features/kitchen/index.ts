@@ -5,3 +5,6 @@ export { LiveOrdersPage } from "./components/live-orders-page";
 export { KitchenOverviewPage } from "./components/overview-page";
 export { PreparationPage } from "./components/preparation-page";
 export { KitchenSettingsPage, KitchenSettingsPanel } from "./components/settings-page";
+
+export { KitchenCopilotPage } from "./components/copilot-page";
+export { KitchenKnowledgePage } from "./components/knowledge-page";

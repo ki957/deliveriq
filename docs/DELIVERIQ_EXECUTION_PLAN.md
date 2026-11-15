@@ -148,8 +148,8 @@ Key points:
 | DDR-42 | Kitchen defaults | A | 8 | Configurable values with labelled test defaults (capacity 10 is the source test value) | Final values |
 | DDR-43 | GPS sampling interval | A | 9 | Configurable 3–5 s | Final interval |
 | DDR-44 | Refund thresholds; KPI formulas; audit retention/export; YAML editor vs upload | B / A | 10, 13, 15A | Refund workflow with thresholds unset (exceptional-refund rule disabled); dbt models built; audit log | YAML editing component (B); presenting KPIs as business truth (A); exceptional-refund action (A) |
-| DDR-45 | Embedding model winner (benchmark, DDR-89) | B | 16 | Embedding adapter; benchmark run | Vector column dimension and indexing |
-| DDR-46 | Approved RAG content and golden sets | A | 15, 16, 17 | Ingestion pipelines with DRAFT stubs | Publishing any knowledge to a live collection |
+| DDR-45 | Embedding model winner (benchmark, DDR-89) | **Resolved by DDR-121** | 16 | MiniLM L6 v2 winner; vector dimension/indexing delivered in 16C | — |
+| DDR-46 | Approved RAG content and golden sets | **Resolved for Kitchen by DDR-122** | 16 | KM-scoped Kitchen approval and golden-set gate delivered; Customer/Management remain gated for their tasks | Other portals' publication |
 
 Resolved since v2.2 and removed from this matrix: DDR-16 (`OUT_FOR_DELIVERY` automatic after pickup). Resolved in v2.6: G gates DDR-21–25 and 27–29 (approved as written), DDR-26 (superseded by DDR-85), DDR-72 (DDR-86), DDR-73 (DDR-93), the LLM part of DDR-45 (DDR-86). Reclassified as out of POC scope: DDR-08, 32, 39, 40, 47. Reclassified as non-blocking: DDR-33–36.
 
@@ -513,6 +513,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 - **Gated features:** vector indexing (B, DDR-45 embedding); publishing SOP chunks (A, DDR-46).
 - **Guidance:** English only; Kitchen RAG ingestion on the pipeline framework. Ships the harness `README.md` card (DDR-80).
 - **Acceptance criteria:** Embedding benchmark report (`docs/EMBEDDING_BENCHMARK_REPORT.md`, DDR-89) exists and the owner-confirmed winner is recorded before the dimension is fixed; index records its embedding model; Kitchen golden set passes with 0 leaks (DDR-90); order questions use the exact pinned recipe version; no mixed versions; KS cannot reach KM-only tools; abstains on cook times and temperatures absent from source; no stock-mutation tool exists; TEST recipes indexed in test/demo only, flagged; production profile refuses them (DDR-77).
+- **Status:** 16A and 16B verified; 16C adds migration 0027's MiniLM 384-dimension hybrid index metadata, KM-scoped SHA-keyed knowledge approval, and the in-app DDR-90 Kitchen golden-set gate. The draft benchmark file remains explicitly non-golden.
 
 ### Task 17 — Customer Assistant
 

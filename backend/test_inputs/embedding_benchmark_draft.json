@@ -1,0 +1,1093 @@
+{
+  "status": "Approved for benchmark use only; draft, not the DDR-90 golden set",
+  "created_from": [
+    "Customer Dashboard Requirements",
+    "Management Dashboard Requirements",
+    "Kitchen SOP Manual"
+  ],
+  "case_count": 90,
+  "corpus": [
+    {
+      "id": "customer-01",
+      "harness": "customer",
+      "text": "DeliverIQ --- Customer Dashboard Requirements\n*Scope:** Customer Dashboard POC\\\n*Status:** Business requirements approved; UI/UX discovery in progress\\\n*Business model:** One centralized cloud kitchen, initially in Chennai.\nNot a multi-restaurant marketplace."
+    },
+    {
+      "id": "customer-02",
+      "harness": "customer",
+      "text": "2. Approved visual direction\nPrimary: `#A8C9CB`\nBase/background: `#FFFFFF`\nAccent: `#F45B0B`\nPremium food photography + clean, minimal layouts.\nDesktop-first, fully responsive on laptop, tablet and mobile.\nUbuntu-inspired left navigation concept; do not copy Ubuntu branding\n    or exact UI.\nDesktop sidebar expanded by default with icons and labels;\n    collapsible.\nLaptop: collapsible sidebar. Tablet: compact sidebar/drawer. Mobile:\n    hamburger drawer + bottom navigation.\nMaintain accessible contrast. Use readable dark text where needed."
+    },
+    {
+      "id": "customer-03",
+      "harness": "customer",
+      "text": "3. Navigation\nKeep cart access easy to find, with item count. Customer AI/chatbot\ndesign and implementation are deferred until all five dashboards are\ncompleted."
+    },
+    {
+      "id": "customer-04",
+      "harness": "customer",
+      "text": "4. Home dashboard\nShow selected sections, not the entire catalogue: 1. Welcome message and\ndelivery location. 2. Active order card only when an active order\nexists. 3. Menu search entry point. 4. Food categories. 5. Popular\ndishes. 6. Featured dishes/promotions. 7. Reorder previous meals when\nhistory exists."
+    },
+    {
+      "id": "customer-05",
+      "harness": "customer",
+      "text": "Food cards\nResponsive grid cards with image, dish name, short description, price,\nvegetarian/non-vegetarian indicator and Add action. Selecting a card\nopens dish details and customization."
+    },
+    {
+      "id": "customer-06",
+      "harness": "customer",
+      "text": "Food cards\n*Open interaction decision:** Add action is not yet selected: - A. Add\ndirectly; customization later. - B. Always open customization first. -\nC. Add directly if no customization is required; otherwise open\ncustomization."
+    },
+    {
+      "id": "customer-07",
+      "harness": "customer",
+      "text": "5. Access and authentication\nVisitors can browse after selecting a delivery location without\n    login.\nOTP authentication is mandatory before placing an order.\nNew mobile number becomes a customer account after successful OTP\n    verification.\nExisting access follows assigned roles.\nStaff users receive customer access only if customer role is\n    separately assigned.\nLost mobile number recovery is intended to use email verification;\n    detailed recovery safeguards remain open."
+    },
+    {
+      "id": "customer-08",
+      "harness": "customer",
+      "text": "6. Location and delivery\nSupport browser GPS and manual address entry.\nMultiple saved addresses and one default address.\nValidate full address and GPS coordinates against configured\n    delivery zones.\nDelivery eligibility requires BOTH: straight-line distance \\<= 4 km\n    AND road distance \\<= 6 km from the kitchen.\nOutside area: show unavailable message, nearby serviceable areas and\n    allow location change.\nRevalidate when address changes and before order placement.\nDo not show a misleading orderable menu for an unserviceable\n    location."
+    },
+    {
+      "id": "customer-09",
+      "harness": "customer",
+      "text": "7. Menu and dish details\nSeparate Menu page contains full catalogue.\nCategories, search and filters: price, vegetarian/non-vegetarian,\n    spice level, popularity/bestseller.\nHide unavailable dishes.\nDish details show description, ingredients, base price and\n    customization choices.\nKitchen configures customization per dish.\nExamples: spice level, portion size, add-ons.\nAll customization included in base price; no surcharge.\nFree-text special instructions; proposed 250-character limit,\n    pending confirmation.\nKitchen controls customization availability."
+    },
+    {
+      "id": "customer-10",
+      "harness": "customer",
+      "text": "8. Cart and pricing\nOne unified cart for the single kitchen.\nPersist cart for authenticated customers.\nNo fixed per-dish quantity cap; stock availability is the limit.\nMinimum order: ₹500 food subtotal before taxes and delivery.\nCart item price protection: 30 minutes after adding.\nIf item becomes unavailable before checkout, remove it, notify\n    customer and require confirmation.\nNo order modification after placement. If cancellation remains\n    eligible, customer can cancel and reorder.\nReorder previous meals subject to current menu and stock.\nDelivery fee configurable; free delivery above configurable\n    threshold.\nDisplayed dish prices include taxes; show tax details in bill.\nManagement-configured coupons.\nNo delivery tips."
+    },
+    {
+      "id": "customer-11",
+      "harness": "customer",
+      "text": "Price protection\nNever silently charge a changed price. At checkout, validate the\n30-minute protection. If expired and price changed, show revised price\nand require explicit confirmation before payment. Preserve accepted\nprice in the order."
+    },
+    {
+      "id": "customer-12",
+      "harness": "customer",
+      "text": "9. Checkout and payment\nCheckout sequence: review cart → validate stock/prices → confirm\naddress/eligibility → enforce ₹500 minimum → apply coupon → calculate\ntaxes/delivery → select payment → place order → simulate payment or COD\n→ send to kitchen."
+    },
+    {
+      "id": "customer-13",
+      "harness": "customer",
+      "text": "9. Checkout and payment\nTrack payment and fulfilment separately: - Prepaid orders require\nsuccessful simulated payment before kitchen processing. - COD does not\nrequire online payment. - Kitchen acceptance is required for fulfilment\nconfirmation."
+    },
+    {
+      "id": "customer-14",
+      "harness": "customer",
+      "text": "10. Order lifecycle and tracking\nCustomer-visible statuses: 1. Order placed 2. Awaiting kitchen\nacceptance 3. Accepted 4. Preparing 5. Ready for pickup 6. Delivery\nagent assigned 7. Picked up 8. Out for delivery 9. Delivered"
+    },
+    {
+      "id": "customer-15",
+      "harness": "customer",
+      "text": "10. Order lifecycle and tracking\nRules: - Cancellation allowed until kitchen acceptance. - No normal\ncustomer cancellation after acceptance. - Kitchen rejection cancels\norder. - Simulated refund for prepaid rejected orders; no refund for\nCOD. - Show estimated delivery time/range. - Show live delivery agent\nlocation on map after pickup, alongside status. - If customer\nunavailable: agent calls, waits a configured period, then follows\nretry/escalation. - Immediate orders only; no scheduled orders. - No\npost-placement modification."
+    },
+    {
+      "id": "customer-16",
+      "harness": "customer",
+      "text": "11. Orders, reviews and profile\nReviews: food rating, delivery rating, written review. Regional manager\ncan hide inappropriate reviews with reason and audit record."
+    },
+    {
+      "id": "customer-17",
+      "harness": "customer",
+      "text": "11. Orders, reviews and profile\nProfile: name (required), verified mobile (required), email (required),\nmultiple saved addresses, default address, food preferences, spice\npreference, customer-declared allergies/ingredients to avoid, favourite\ndishes."
+    },
+    {
+      "id": "customer-18",
+      "harness": "customer",
+      "text": "12. Notifications and support\nSMS and in-app notifications for order placed, accepted/rejected,\npreparation started, ready for pickup, agent assigned, out for delivery,\ndelivered and cancellation/refund updates. Browser push is optional and\npermission-based."
+    },
+    {
+      "id": "customer-19",
+      "harness": "customer",
+      "text": "12. Notifications and support\nSupport: phone support and support tickets. Customer AI is deferred\nuntil all five dashboards are completed. Do not include chatbot UI or\nflows now."
+    },
+    {
+      "id": "customer-20",
+      "harness": "customer",
+      "text": "13. Explicitly excluded from POC\nScheduled orders\nLoyalty points\nDelivery tips\nReal payment processing\nMulti-restaurant marketplace\nPost-placement order modification\nPaid customization\nCustomer AI chatbot in this phase"
+    },
+    {
+      "id": "customer-21",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\n----------------------------------------------------------------------\n  ID                                  Acceptance criterion\n---------------------------------- -----------------------------------\n  CD-01                               Visitor can browse after selecting\n                                      location without login."
+    },
+    {
+      "id": "customer-22",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\nCD-02                               Out-of-zone customers see\n                                      serviceability information and can\n                                      change location."
+    },
+    {
+      "id": "customer-23",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\nCD-03                               Only OTP-authenticated customers\n                                      with customer access can order."
+    },
+    {
+      "id": "customer-24",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\nCD-04                               Categories, search and all four\n                                      menu filters work."
+    },
+    {
+      "id": "customer-25",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\nCD-05                               Unavailable dishes are hidden and\n                                      cannot be ordered."
+    },
+    {
+      "id": "customer-26",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\nCD-06                               Customization follows\n                                      kitchen-configured options without\n                                      extra charges."
+    },
+    {
+      "id": "customer-27",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\nCD-07                               Cart persists for authenticated\n                                      customers."
+    },
+    {
+      "id": "customer-28",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\nCD-08                               ₹500 minimum food subtotal is\n                                      enforced."
+    },
+    {
+      "id": "customer-29",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\nCD-09                               Stock, price and delivery\n                                      eligibility are validated before\n                                      order placement."
+    },
+    {
+      "id": "customer-30",
+      "harness": "customer",
+      "text": "14. Acceptance criteria\nCD-10                               Customer confirms changes when an\n                                      item becomes unavailable."
+    },
+    {
+      "id": "management-01",
+      "harness": "management",
+      "text": "DeliverIQ --- Unified Management Dashboard Requirements\n*Status:** Approved discovery baseline\\\n*Initial deployment:** One centralized cloud kitchen in Chennai, India\\\n*Application:** One dashboard with role-based Central Administrator and\nRegional Manager experiences."
+    },
+    {
+      "id": "management-02",
+      "harness": "management",
+      "text": "1. Purpose and scope\nCombine the former Regional Manager and Central Administrator dashboards\ninto one application without merging their authority. The initial POC\nhas one Chennai region and one kitchen; model Region and Kitchen\nseparately to support future expansion. This is not a multi-restaurant\nmarketplace. Backend authorization is authoritative."
+    },
+    {
+      "id": "management-03",
+      "harness": "management",
+      "text": "Central Administrator\nPlatform-wide access to all regions and kitchens.\nCreate, assign, update and deactivate Regional Managers.\nPerform authorized Regional Manager operations in any region.\nConfigure global policies, providers, integrations, AI settings and\n    YAML configuration.\nManage global or regional promotions.\nView global reports and audit logs."
+    },
+    {
+      "id": "management-04",
+      "harness": "management",
+      "text": "Regional Manager\nAccess only assigned regions.\nManage Kitchen Managers, Kitchen Staff and Delivery Agents in\n    assigned regions.\nMonitor/intervene in kitchen, delivery and order operations.\nAssign/reassign agents; change kitchen mode/capacity within regional\n    limits.\nApprove/reject dish unavailability requests.\nHandle escalations and approve exceptional refunds within assigned\n    regions.\nManage regional promotions, support, review moderation and regional\n    settings.\nView regional reports and audit logs."
+    },
+    {
+      "id": "management-05",
+      "harness": "management",
+      "text": "Regional Manager\nRegional Managers cannot create Regional Managers, change global\npolicies/providers, access other regions or edit global YAML\nconfiguration. Central Administrator access is additive and includes\nregional operations."
+    },
+    {
+      "id": "management-06",
+      "harness": "management",
+      "text": "Regional Manager\nCapability                      Regional Manager   Central Administrator\n------------------------------ ------------------ -----------------------\n  View operations                 Assigned regions   All regions\n  Create Regional Managers        No                 Yes\n  Manage kitchen/delivery staff   Assigned regions   All regions\n  Assign/reassign agents          Assigned regions   All regions\n  Change kitchen mode/capacity    Assigned regions   All regions\n  Approve dish unavailability     Assigned regions   All regions\n  Exceptional refund approval     Assigned regions   All regions\n  Override refund decisions       No                 Yes\n  Regional settings               Yes                Yes\n  Global settings/providers       No                 Yes\n  Regional audit logs             Yes                Yes\n  Global audit logs/YAML          No                 Yes"
+    },
+    {
+      "id": "management-07",
+      "harness": "management",
+      "text": "3. Organization model\nRegion contains one or more kitchens.\nRegional Manager may be assigned to one or more regions.\nInitial data: Chennai region, one centralized kitchen.\nEnforce region scope on every backend request, query, export,\n    WebSocket and AI retrieval.\nAvoid unnecessary multi-tenant billing/marketplace functionality."
+    },
+    {
+      "id": "management-08",
+      "harness": "management",
+      "text": "4. Staff and access\nManagement provisions Kitchen Managers, Kitchen Staff and Delivery\n    Agents.\nOnly Central Administrator provisions Regional Managers and changes\n    their region assignments.\nSupport explicitly assigned multiple roles; Customer role is not\n    implicit.\nReuse shared mobile OTP authentication and\n    trusted-device/account-recovery rules from other DeliverIQ portals.\nRole changes take effect immediately; removal revokes relevant\n    active access/sessions.\nRegional Managers can manage only staff in assigned regions.\nPrevent self-escalation of permissions.\nStaff deactivation must first handle active orders/deliveries\n    safely.\nAudit creation, role/region assignment, changes and deactivation."
+    },
+    {
+      "id": "management-09",
+      "harness": "management",
+      "text": "5. Kitchen operations\nManagement can inspect kitchen mode (Normal/Busy/Paused), capacity,\n    orders, delays, exceptions, inventory alerts and dish unavailability\n    requests.\nRegional Manager/Central Administrator may change mode/capacity\n    within authority; backend enforces capacity and records overrides\n    with reasons.\nRegional Manager approves/rejects dish unavailability; kitchen staff\n    cannot approve their own request.\nPreserve Kitchen Portal ownership: Kitchen Manager edits\n    recipes/ingredient records, manages stock and normal kitchen\n    operations.\nAccepted orders retain their recipe version.\nIngredient stock is reserved atomically on acceptance, deducted on\n    handover and released on cancellation/rejection.\nStock adjustments require reason/audit.\nIngredient shortage does not automatically hide a dish; management\n    approval controls customer-facing availability.\nNo procurement, supplier, purchase order, accounting or wastage\n    module."
+    },
+    {
+      "id": "management-10",
+      "harness": "management",
+      "text": "6. Delivery operations\nView agent availability, active assignments and live locations for\n    active deliveries.\nAssign/reassign agents and handle timeouts, rejection,\n    delivery-failure requests, customer-unavailable cases and COD\n    discrepancies.\nOne active delivery per agent.\nAssignment response timeout: 60 seconds; unanswered assignments\n    return to pool.\nRejection requires reason; reassignment immediately revokes previous\n    agent access.\nCustomer delivery confirmation uses six-digit OTP; three failed\n    attempts trigger management escalation.\nCustomer unavailable: agent calls, waits five minutes, then contacts\n    management.\nAgent-requested delivery failure requires reason and manager\n    approval.\nForce agent offline only after active work is reassigned or\n    explicitly handled.\nGPS uses browser geolocation with permission; never fabricate real\n    coordinates.\nMaps/routing: OpenStreetMap, Leaflet and OSRM only."
+    },
+    {
+      "id": "management-11",
+      "harness": "management",
+      "text": "7. Orders and exceptions\nMonitor orders by status, date, kitchen, agent and exception.\nKeep payment state separate from fulfilment state.\nHandle kitchen rejection, prep delays, assignment failures, delivery\n    failures and customer-unavailable cases.\nPreserve existing lifecycle: customer cancellation before kitchen\n    acceptance; no normal cancellation after acceptance; kitchen\n    rejection cancels; kitchen acceptance precedes preparation.\nKitchen: Accepted → Preparing → Ready for Pickup → Handed Over.\nAgent pickup is authoritative and blocked until Ready for Pickup.\nNo post-placement customer modification.\nOverrides require permission and mandatory reason."
+    },
+    {
+      "id": "management-12",
+      "harness": "management",
+      "text": "8. Menu, inventory and customer support\nInspect menu availability, unavailability requests, ingredient\n    stock, reservations, thresholds and stock history.\nKitchen Manager owns recipe editing and ingredient records.\nView customer profiles/orders within scope; handle support tickets.\nHide inappropriate reviews only with reason and audit.\nCustomer suspension is controlled and audited; Regional Manager may\n    initiate/recommend within scope, Central Administrator has final\n    global authority.\nNo permanent customer deletion through dashboard.\nCustomer-declared allergies/preferences are not a food-safety\n    guarantee."
+    },
+    {
+      "id": "management-13",
+      "harness": "management",
+      "text": "9. Payments and promotions\nPOC uses simulated payments only; no real money.\nRegional Manager views regional transactions, failed payments and\n    COD discrepancies; may approve exceptional refunds within region.\nCentral Administrator views all, overrides refund decisions and\n    configures payment simulator.\nRoutine refunds follow existing automated rules; exceptional refunds\n    require review.\nPrepaid simulated payment succeeds before kitchen processing; COD is\n    simulated.\nAgents never collect payment for prepaid orders.\nRecord refund actor, amount, reason, transaction/order and outcome.\nRegional Managers create regional promotions; Central Administrator\n    creates global or regional promotions and configures global coupon\n    rules.\nValidate eligibility, dates, usage limits and discounts server-side;\n    audit changes."
+    },
+    {
+      "id": "management-14",
+      "harness": "management",
+      "text": "10. Reporting and analytics\nMetrics: orders (total/completed/cancelled/rejected), revenue (gross\nsales/refunds/AOV), kitchen (acceptance/preparation time/delays),\ndelivery (assignment/delivery time/failures), inventory (low\nstock/consumption/shortages), customers (new/repeat/ratings), staff\n(active agents/workload), promotions (usage/discount/resulting\norders). - Regional view is limited to assigned regions; Central\nAdministrator gets global view and drill-down. - Date filters, period\ncomparisons and CSV export. - Metrics derive from persisted records;\nlabel simulated/demo data and never invent values. - Exports enforce\nsame authorization as UI."
+    },
+    {
+      "id": "management-15",
+      "harness": "management",
+      "text": "11. Management AI Copilot\nRead-only contextual decision support: - Operational bottlenecks/delayed\norders. - Revenue, order and customer trends. - Inventory shortage\nrisk. - Staffing workload imbalance. - Prioritized recommendations with\nevidence. Example questions: \"Why are orders delayed?\", \"Which\ningredients may run out?\", \"Which agents are overloaded?\", \"Summarize\ntoday's operations.\" - AI cannot approve refunds, change\npermissions/settings, modify orders, approve dish unavailability or\nexecute overrides. - Enforce current user's region scope on every\nretrieval. - Groq via provider-independent LLM gateway; PostgreSQL\nsource of truth; pgvector/RAG only where useful. - Live data through\npermission-checked APIs. - Explain evidence, time window and\nuncertainty; do not present predictions as facts. - AI outage must not\ninterrupt dashboard operations."
+    },
+    {
+      "id": "management-16",
+      "harness": "management",
+      "text": "12. Configuration and audit\nConfiguration                                      Regional Manager   Central Administrator\n------------------------------------------------- ------------------ -----------------------\n  Regional hours/delivery limits/capacity defaults   Yes                Yes\n  Global business rules                              No                 Yes\n  SMS/OTP provider                                   No                 Yes\n  AI provider/model                                  No                 Yes\n  Integrations                                       No                 Yes\n  Regional audit logs                                Yes                Yes\n  Global audit logs/YAML                             No                 Yes"
+    },
+    {
+      "id": "management-17",
+      "harness": "management",
+      "text": "12. Configuration and audit\nValidate configuration before saving; confirm sensitive changes; mask\nsecrets; maintain append-only audit records; support rollback where\neligible. YAML must be schema-validated, permission-controlled,\nversioned and audited; never execute arbitrary code. Audit actor, role,\ntimestamp, target, action, scope, reason, result, correlation ID and\nsafe before/after values. Never log passwords, OTPs, tokens or secrets."
+    },
+    {
+      "id": "management-18",
+      "harness": "management",
+      "text": "13. UI/UX\nPremium enterprise SaaS; desktop-first, responsive tablet/mobile.\nCollapsible left sidebar; header with search, notifications, profile\n    and role/scope.\nMobile compact navigation/cards; tablet compact sidebar.\nOverview prioritizes active/delayed orders, kitchen status/capacity,\n    online agents/active deliveries, revenue trends, critical alerts,\n    pending approvals and AI insights.\nUse compact filterable/paginated tables, summary cards and\n    purposeful charts.\nProvide loading, empty, error, permission-denied and success states.\nAccessible contrast, keyboard focus/navigation and touch targets.\nAvoid excessive gradients, animations and clutter.\nTypography recommendation: Inter unless repo has an established font\n    system."
+    },
+    {
+      "id": "management-19",
+      "harness": "management",
+      "text": "Approved color palette\n----------------------------------------------------------------------\n  Token                   Hex                     Use\n---------------------- ----------------------- -----------------------\n  Primary                 `#021861`               Sidebar, headers,\n                                                  primary navigation"
+    },
+    {
+      "id": "management-20",
+      "harness": "management",
+      "text": "Approved color palette\nSecondary               `#255DCE`               Actions, links, active\n                                                  states, charts"
+    },
+    {
+      "id": "management-21",
+      "harness": "management",
+      "text": "Approved color palette\nAccent                  `#DE1110`               Critical alerts,\n                                                  destructive actions,\n                                                  urgent exceptions"
+    },
+    {
+      "id": "management-22",
+      "harness": "management",
+      "text": "Approved color palette\nNeutral                 `#F3F5FA`               Page/secondary\n                                                  backgrounds\n----------------------------------------------------------------------"
+    },
+    {
+      "id": "management-23",
+      "harness": "management",
+      "text": "Navigation\nShared: Overview, Kitchen Operations, Delivery Operations, Orders &\nExceptions, Menu & Inventory, Customers & Support, Payments &\nPromotions, Reports & Analytics, Management AI Copilot. Regional\nManager: Staff & Access, Regional Settings, Regional Audit Logs. Central\nAdministrator: Global Staff & Regional Manager Access, Global\nConfiguration, Integrations & Providers, AI Model Configuration, Global\nAudit Logs, YAML Configuration Management. Navigation is\npermission-derived; frontend hiding is not authorization."
+    },
+    {
+      "id": "management-24",
+      "harness": "management",
+      "text": "14. Architecture and non-functional requirements\nExisting baseline: modular monolith with selective\nserverless/event-driven integration; Python/FastAPI; PostgreSQL/Alembic\nand PostGIS; Redis/WebSockets; OSRM/Leaflet/OSM; MinIO, Parquet, DuckDB,\ndbt; Groq gateway; pgvector; Docker Compose first. Verify repository\nbefore assuming stack. - Reuse shared identity, order, payment,\ninventory, kitchen and delivery services. - Server-side role/region\nchecks for every endpoint, query, export, WebSocket and AI retrieval. -\nTransactions/concurrency controls for assignment, capacity and\nrefunds. - Pagination and bounded date ranges. - Safe retry for read\noperations. - No secrets in logs/UI. - AI optional/non-blocking. - Do\nnot introduce microservices or major infrastructure without demonstrated\nneed and approval."
+    },
+    {
+      "id": "management-25",
+      "harness": "management",
+      "text": "15. Exclusions\nNo marketplace, real payments, payroll/incentives/shifts, procurement,\npermanent customer deletion, autonomous AI actions, arbitrary YAML code\nexecution, mandatory microservices migration or native mobile app."
+    },
+    {
+      "id": "management-26",
+      "harness": "management",
+      "text": "16. Acceptance criteria\n1.  Regional Manager cannot access other regions through UI, API,\n    export, WebSocket or AI.\n2.  Central Administrator accesses all regions and manages Regional\n    Managers.\n3.  Role changes take effect immediately.\n4.  Backend rejects unauthorized actions even if manually invoked.\n5.  Staff deactivation cannot strand active deliveries.\n6.  Kitchen capacity is enforced under concurrent requests and overrides\n    audited.\n7.  Dish unavailability requires authorized approval and audit.\n8.  Agent assignment/reassignment respects one-active-delivery and\n    revocation.\n9.  Payment and fulfilment states remain separate.\n10. Exceptional refund approval/override is permission-checked and\n    audited.\n11. Review moderation requires reason and audit.\n12. Promotions validated server-side.\n13. Reports/exports respect region scope.\n14. AI uses authorized current data and cannot mutate business state.\n15. Provider/configuration access is Central Administrator-only; secrets\n    masked.\n16. YAML is validated, versioned and audited.\n17. Responsive navigation works desktop/tablet/mobile.\n18. Critical states are not color-only.\n19. All screens have loading, empty, error and denied states.\n20. Existing Customer, Kitchen and Delivery Agent flows pass regression\n    tests."
+    },
+    {
+      "id": "management-27",
+      "harness": "management",
+      "text": "17. Open implementation decisions\nResolve during repository inspection; do not guess: current repo\nstructure; identity/region schema; SMS provider and India DLT\nrequirements; refund thresholds/classes; regional configuration fields;\naudit retention/export; YAML editor versus validated upload; KPI\nformulas/accounting definitions; AI model/cost limits/evaluation;\nlogo/tagline/design assets."
+    },
+    {
+      "id": "kitchen-01",
+      "harness": "kitchen",
+      "text": "MENU001 — Poha\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Poha: 100 g\n  - Onion: 40 g\n  - Potato: 40 g\n  - Peanuts: 15 g\n  - Cooking oil: 10 ml\n  - Mustard seeds: 2 g\n  - Turmeric powder: 1 g\n  - Coriander leaves: 5 g\n  - Lemon: 0.25 piece\n  - Salt: 2 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-02",
+      "harness": "kitchen",
+      "text": "MENU002 — Upma\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Semolina / Rava: 100 g\n  - Onion: 30 g\n  - Carrot: 20 g\n  - Green peas: 20 g\n  - Cooking oil: 10 ml\n  - Mustard seeds: 2 g\n  - Cumin: 1 g\n  - Curry leaves: 2 g\n  - Water: 220 ml\n  - Salt: 2 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 3"
+    },
+    {
+      "id": "kitchen-03",
+      "harness": "kitchen",
+      "text": "MENU003 — Idli with Sambhar / Chutney\n- Preparation: Batch-prepared + order assembly\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Idli batter: 180 g\n  - Sambhar (prepared): 200 ml\n  - Coconut chutney (prepared): 30 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-04",
+      "harness": "kitchen",
+      "text": "MENU004 — Sabudana Khichadi\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Sabudana: 100 g\n  - Potato: 50 g\n  - Peanuts: 20 g\n  - Cooking oil: 10 ml\n  - Cumin: 2 g\n  - Green chilli: 3 g\n  - Coriander leaves: 4 g\n  - Lemon: 0.25 piece\n  - Salt: 2 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 4"
+    },
+    {
+      "id": "kitchen-05",
+      "harness": "kitchen",
+      "text": "MENU005 — Sandwich Veg\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Bread: 2 piece\n  - Potato: 40 g\n  - Cucumber: 25 g\n  - Tomato: 25 g\n  - Onion: 20 g\n  - Green chutney (prepared): 20 g\n  - Butter: 10 g\n  - Cheese: 20 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-06",
+      "harness": "kitchen",
+      "text": "MENU006 — Medu Wada with Sambhar / Chutney\n- Preparation: Batch-prepared + order assembly\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Urad dal: 100 g\n  - Ginger: 3 g\n  - Green chilli: 3 g\n  - Curry leaves: 2 g\n  - Cooking oil: 25 ml\n  - Sambhar (prepared): 150 ml\n  - Coconut chutney (prepared): 30 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 5"
+    },
+    {
+      "id": "kitchen-07",
+      "harness": "kitchen",
+      "text": "MENU007 — Puri Bhaji\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Wheat flour: 100 g\n  - Potato: 150 g\n  - Onion: 25 g\n  - Cooking oil: 30 ml\n  - Turmeric powder: 1 g\n  - Mustard seeds: 2 g\n  - Curry leaves: 2 g\n  - Salt: 3 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-08",
+      "harness": "kitchen",
+      "text": "MENU008 — Mini Batata Wada\n- Preparation: Semi-prepared + fry to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Potato: 120 g\n  - Besan: 35 g\n  - Green chilli: 4 g\n  - Ginger: 3 g\n  - Turmeric powder: 1 g\n  - Mustard seeds: 1 g\n  - Curry leaves: 2 g\n  - Cooking oil: 25 ml\n  - Salt: 2 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 6"
+    },
+    {
+      "id": "kitchen-09",
+      "harness": "kitchen",
+      "text": "MENU009 — Veg Cutlets\n- Preparation: Semi-prepared + fry to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Potato: 100 g\n  - Carrot: 25 g\n  - Green peas: 25 g\n  - Beans/cabbage mix: 25 g\n  - Breadcrumbs: 25 g\n  - Cornflour: 10 g\n  - Cooking oil: 20 ml\n  - Garam masala: 2 g\n  - Salt: 2 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-10",
+      "harness": "kitchen",
+      "text": "MENU010 — Sabudana Wada\n- Preparation: Semi-prepared + fry to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Sabudana: 80 g\n  - Potato: 70 g\n  - Peanuts: 20 g\n  - Green chilli: 3 g\n  - Cumin: 2 g\n  - Coriander leaves: 4 g\n  - Cooking oil: 25 ml\n  - Salt: 2 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 7"
+    },
+    {
+      "id": "kitchen-11",
+      "harness": "kitchen",
+      "text": "MENU011 — Misal Pav\n- Preparation: Batch-prepared + order assembly\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Mixed sprouts: 120 g\n  - Onion-tomato gravy (prepared): 150 g\n  - Farsan: 30 g\n  - Pav: 2 piece\n  - Onion: 25 g\n  - Coriander leaves: 5 g\n  - Lemon: 0.25 piece\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-12",
+      "harness": "kitchen",
+      "text": "MENU012 — Tea, Coffee & Cookies\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Milk: 120 ml\n  - Tea leaves: 2 g\n  - Coffee powder: 2 g\n  - Sugar: 10 g\n  - Cookies: 25 g\n- Method: Weigh and stage ingredients before cooking; soak/batter preparation must follow its component SOP. Cook the base ingredient using the specified method; stir or turn to prevent sticking and uneven cooking. Finish with measured tempering, garnish or accompaniment. Portion consistently and serve immediately at the defined serving temperature.\n- Quality: Uniform portion and shape; cooked through; seasoning balanced; no excess oil; served promptly.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 8 Welcome Drinks"
+    },
+    {
+      "id": "kitchen-13",
+      "harness": "kitchen",
+      "text": "MENU013 — Fresh Lime Water\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Lemon: 0.5 piece\n  - Water: 200 ml\n  - Sugar: 15 g\n  - Salt: 1 g\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-14",
+      "harness": "kitchen",
+      "text": "MENU014 — Jaljeera\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Water: 200 ml\n  - Lemon: 0.25 piece\n  - Cumin: 2 g\n  - Mint leaves: 3 g\n  - Tamarind: 5 g\n  - Salt: 2 g\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-15",
+      "harness": "kitchen",
+      "text": "MENU015 — Kokum Sarbat\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Kokum syrup: 35 ml\n  - Water: 180 ml\n  - Cumin: 1 g\n  - Salt: 1 g\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 9"
+    },
+    {
+      "id": "kitchen-16",
+      "harness": "kitchen",
+      "text": "MENU016 — Blue Lagoon\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Blue curaçao syrup: 25 ml\n  - Lemon: 0.25 piece\n  - Soda water: 180 ml\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-17",
+      "harness": "kitchen",
+      "text": "MENU017 — Peach and Apricot\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Peach/apricot pulp: 50 g\n  - Water: 150 ml\n  - Sugar: 10 g\n  - Lemon: 0.1 piece\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-18",
+      "harness": "kitchen",
+      "text": "MENU018 — Passion Fruit\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Passion fruit pulp: 50 g\n  - Water: 150 ml\n  - Sugar: 12 g\n  - Lemon: 0.1 piece\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 10"
+    },
+    {
+      "id": "kitchen-19",
+      "harness": "kitchen",
+      "text": "MENU019 — Cranberry\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Cranberry juice: 100 ml\n  - Water: 100 ml\n  - Lemon: 0.1 piece\n  - Sugar: 5 g\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-20",
+      "harness": "kitchen",
+      "text": "MENU020 — Virgin Mojito\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Lemon: 0.5 piece\n  - Mint leaves: 8 g\n  - Sugar: 15 g\n  - Soda water: 180 ml\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-21",
+      "harness": "kitchen",
+      "text": "MENU021 — Choice of Squash\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Squash concentrate: 30 ml\n  - Water: 180 ml\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-22",
+      "harness": "kitchen",
+      "text": "MENU022 — Watermelon Smoothie\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Watermelon: 180 g\n  - Curd: 50 g\n  - Sugar: 10 g\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 11"
+    },
+    {
+      "id": "kitchen-23",
+      "harness": "kitchen",
+      "text": "MENU023 — Fruit Punch\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Orange juice: 60 ml\n  - Pineapple juice: 60 ml\n  - Mango: 30 g\n  - Water: 50 ml\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-24",
+      "harness": "kitchen",
+      "text": "MENU024 — Pinacolada\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Pineapple juice: 120 ml\n  - Coconut milk: 60 ml\n  - Sugar: 10 g\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-25",
+      "harness": "kitchen",
+      "text": "MENU025 — Spicy Guava\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Guava pulp: 100 g\n  - Water: 100 ml\n  - Lemon: 0.2 piece\n  - Red chilli powder: 1 g\n  - Salt: 1 g\n- Method: Sanitize blender/shaker and use potable chilled water and clean ice. Measure syrups, juices, fruit and liquid ingredients to the recipe. Blend or shake only as appropriate; do not over-dilute. Serve immediately in a clean chilled glass with the specified garnish.\n- Quality: Correct measured dilution; clean glass; chilled; no off-odour; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 12 Soup"
+    },
+    {
+      "id": "kitchen-26",
+      "harness": "kitchen",
+      "text": "MENU026 — Manchow Soup\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Cabbage: 25 g\n  - Carrot: 20 g\n  - Capsicum: 15 g\n  - Spring onion: 8 g\n  - Garlic: 4 g\n  - Soy sauce: 8 ml\n  - Cornflour: 8 g\n  - Vegetable stock: 250 ml\n  - Fried noodles: 15 g\n- Method: Wash and cut vegetables; measure stock and seasonings. Sweat aromatics, add vegetables and stock; simmer until vegetables are tender. Add thickener or dairy only as listed; simmer briefly until consistency is correct. Taste, adjust seasoning, garnish and serve hot.\n- Quality: Hot, smooth/clear as intended; no raw flour taste; seasoning balanced; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-27",
+      "harness": "kitchen",
+      "text": "MENU027 — Tamatar Dhaniya Shorba\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Tomato: 180 g\n  - Coriander leaves: 8 g\n  - Ginger: 4 g\n  - Garlic: 3 g\n  - Cumin: 1 g\n  - Water: 220 ml\n- Method: Wash and cut vegetables; measure stock and seasonings. Sweat aromatics, add vegetables and stock; simmer until vegetables are tender. Add thickener or dairy only as listed; simmer briefly until consistency is correct. Taste, adjust seasoning, garnish and serve hot.\n- Quality: Hot, smooth/clear as intended; no raw flour taste; seasoning balanced; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 13"
+    },
+    {
+      "id": "kitchen-28",
+      "harness": "kitchen",
+      "text": "MENU028 — Vegetable Noodle Soup\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Noodles: 35 g\n  - Carrot: 20 g\n  - Cabbage: 20 g\n  - Beans/cabbage mix: 20 g\n  - Vegetable stock: 230 ml\n  - Soy sauce: 5 ml\n- Method: Wash and cut vegetables; measure stock and seasonings. Sweat aromatics, add vegetables and stock; simmer until vegetables are tender. Add thickener or dairy only as listed; simmer briefly until consistency is correct. Taste, adjust seasoning, garnish and serve hot.\n- Quality: Hot, smooth/clear as intended; no raw flour taste; seasoning balanced; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-29",
+      "harness": "kitchen",
+      "text": "MENU029 — Tomato Basil Soup\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Tomato: 180 g\n  - Basil leaves: 4 g\n  - Cream: 15 ml\n  - Vegetable stock: 180 ml\n  - Butter: 5 g\n- Method: Wash and cut vegetables; measure stock and seasonings. Sweat aromatics, add vegetables and stock; simmer until vegetables are tender. Add thickener or dairy only as listed; simmer briefly until consistency is correct. Taste, adjust seasoning, garnish and serve hot.\n- Quality: Hot, smooth/clear as intended; no raw flour taste; seasoning balanced; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation."
+    },
+    {
+      "id": "kitchen-30",
+      "harness": "kitchen",
+      "text": "MENU030 — Tomato Rasam\n- Preparation: Made to order\n- Portion: 1 restaurant serving\n- Ingredients per serving:\n  - Tomato: 100 g\n  - Tamarind: 8 g\n  - Rasam spice mix: 5 g\n  - Coriander leaves: 5 g\n  - Water: 220 ml\n- Method: Wash and cut vegetables; measure stock and seasonings. Sweat aromatics, add vegetables and stock; simmer until vegetables are tender. Add thickener or dairy only as listed; simmer briefly until consistency is correct. Taste, adjust seasoning, garnish and serve hot.\n- Quality: Hot, smooth/clear as intended; no raw flour taste; seasoning balanced; garnish fresh.\n- Inventory: Deduct approved BOM only. Prepared components are deducted at assembly; raw inputs are deducted when the batch is produced.\n- Validation: Confirm recipe, yield, allergens, cook time, equipment, storage and final portion weight before activation. DeliverIQ Kitchen SOP | POC draft — chef validation required Page 14"
+    },
+    {
+      "id": "management-28",
+      "harness": "management",
+      "text": "4.1 Operational knowledge\nApproved procedures for:\n- Regional kitchen operations.\n- Delivery operations and exception handling.\n- Order lifecycle and escalation.\n- Kitchen capacity and operating modes.\n- Delivery assignment and reassignment procedures.\n- Customer-unavailable delivery process.\n- Delivery failure escalation.\n- COD mismatch escalation.\n- Dish-unavailability request and approval workflow.\n- Regional incident handling.\n- Operational handover and daily checklists.\n\nDo not use this category to store live order states, live agent locations, current kitchen capacity or current stock. Those are API facts."
+    },
+    {
+      "id": "management-29",
+      "harness": "management",
+      "text": "4.2 Business policies\nApproved policies covering:\n- Cancellation rules.\n- Refund eligibility and approval responsibilities.\n- Simulated payment behaviour for the POC.\n- Promotions and coupon rules.\n- Customer support and escalation.\n- Review moderation.\n- Customer suspension and account handling.\n- Regional versus global authority.\n- Exception approval and override boundaries.\n\nPolicy documents must state effective dates, owner, approval and scope. RAG must not decide eligibility when a live transaction requires backend rule evaluation."
+    },
+    {
+      "id": "management-30",
+      "harness": "management",
+      "text": "4.3 Management documentation\nApproved internal documentation covering:\n- Regional Manager responsibilities.\n- Central Administrator responsibilities.\n- Region and kitchen governance.\n- Staff provisioning and role assignment procedures.\n- Audit and compliance procedures.\n- Configuration management guidance.\n- Incident response and escalation.\n- Operational reporting guidance.\n- Integration and provider operating procedures, excluding secrets.\n\nNever index credentials, tokens, passwords, private keys, raw environment files or unredacted secret-bearing configuration."
+    }
+  ],
+  "queries": [
+    {
+      "id": "q-customer-01",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to deliveriq --- customer dashboard requirements?",
+      "expected_chunk_id": "customer-01",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-02",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 2. approved visual direction?",
+      "expected_chunk_id": "customer-02",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-03",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 3. navigation?",
+      "expected_chunk_id": "customer-03",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-04",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 4. home dashboard?",
+      "expected_chunk_id": "customer-04",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-05",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to food cards?",
+      "expected_chunk_id": "customer-05",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-06",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to food cards?",
+      "expected_chunk_id": "customer-06",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-07",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 5. access and authentication?",
+      "expected_chunk_id": "customer-07",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-08",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 6. location and delivery?",
+      "expected_chunk_id": "customer-08",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-09",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 7. menu and dish details?",
+      "expected_chunk_id": "customer-09",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-10",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 8. cart and pricing?",
+      "expected_chunk_id": "customer-10",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-11",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to price protection?",
+      "expected_chunk_id": "customer-11",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-12",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 9. checkout and payment?",
+      "expected_chunk_id": "customer-12",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-13",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 9. checkout and payment?",
+      "expected_chunk_id": "customer-13",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-14",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 10. order lifecycle and tracking?",
+      "expected_chunk_id": "customer-14",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-15",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 10. order lifecycle and tracking?",
+      "expected_chunk_id": "customer-15",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-16",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 11. orders, reviews and profile?",
+      "expected_chunk_id": "customer-16",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-17",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 11. orders, reviews and profile?",
+      "expected_chunk_id": "customer-17",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-18",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 12. notifications and support?",
+      "expected_chunk_id": "customer-18",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-19",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 12. notifications and support?",
+      "expected_chunk_id": "customer-19",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-20",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 13. explicitly excluded from poc?",
+      "expected_chunk_id": "customer-20",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-21",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-21",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-22",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-22",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-23",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-23",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-24",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-24",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-25",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-25",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-26",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-26",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-27",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-27",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-28",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-28",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-29",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-29",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-customer-30",
+      "harness": "customer",
+      "question": "What customer-facing guidance applies to 14. acceptance criteria?",
+      "expected_chunk_id": "customer-30",
+      "source_ref": "data/source/customer/Customer_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-01",
+      "harness": "management",
+      "question": "What management guidance applies to deliveriq --- unified management dashboard requirements?",
+      "expected_chunk_id": "management-01",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-02",
+      "harness": "management",
+      "question": "What management guidance applies to 1. purpose and scope?",
+      "expected_chunk_id": "management-02",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-03",
+      "harness": "management",
+      "question": "What management guidance applies to central administrator?",
+      "expected_chunk_id": "management-03",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-04",
+      "harness": "management",
+      "question": "What management guidance applies to regional manager?",
+      "expected_chunk_id": "management-04",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-05",
+      "harness": "management",
+      "question": "What management guidance applies to regional manager?",
+      "expected_chunk_id": "management-05",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-06",
+      "harness": "management",
+      "question": "What management guidance applies to regional manager?",
+      "expected_chunk_id": "management-06",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-07",
+      "harness": "management",
+      "question": "What management guidance applies to 3. organization model?",
+      "expected_chunk_id": "management-07",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-08",
+      "harness": "management",
+      "question": "What management guidance applies to 4. staff and access?",
+      "expected_chunk_id": "management-08",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-09",
+      "harness": "management",
+      "question": "What management guidance applies to 5. kitchen operations?",
+      "expected_chunk_id": "management-09",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-10",
+      "harness": "management",
+      "question": "What management guidance applies to 6. delivery operations?",
+      "expected_chunk_id": "management-10",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-11",
+      "harness": "management",
+      "question": "What management guidance applies to 7. orders and exceptions?",
+      "expected_chunk_id": "management-11",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-12",
+      "harness": "management",
+      "question": "What management guidance applies to 8. menu, inventory and customer support?",
+      "expected_chunk_id": "management-12",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-13",
+      "harness": "management",
+      "question": "What management guidance applies to 9. payments and promotions?",
+      "expected_chunk_id": "management-13",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-14",
+      "harness": "management",
+      "question": "What management guidance applies to 10. reporting and analytics?",
+      "expected_chunk_id": "management-14",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-15",
+      "harness": "management",
+      "question": "What management guidance applies to 11. management ai copilot?",
+      "expected_chunk_id": "management-15",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-16",
+      "harness": "management",
+      "question": "What management guidance applies to 12. configuration and audit?",
+      "expected_chunk_id": "management-16",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-17",
+      "harness": "management",
+      "question": "What management guidance applies to 12. configuration and audit?",
+      "expected_chunk_id": "management-17",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-18",
+      "harness": "management",
+      "question": "What management guidance applies to 13. ui/ux?",
+      "expected_chunk_id": "management-18",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-19",
+      "harness": "management",
+      "question": "What management guidance applies to approved color palette?",
+      "expected_chunk_id": "management-19",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-20",
+      "harness": "management",
+      "question": "What management guidance applies to approved color palette?",
+      "expected_chunk_id": "management-20",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-21",
+      "harness": "management",
+      "question": "What management guidance applies to approved color palette?",
+      "expected_chunk_id": "management-21",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-22",
+      "harness": "management",
+      "question": "What management guidance applies to approved color palette?",
+      "expected_chunk_id": "management-22",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-23",
+      "harness": "management",
+      "question": "What management guidance applies to navigation?",
+      "expected_chunk_id": "management-23",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-24",
+      "harness": "management",
+      "question": "What management guidance applies to 14. architecture and non-functional requirements?",
+      "expected_chunk_id": "management-24",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-25",
+      "harness": "management",
+      "question": "What management guidance applies to 15. exclusions?",
+      "expected_chunk_id": "management-25",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-26",
+      "harness": "management",
+      "question": "What management guidance applies to 16. acceptance criteria?",
+      "expected_chunk_id": "management-26",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-management-27",
+      "harness": "management",
+      "question": "What management guidance applies to 17. open implementation decisions?",
+      "expected_chunk_id": "management-27",
+      "source_ref": "data/source/shareddsah/Management_Dashboard_Requirements.md"
+    },
+    {
+      "id": "q-kitchen-01",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Poha?",
+      "expected_chunk_id": "kitchen-01",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-02",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Upma?",
+      "expected_chunk_id": "kitchen-02",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-03",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Idli with Sambhar / Chutney?",
+      "expected_chunk_id": "kitchen-03",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-04",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Sabudana Khichadi?",
+      "expected_chunk_id": "kitchen-04",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-05",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Sandwich Veg?",
+      "expected_chunk_id": "kitchen-05",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-06",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Medu Wada with Sambhar / Chutney?",
+      "expected_chunk_id": "kitchen-06",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-07",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Puri Bhaji?",
+      "expected_chunk_id": "kitchen-07",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-08",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Mini Batata Wada?",
+      "expected_chunk_id": "kitchen-08",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-09",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Veg Cutlets?",
+      "expected_chunk_id": "kitchen-09",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-10",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Sabudana Wada?",
+      "expected_chunk_id": "kitchen-10",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-11",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Misal Pav?",
+      "expected_chunk_id": "kitchen-11",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-12",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Tea, Coffee & Cookies?",
+      "expected_chunk_id": "kitchen-12",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-13",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Fresh Lime Water?",
+      "expected_chunk_id": "kitchen-13",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-14",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Jaljeera?",
+      "expected_chunk_id": "kitchen-14",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-15",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Kokum Sarbat?",
+      "expected_chunk_id": "kitchen-15",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-16",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Blue Lagoon?",
+      "expected_chunk_id": "kitchen-16",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-17",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Peach and Apricot?",
+      "expected_chunk_id": "kitchen-17",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-18",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Passion Fruit?",
+      "expected_chunk_id": "kitchen-18",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-19",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Cranberry?",
+      "expected_chunk_id": "kitchen-19",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-20",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Virgin Mojito?",
+      "expected_chunk_id": "kitchen-20",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-21",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Choice of Squash?",
+      "expected_chunk_id": "kitchen-21",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-22",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Watermelon Smoothie?",
+      "expected_chunk_id": "kitchen-22",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-23",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Fruit Punch?",
+      "expected_chunk_id": "kitchen-23",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-24",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Pinacolada?",
+      "expected_chunk_id": "kitchen-24",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-25",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Spicy Guava?",
+      "expected_chunk_id": "kitchen-25",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-26",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Manchow Soup?",
+      "expected_chunk_id": "kitchen-26",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-27",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Tamatar Dhaniya Shorba?",
+      "expected_chunk_id": "kitchen-27",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-28",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Vegetable Noodle Soup?",
+      "expected_chunk_id": "kitchen-28",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-29",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Tomato Basil Soup?",
+      "expected_chunk_id": "kitchen-29",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-kitchen-30",
+      "harness": "kitchen",
+      "question": "What does the Kitchen SOP specify for Tomato Rasam?",
+      "expected_chunk_id": "kitchen-30",
+      "source_ref": "data/source/kitchen/original/Kitchen_SOP_Manual_Token_Friendly.md"
+    },
+    {
+      "id": "q-management-28",
+      "harness": "management",
+      "question": "What management knowledge scope covers operational knowledge?",
+      "expected_chunk_id": "management-28",
+      "source_ref": "data/source/deliver/DeliverIQ_Management_RAG_AI_Master_Prompt.md"
+    },
+    {
+      "id": "q-management-29",
+      "harness": "management",
+      "question": "What management knowledge scope covers business policies?",
+      "expected_chunk_id": "management-29",
+      "source_ref": "data/source/deliver/DeliverIQ_Management_RAG_AI_Master_Prompt.md"
+    },
+    {
+      "id": "q-management-30",
+      "harness": "management",
+      "question": "What management knowledge scope covers management documentation?",
+      "expected_chunk_id": "management-30",
+      "source_ref": "data/source/deliver/DeliverIQ_Management_RAG_AI_Master_Prompt.md"
+    }
+  ]
+}
