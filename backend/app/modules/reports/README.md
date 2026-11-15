@@ -1,5 +1,7 @@
 # Reports module (management analytics on the marts)
 
+P3 (DDR-118) publishes validated demo marts in `analytics_synthetic`; the existing Simulated dataset then serves the same scoped KPIs and CSV, with `generated_from`/`generated_to` for the UI's explicit demo-date action. A failed rebuild removes synthetic freshness and makes this dataset unavailable until validation succeeds.
+
 **Purpose and scope:** Management "Reports & Analytics" (#10 §10; MG-07, MG-08; plan Task 13; DDR-44, DDR-74, DDR-75, DDR-117). Reads the DDR-75 marts built by P2 (`analytics/dbt`) and shows the ETL spec §9 KPIs, each with its formula, source and "Definition pending approval (DDR-44)". Nothing is business truth (class A). Simulated data (`analytics_synthetic`) is Task 14.
 
 | Item | Value |

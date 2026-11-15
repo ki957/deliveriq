@@ -93,7 +93,9 @@ export async function expectNoAxeViolations(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
     .analyze();
-  const summary = results.violations.map((v) => `${v.id}: ${v.help} (${v.nodes.length})`);
+  const summary = results.violations.map(
+    (v) => `${v.id}: ${v.help} (${v.nodes.length}) ${v.nodes.map((n) => n.target.join(", ")).join("; ")}`,
+  );
   expect(summary).toEqual([]);
 }
 

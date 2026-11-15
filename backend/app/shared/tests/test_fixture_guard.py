@@ -13,10 +13,10 @@ pytestmark = pytest.mark.unit
 
 
 class _Result:
-    def __init__(self, value: int) -> None:
+    def __init__(self, value: Any) -> None:
         self.value = value
 
-    def scalar_one(self) -> int:
+    def scalar_one(self) -> Any:
         return self.value
 
 
@@ -26,6 +26,18 @@ class _Conn:
 
     def execute(self, statement: Any) -> _Result:
         sql = str(statement)
+        if "synthetic_fixture_counts" in sql:
+            return _Result(
+                {
+                    key: self.counts.get(key, 0)
+                    for key in (
+                        "synthetic.manifests",
+                        "synthetic.events",
+                        "synthetic.gps_tracks",
+                        "synthetic.gps_points",
+                    )
+                }
+            )
         table = "ingredients" if "origin" in sql else sql.split("FROM app.")[1].split()[0]
         return _Result(self.counts.get(table, 0))
 
@@ -34,7 +46,17 @@ def test_clean_database_passes() -> None:
     fixture_guard.assert_no_fixtures(_Conn({}))  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("table", [*fixture_guard.FIXTURE_TABLES, "ingredients"])
+@pytest.mark.parametrize(
+    "table",
+    [
+        *fixture_guard.FIXTURE_TABLES,
+        "ingredients",
+        "synthetic.events",
+        "synthetic.manifests",
+        "synthetic.gps_tracks",
+        "synthetic.gps_points",
+    ],
+)
 def test_any_fixture_row_blocks_startup(table: str) -> None:
     with pytest.raises(fixture_guard.FixtureRowsPresent, match=f"{table}=2"):
         fixture_guard.assert_no_fixtures(_Conn({table: 2}))  # type: ignore[arg-type]

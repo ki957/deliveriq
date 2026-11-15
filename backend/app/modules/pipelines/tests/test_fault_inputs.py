@@ -91,4 +91,5 @@ def test_listed_inputs_follow_the_environment(
     )
     assert service.available_inputs("p1_sop") == expected[0]
     assert service.available_inputs("p2_elt") == expected[1]  # DDR-116: the P2 fault input is TEST only
-    assert service.available_inputs("p3_synthetic") == []
+    assert service.available_inputs("p3_synthetic") == (["demo"] if app_env == "local" else [])
+    assert service.available_inputs("k3_management") == []

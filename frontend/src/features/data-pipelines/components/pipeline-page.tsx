@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router";
 
 import { inputLabel, usePipelines, useRuns, useTriggerRun, type Pipeline } from "../api";
 import { P2StatusPanel } from "./p2-status";
+import { P3StatusPanel } from "./p3-status";
 import { actionError } from "@/shared/api/errors";
 import { useCan } from "@/shared/auth/require-permission";
 import { Button } from "@/shared/ui/button";
@@ -31,6 +32,7 @@ export function PipelinePage() {
       </p>
       <h1 className="mt-1 text-2xl font-semibold">{pipeline.display_name}</h1>
       {pipeline.name === "p2_elt" ? <P2StatusPanel /> : null}
+      {pipeline.name === "p3_synthetic" ? <P3StatusPanel /> : null}
       <RunControls pipeline={pipeline} />
       <RunHistory pipeline={pipeline.name} />
     </section>

@@ -1,5 +1,7 @@
 # Database migrations
 
+Head `0017` adds P3 manifests, synthetic flags, GPS tables, scoped read functions and narrow grants (DDR-118). Rebuild the migrate image before upgrading.
+
 Alembic revisions in `versions/`, run by the one-off `migrate` service as `app_migrator` (DDL only). The API never migrates on startup (DOCKER_DEPLOYMENT_DESIGN §8).
 
 | Revision | Contents |

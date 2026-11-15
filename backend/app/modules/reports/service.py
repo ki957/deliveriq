@@ -78,6 +78,8 @@ class Report:
     kpis: list[KpiValue]
     daily: list[repo.DailyRow]
     ingredients: list[repo.IngredientRow]
+    generated_from: date | None = None
+    generated_to: date | None = None
 
 
 def report(
@@ -102,9 +104,23 @@ def report(
             raise NotFound  # outside scope reads as not found
         ids = [kitchen_id] if kitchen_id else [k.id for k in in_scope]
         fresh = repo.freshness(conn, dataset)
-        if not repo.built(conn, dataset):
+        generated = repo.synthetic_dates(conn) if dataset == "analytics_synthetic" else None
+        dates = generated or (None, None)
+        if not repo.built(conn, dataset) or (dataset == "analytics_synthetic" and fresh is None):
             return Report(
-                dataset, False, fresh, start, end, prev_start, prev_end, in_scope, kitchen_id, [], [], []
+                dataset,
+                False,
+                fresh,
+                start,
+                end,
+                prev_start,
+                prev_end,
+                in_scope,
+                kitchen_id,
+                [],
+                [],
+                [],
+                *dates,
             )
         now, before = (
             d.compute(repo.totals(conn, dataset, ids, start, end)),
@@ -123,6 +139,7 @@ def report(
             [KpiValue(k, now[k.key], before[k.key]) for k in d.KPIS],
             repo.daily(conn, dataset, ids, start, end),
             repo.ingredients(conn, dataset, ids, start, end),
+            *dates,
         )
 
 

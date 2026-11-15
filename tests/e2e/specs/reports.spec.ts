@@ -23,8 +23,9 @@ test("a Central Administrator reads labelled KPIs, freshness and an audited expo
   expect(await csv.text()).toContain("Definition pending approval (DDR-44)");
 
   await page.getByRole("button", { name: "Simulated" }).click();
-  await expect(page.getByTestId("dataset-not-built")).toContainText("Not built yet (Task 14)");
-  await expect(page.getByRole("link", { name: "Export CSV" })).toHaveCount(0);
+  await expect(page.getByTestId("simulated-note")).toContainText("Simulated data");
+  await expect(page.getByRole("link", { name: "Export CSV" })).toHaveCount(1);
+  await expect(page.getByTestId("demo-dates")).toContainText("Use demo dates");
   await expectNoAxeViolations(page);
 });
 
@@ -36,6 +37,8 @@ test("a Regional Manager sees only own-region kitchens and no pipeline control",
   const kitchens = rm.getByLabel("Kitchen");
   await expect(kitchens.locator("option")).not.toContainText(["TEST – E2E Kitchen"]);
   await expect(rm.getByRole("link", { name: "Run P2" })).toHaveCount(0);
+  await rm.getByRole("button", { name: "Simulated" }).click();
+  await expect(rm.getByRole("link", { name: "Run P3" })).toHaveCount(0);
   // The other region's TEST kitchen reads as not found for this RM, on the page and the export.
   const other = await browser.newContext();
   const otherRm = await other.newPage();

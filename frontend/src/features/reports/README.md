@@ -1,5 +1,7 @@
 # Reports feature (Reports & Analytics)
 
+P3 (DDR-118) supplies the Simulated tab from validated demo marts. The page shows the generated date range and an explicit "Use demo dates" action, with existing filters, comparison, pending-definition badges and CSV export. CA's run link opens P3; RM has no run control. Tests: `reports.test.tsx` and `tests/e2e/specs/p3-synthetic.spec.ts`.
+
 **Purpose and scope:** the Management reports page (#10 §10; MG-07, MG-08, MG-U4; DDR-117). Backend: `reports` module.
 
 | Item          | Value                                                                                                                    |

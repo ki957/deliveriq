@@ -121,6 +121,7 @@ reset-fixtures: env-check
 e2e-setup: env-check
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures reset-shared
 	$(COMPOSE) exec -T api python -m app.cli.pipelines run p1_sop --wait
+	$(COMPOSE) exec -T api python -m app.cli.pipelines run p3_synthetic --input demo --wait
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-recipe
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-agent
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures load-e2e-region

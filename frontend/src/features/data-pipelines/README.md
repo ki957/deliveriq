@@ -1,5 +1,7 @@
 # Data & Pipelines feature
 
+P3 (DDR-118): CA runs the local/test demo input; ML generation stays explicit CLI-only. The P3 page reads persisted profile status and offers three scoped, read-only GPS tracks on a labelled Leaflet preview. RM sees assigned-region runs and tracks without controls. Loading, missing tracks and API errors are shown; the Run and track endpoints enforce scope in the backend. Tests: `data-pipelines.test.tsx` and `tests/e2e/specs/p3-synthetic.spec.ts`.
+
 **Purpose and scope:** the Management "Data & Pipelines" area (MG-12; DATA_PIPELINE_DESIGN §12; DDR-63, DDR-64, DDR-105, DDR-108). Overview, pipeline page with run history and the Run control, and run detail. The P2 schedule toggle, freshness and outbox backlog arrive with P2 (Task 12); knowledge approval with Task 15.
 
 | Item          | Value                                                                                                                                                                                                                   |

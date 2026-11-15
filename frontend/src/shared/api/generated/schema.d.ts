@@ -1473,6 +1473,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pipelines/p3/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** P3 Status */
+        get: operations["p3_status_api_v1_pipelines_p3_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pipelines/p3/tracks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** P3 Tracks */
+        get: operations["p3_tracks_api_v1_pipelines_p3_tracks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pipelines/p3/tracks/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** P3 Track */
+        get: operations["p3_track_api_v1_pipelines_p3_tracks__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pipelines/runs": {
         parameters: {
             query?: never;
@@ -3114,6 +3165,101 @@ export interface components {
             intervals: number[];
             schedule: components["schemas"]["ScheduleOut"];
         };
+        /** P3PointOut */
+        P3PointOut: {
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /**
+             * Region Id
+             * Format: uuid
+             */
+            region_id: string;
+            /** Rider Key */
+            rider_key: string;
+            /** Sequence */
+            sequence: number;
+        };
+        /** P3StatusOut */
+        P3StatusOut: {
+            /** Build Status */
+            build_status: string;
+            /** Content Sha256 */
+            content_sha256: string | null;
+            /**
+             * Dataset Label
+             * @default Simulated data
+             * @constant
+             */
+            dataset_label: "Simulated data";
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /** Generated At */
+            generated_at: string | null;
+            /** Generator Seed */
+            generator_seed: number;
+            /** Generator Version */
+            generator_version: number;
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /** Pipeline Run Id */
+            pipeline_run_id: string | null;
+            /**
+             * Profile
+             * @enum {string}
+             */
+            profile: "demo" | "ml";
+            /**
+             * Region Id
+             * Format: uuid
+             */
+            region_id: string;
+        };
+        /** P3TrackOut */
+        P3TrackOut: {
+            /**
+             * Kitchen Id
+             * Format: uuid
+             */
+            kitchen_id: string;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /**
+             * Region Id
+             * Format: uuid
+             */
+            region_id: string;
+        };
         /**
          * PaymentMethod
          * @enum {string}
@@ -3401,6 +3547,10 @@ export interface components {
             fresh_as_of: string | null;
             /** Freshness Warn Hours */
             freshness_warn_hours: number;
+            /** Generated From */
+            generated_from: string | null;
+            /** Generated To */
+            generated_to: string | null;
             /** Ingredients */
             ingredients: components["schemas"]["IngredientOut"][];
             /** Kitchen Id */
@@ -3484,7 +3634,7 @@ export interface components {
         /** RunCreateIn */
         RunCreateIn: {
             /** Input Ref */
-            input_ref?: ("sop" | "fault:records" | "fault:structural" | "run" | "fault:reconciliation") | null;
+            input_ref?: ("sop" | "fault:records" | "fault:structural" | "run" | "fault:reconciliation" | "demo" | "ml") | null;
             /**
              * Pipeline
              * @example p1_sop
@@ -6364,6 +6514,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["P2StatusOut"];
+                };
+            };
+        };
+    };
+    p3_status_api_v1_pipelines_p3_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["P3StatusOut"][];
+                };
+            };
+        };
+    };
+    p3_tracks_api_v1_pipelines_p3_tracks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["P3TrackOut"][];
+                };
+            };
+        };
+    };
+    p3_track_api_v1_pipelines_p3_tracks__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["P3PointOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

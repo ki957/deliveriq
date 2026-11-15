@@ -18,6 +18,9 @@ from app.modules.pipelines.schemas import (
     FreshnessOut,
     IngestionErrorOut,
     P2StatusOut,
+    P3PointOut,
+    P3StatusOut,
+    P3TrackOut,
     PipelineOut,
     RunCreateIn,
     RunDetailOut,
@@ -28,6 +31,21 @@ from app.modules.pipelines.schemas import (
 )
 
 router = APIRouter(prefix="/api/v1/pipelines", tags=["pipelines"], dependencies=[Depends(csrf_protect)])
+
+
+@router.get("/p3/status", response_model=list[P3StatusOut])
+def p3_status(principal: CurrentPrincipal) -> list[P3StatusOut]:
+    return [P3StatusOut.model_validate(x) for x in _call(lambda: service.p3_status(principal))]
+
+
+@router.get("/p3/tracks", response_model=list[P3TrackOut])
+def p3_tracks(principal: CurrentPrincipal) -> list[P3TrackOut]:
+    return [P3TrackOut.model_validate(x) for x in _call(lambda: service.p3_tracks(principal))]
+
+
+@router.get("/p3/tracks/{order_id}", response_model=list[P3PointOut])
+def p3_track(order_id: uuid.UUID, principal: CurrentPrincipal) -> list[P3PointOut]:
+    return [P3PointOut.model_validate(x) for x in _call(lambda: service.p3_track(principal, order_id))]
 
 
 def _call[T](fn: Callable[[], T]) -> T:

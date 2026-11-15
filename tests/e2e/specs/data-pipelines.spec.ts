@@ -68,10 +68,10 @@ test("Regional Manager views runs without any action control", async ({ page }) 
   await expectNoAxeViolations(page);
 });
 
-test("unbuilt pipelines are labelled with their task", async ({ page }) => {
+test("P3 is built and future knowledge pipelines remain labelled", async ({ page }) => {
   await signIn(page, "management", SEED.regionalManager);
   await page.getByRole("link", { name: "Data & Pipelines" }).first().click();
-  await expect(page.getByRole("region", { name: "Data" })).toContainText("Not built yet (Task 14)");
+  await expect(page.getByRole("region", { name: "Data" })).toContainText("P3 synthetic data");
   await expect(page.getByRole("region", { name: "Knowledge" })).toContainText("Not built yet (Task 15)");
   // P2 landing covers every region: no backlog for an RM (DDR-116 (10)).
   await expect(page.getByRole("heading", { name: "P2 event landing (outbox → raw)" })).toHaveCount(0);

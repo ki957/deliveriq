@@ -42,6 +42,7 @@ export function RunPage() {
           <StatusBadge tone={tone} label={label} />
         </span>
         {run.is_test ? <TestBadge label="Test run" /> : null}
+        {run.pipeline === "p3_synthetic" ? <TestBadge label="Simulated data" /> : null}
       </div>
       {isActive(run) ? (
         <p role="status" className="mt-1 text-sm text-text-muted">
