@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. Task 16A and 16B are built and verified on `task-16-kitchen-rag-copilot`; 16B is pending owner confirmation of the provisional benchmark result. The last registered decision is **DDR-121**; migration head is **0026**.
+Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. Task 16A and 16B are built and verified on `task-16-kitchen-rag-copilot`; the owner confirmed MiniLM L6 v2 as the 16B winner. The last registered decision is **DDR-121**; migration head is **0026**.
 
 | Task | Scope | State |
 |---|---|---|
@@ -60,17 +60,17 @@ Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Ta
 | 15A | Management Operational Actions (DDR-120) | ✅ merged (PR #28) |
 | 16A | Kitchen RAG text retrieval, K2 drafts, Kitchen Copilot | ✅ built and verified on `task-16-kitchen-rag-copilot` |
 | tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | 🟡 on `tooling-handover-refresh` |
-| 16B / 16C | Embedding winner, hybrid retrieval, KM approval and golden set | 16B ✅ benchmark verified; provisional MiniLM result awaiting owner confirmation; 16C not started |
+| 16B / 16C | Embedding winner, hybrid retrieval, KM approval and golden set | 16B ✅ benchmark verified; MiniLM L6 v2 confirmed as winner; 16C not started |
 | 17–22 | See plan | ⬜ not started |
 
 **Milestones** (plan §4.1):
 - M1 Foundation (0–4): done.
 - M2 Core order flow (5–9): done.
 - M3 Ops & data (10–14): done; Task 14 is merged.
-- M4 AI (15–17): Task 15 and 15A are merged; Task 16A and 16B are built and verified. Wait for owner confirmation before recording the winner or starting 16C.
+- M4 AI (15–17): Task 15 and 15A are merged; Task 16A and 16B are built and verified. 16C remains the next task.
 - M5 ML & polish (18–22): not started.
 
-**Next:** owner confirms or changes the provisional MiniLM result from the DDR-89 report. Then record point (7) in DDR-121 and only afterward plan 16C; do not set a vector dimension before confirmation.
+**Next:** plan Task 16C for hybrid retrieval, KM approval and the DDR-90 golden set. The confirmed winner is MiniLM L6 v2; no vector schema or index has been changed yet.
 
 ---
 
@@ -167,7 +167,7 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ## 5. Next task: 16C (Hybrid retrieval, KM approval and golden set)
 
-Task 16B is verified. The corrected DDR-89 run passes GTE and MiniLM; the rule’s provisional result is MiniLM L6 v2 after the Recall@5 tie and lower-RSS tie-break. Owner confirmation is required before DDR-121 point (7), vector dimension selection or 16C. The 90-case set remains draft, not the DDR-90 golden set; KM approval and in-app golden-set work remain in 16C under DDR-46.
+Task 16B is verified. The corrected DDR-89 run passes GTE and MiniLM; the Recall@5 tie and lower-RSS tie-break select MiniLM L6 v2, confirmed by the owner as DDR-121 point (7). No vector schema or index has been changed. The 90-case set remains draft, not the DDR-90 golden set; KM approval and in-app golden-set work remain in 16C under DDR-46.
 
 ## 6. Remaining tasks after 15A (full criteria in plan §7)
 
@@ -315,6 +315,6 @@ Rules:
 | 2026-11-12 | 12B / #23 | DDR-116 | dbt 1.12.7 + dbt-postgres 1.11.0 (worker group); `analytics/dbt` (staging, 11 core, 6 marts, 45 tests); P2 stages land → dbt → tests → publish freshness; migration 0015 (reference grants by column, `ops.dataset_freshness`, `ops.pipeline_schedules`, `ops.queue_due_schedules()`); `order.placed` carries `items`; P2 page; real marts empty (all TEST); framework integration tests used `p3_synthetic` as the not-yet-built pipeline stand-in |
 | 2026-11-12 | 13 / #24 | DDR-117 | `modules/reports` + `features/reports` (13 ETL §9 KPIs labelled pending DDR-44; Real/Simulated tabs; audited CSV); `management.reports.view`; migration 0016 (schema usage, `ops.operational_totals()`); dbt `grants` to app_api on marts and dims; P2 reconciles operational totals (6 critical checks); payment/delivery marts gain `kitchen_id` |
 | 2026-11-12 | tooling / branch `tooling-handover-refresh` | rules v1.2 | Handover refresh (status, Task 14 brief, gotchas, memory); builder switched from Claude Code to Codex: `CLAUDE.md` → `AGENTS.md`, `.claude/commands` → `.agents/skills`, guard hook → `.codex/hooks.json` (now also guards `apply_patch` and `.env` reads) |
-| 2026-11-15 | 16A / 16B / branch `task-16-kitchen-rag-copilot` | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121 | Migration 0026 persists evaluation evidence; corrected DDR-89 benchmark in the built worker image; GTE and MiniLM pass, provisional MiniLM tie-break result; no vector dimension fixed and 16C not started |
+| 2026-11-15 | 16A / 16B / branch `task-16-kitchen-rag-copilot` | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121 | Migration 0026 persists evaluation evidence; corrected DDR-89 benchmark in the built worker image; owner confirmed MiniLM L6 v2 by the Recall@5/RSS tie-break; no vector schema or index changed and 16C not started |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

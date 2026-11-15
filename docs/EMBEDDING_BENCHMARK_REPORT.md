@@ -1,6 +1,6 @@
 # Embedding benchmark report
 
-**Status:** Task 16B benchmark complete. The DDR-89 rule gives MiniLM L6 v2 as the provisional result, but no winner or vector dimension is recorded until the owner confirms it. The 90-case set remains draft and is not the DDR-90 golden set.
+**Status:** Task 16B benchmark complete. The owner confirmed sentence-transformers/all-MiniLM-L6-v2 as the DDR-89 winner. The vector dimension is recorded as benchmark evidence only; schema/index implementation remains a later task. The 90-case set remains draft and is not the DDR-90 golden set.
 
 ## Method and evidence
 
@@ -41,7 +41,7 @@ Corrected evidence is persisted in four DDR-89 runs created 2026-11-15, one cand
 2. BGE and E5 fail only the RSS bar. GTE and MiniLM pass all three bars.
 3. GTE and E5 have the highest Recall@5 at 0.933, but E5 is ineligible because its RSS is 300.59 MiB. Among passing models, GTE and MiniLM tie at 0.922.
 4. The RSS tie-break selects MiniLM at 175.52 MiB over GTE at 242.41 MiB.
-5. The rule therefore gives MiniLM L6 v2 as the provisional winner. Owner confirmation is required before recording point (7) in DDR-121 or fixing a vector dimension.
+5. The rule gives sentence-transformers/all-MiniLM-L6-v2 as the winner. The owner confirmed this as DDR-121 point (7); no vector schema or index has been changed.
 
 ## Open items
 
