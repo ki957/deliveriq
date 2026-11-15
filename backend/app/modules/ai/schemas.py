@@ -79,3 +79,18 @@ class KitchenCopilotOut(BaseModel):
     grounded: bool
     retrieval_mode: str = "reduced retrieval"
     simulated: bool = True
+
+
+class CustomerAssistantIn(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+    conversation_id: uuid.UUID | None = None
+
+
+class CustomerAssistantOut(BaseModel):
+    answer: str
+    citations: list[str]
+    grounded: bool
+    retrieval_mode: str
+    guard_status: str
+    conversation_id: uuid.UUID | None
+    simulated: bool = True

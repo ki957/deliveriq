@@ -172,6 +172,7 @@ services:
     volumes:
       - ./backend/app:/srv/backend/app:ro
       - ./knowledge/kitchen:/srv/knowledge/kitchen:ro
+      - ./knowledge/customer:/srv/knowledge/customer:ro
       - ./data/source:/srv/data/source:ro
       - ./docs/SOURCE_DOCUMENT_INVENTORY.md:/srv/docs/SOURCE_DOCUMENT_INVENTORY.md:ro
       - ./backend/test_inputs:/srv/test_inputs:ro

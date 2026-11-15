@@ -23,6 +23,7 @@ import {
 
 import type { PortalConfig } from "@/app/portal-config";
 import { MenuPublicationPage, RecipeSignoffDetailPage, RecipeSignoffPage } from "@/features/approvals";
+import { CustomerKnowledgePage } from "@/features/customer-assistant";
 import { PipelinePage, PipelinesOverview, RunPage } from "@/features/data-pipelines";
 import { AvailabilityDecisionsPage } from "@/features/kitchen";
 import {
@@ -180,6 +181,14 @@ export const managementConfig: PortalConfig = {
         { path: "data-pipelines/runs/:runId", element: gate("pipelines.view", <RunPage />) },
         { path: "data-pipelines/:pipeline", element: gate("pipelines.view", <PipelinePage />) },
       ],
+    },
+    {
+      to: "/management/customer-knowledge",
+      label: "Customer Assistant Knowledge",
+      Icon: Database,
+      task: 17,
+      permission: "customer.knowledge.approve",
+      element: gate("customer.knowledge.approve", <CustomerKnowledgePage />),
     },
     {
       to: "/management/staff",

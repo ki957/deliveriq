@@ -47,6 +47,11 @@ class MockAdapter:
         if "DeliverIQ Kitchen Copilot" in system and "[S1]" in user:
             excerpt = user.split("[S1]", 1)[1].split("\n\n[S2]", 1)[0].strip()
             return "Simulated source excerpt [S1]: " + excerpt[:500]
+        if "DeliverIQ Customer Assistant" in system:
+            return (
+                "I can help with customer menu, delivery and support information using the "
+                "available published sources and live read-only facts."
+            )
         return (
             "Management Copilot response. I can provide read-only operational context "
             "when approved knowledge is available. Your request was: " + user[:500]

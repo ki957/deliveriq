@@ -29,12 +29,14 @@ TRIGGERABLE: dict[str, frozenset[str]] = {
     "p2_elt": frozenset({"run", "fault:reconciliation"}),
     "p3_synthetic": frozenset({"demo", "ml"}),
     "k2_kitchen": frozenset({"draft"}),
+    "k1_customer": frozenset({"draft"}),
 }
 DEFAULT_INPUT: dict[str, str] = {
     "p1_sop": "sop",
     "p2_elt": "run",
     "p3_synthetic": "demo",
     "k2_kitchen": "draft",
+    "k1_customer": "draft",
 }
 # TEST fault-injection inputs (DDR-65, DDR-104): local/test only, always flagged as test runs.
 FAULT_INPUTS = frozenset({"fault:records", "fault:structural", "fault:reconciliation"})

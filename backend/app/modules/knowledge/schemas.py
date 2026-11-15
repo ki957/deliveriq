@@ -16,7 +16,7 @@ class KnowledgeVersionOut(BaseModel):
     doc_version: int
     content_sha256: str
     status: Literal["DRAFT", "APPROVED", "REJECTED"]
-    kitchen_id: uuid.UUID
+    kitchen_id: uuid.UUID | None = None
     submitted_at: datetime
     approved_by: uuid.UUID | None
     approved_at: datetime | None
@@ -30,7 +30,7 @@ class KnowledgeDecisionIn(BaseModel):
 class GoldenSetOut(BaseModel):
     id: uuid.UUID
     suite: Literal["DDR-90"]
-    portal: Literal["KITCHEN"]
+    portal: Literal["KITCHEN", "CUSTOMER"]
     name: str
     approval_label: str
     case_count: int

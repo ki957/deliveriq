@@ -1,6 +1,6 @@
 # Pipelines: framework, worker and P1 SOP import
 
-P3 synthetic generation is in [`p3_synthetic/README.md`](p3_synthetic/README.md) (DDR-118); the shared worker and run framework execute it with the `p3_synth` role. K2 Kitchen knowledge uses the `rag_kitchen` role and migration 0027's versioned approval/vector tables (DDR-122).
+P3 synthetic generation is in [`p3_synthetic/README.md`](p3_synthetic/README.md) (DDR-118); the shared worker and run framework execute it with the `p3_synth` role. K1 Customer knowledge uses the `rag_customer` role, the read-only `knowledge/customer` mount and migration 0028's versioned Customer RAG/approval tables (DDR-123). K2 Kitchen knowledge uses the `rag_kitchen` role and migration 0027's versioned approval/vector tables (DDR-122).
 
 **Purpose and scope:** the shared run framework, the single heartbeating worker and P1, the SOP master-data ETL (DATA_PIPELINE_DESIGN §2.3, §5, §11; KITCHEN_SOURCE_VALIDATION §7–9; DDR-63, DDR-67, DDR-102–DDR-105). Fault inputs (5B): `backend/test_inputs/p1/test_fault_cards.md` (one card per DDR-65 fault plus a clean card) and `test_structural_fault.md`; fault runs stop at staging.
 

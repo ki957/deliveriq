@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Callable
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.modules.ai import kitchen_copilot, service
+from app.core.permissions import Principal
+from app.modules.ai import customer_assistant, kitchen_copilot, service
 from app.modules.ai.actions import service as actions
 from app.modules.ai.schemas import (
     ActionConfirmIn,
@@ -20,16 +22,21 @@ from app.modules.ai.schemas import (
     AiStatusOut,
     CopilotIn,
     CopilotOut,
+    CustomerAssistantIn,
+    CustomerAssistantOut,
     KitchenCopilotIn,
     KitchenCopilotOut,
 )
-from app.modules.identity.dependencies import CurrentPrincipal, csrf_protect
+from app.modules.identity.dependencies import CurrentPrincipal, csrf_protect, optional_principal
 
 router = APIRouter(
     prefix="/api/v1/management/ai", tags=["management-ai"], dependencies=[Depends(csrf_protect)]
 )
 kitchen_router = APIRouter(
     prefix="/api/v1/kitchen/ai", tags=["kitchen-ai"], dependencies=[Depends(csrf_protect)]
+)
+customer_router = APIRouter(
+    prefix="/api/v1/customer/ai", tags=["customer-ai"], dependencies=[Depends(csrf_protect)]
 )
 
 
@@ -128,4 +135,25 @@ def ask_kitchen_copilot(body: KitchenCopilotIn, principal: CurrentPrincipal) -> 
         grounded=bool(citations),
         retrieval_mode=retrieval_mode,
         simulated=True,
+    )
+
+
+@customer_router.post("/assistant", response_model=CustomerAssistantOut)
+def ask_customer_assistant(
+    body: CustomerAssistantIn,
+    principal: Annotated[Principal | None, Depends(optional_principal)],
+) -> CustomerAssistantOut:
+    try:
+        answer, citations, mode, conversation_id, guard_status = customer_assistant.ask(
+            principal, body.question, body.conversation_id
+        )
+    except customer_assistant.NotFound:
+        raise HTTPException(status_code=404, detail="Conversation not found") from None
+    return CustomerAssistantOut(
+        answer=answer,
+        citations=citations,
+        grounded=bool(citations),
+        retrieval_mode=mode,
+        guard_status=guard_status,
+        conversation_id=uuid.UUID(conversation_id) if conversation_id else None,
     )

@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. The tooling handover branch is merged. Task 16A, 16B and 16C are merged on `main` at `778a863` (DDR-121, DDR-122); the owner confirmed MiniLM L6 v2 as the 16B winner. The Task 16 CI fix is on `task-16-ci-fix`; the last registered decision is **DDR-122**; migration head is **0027**.
+Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. The tooling handover branch is merged. Task 16A, 16B and 16C are merged on `main` at `778a863` (DDR-121, DDR-122), and the CI fix is merged in PR #30 at `9dc6871`; the owner confirmed MiniLM L6 v2 as the 16B winner. Task 17A/17B are built on `task-17-customer-assistant`; the Customer Assistant UI remains gated by CD-18. The last registered decision is **DDR-123**; migration head is **0028**.
 
 | Task | Scope | State |
 |---|---|---|
@@ -60,9 +60,10 @@ Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Ta
 | 15A | Management Operational Actions (DDR-120) | ✅ merged (PR #28) |
 | 15B | Builder Agent sandbox (DDR-70) | ⬜ not started |
 | 15C | Builder Agent harness (DDR-71, DDR-80, Task 21 dependency) | ⬜ not started; Task 21 depends on 15C |
-| 16A / 16B / 16C | Kitchen RAG, embedding winner, hybrid retrieval, KM approval and golden-set gate | ✅ merged on `main` (`778a863`); CI fix in progress on `task-16-ci-fix` |
+| 16A / 16B / 16C | Kitchen RAG, embedding winner, hybrid retrieval, KM approval and golden-set gate | ✅ merged on `main` (`778a863`); CI fix merged in PR #30 (`9dc6871`) |
+| 17A / 17B | Customer RAG/K1, Customer Assistant guard/tools, CA approval UI and golden-set draft | ✅ built on `task-17-customer-assistant`; awaiting report/owner review |
 | tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | ✅ merged |
-| 17–22 | See plan | ⬜ not started |
+| 17–22 | See plan | 17 built; 18–22 not started |
 
 **Milestones** (plan §4.1):
 - M1 Foundation (0–4): done.
@@ -71,7 +72,7 @@ Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Ta
 - M4 AI (15–17): Task 15 and 15A are merged; Task 16A–16C are merged. Task 17 remains.
 - M5 ML & polish (18–22): not started.
 
-**Next:** Task 17 Customer Assistant. Task 16C added the versioned MiniLM vector metadata/index, hybrid retrieval SQL, KM-scoped knowledge approval and the in-app DDR-90 golden-set gate. The draft benchmark file remains non-golden until approved cases are loaded.
+**Next:** Task 18 Demand Forecast after Task 17 is reviewed and merged. Task 17 adds Customer-only K1 staging, approved Customer RAG retrieval, read-only live-fact adapters, Prompt Guard, CA approval and the draft Customer golden set; the chat UI stays hidden until CD-18 is opened.
 
 ---
 
@@ -168,7 +169,7 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ## 5. Completed task: 16C (Hybrid retrieval, KM approval and golden set)
 
-Task 16C is built and verified. Migration 0027 adds `vector(384)` MiniLM index metadata, HNSW cosine indexing, hybrid RRF retrieval, SHA-keyed Kitchen knowledge versions and audited KM approval functions. The Copilot preserves SQL scope, recipe-version pinning, production fixture refusal and reduced-retrieval fallback. The draft 90-case file remains labelled non-golden; the in-app DDR-90 gate refuses approval until approved cases exist. The last decision is DDR-122; next is Task 17.
+Task 16C is built and verified. Migration 0027 adds `vector(384)` MiniLM index metadata, HNSW cosine indexing, hybrid RRF retrieval, SHA-keyed Kitchen knowledge versions and audited KM approval functions. The Copilot preserves SQL scope, recipe-version pinning, production fixture refusal and reduced-retrieval fallback. Task 17 extends the same pattern with migration 0028, `customer_rag`, K1 DRAFT-only ingestion, Customer-only retrieval, Prompt Guard and CA approval. The last decision is DDR-123; next is Task 18.
 
 ## 6. Remaining tasks after 15A (full criteria in plan §7)
 
@@ -177,7 +178,7 @@ Task 16C is built and verified. Migration 0027 adds `vector(384)` MiniLM index m
 | 14 Synthetic P3 | Labelled deterministic synthetic data and separate marts | ✅ merged (#26), DDR-74 separation |
 | 15 / 15A / 15B / 15C | AI gateway + Management Copilot; Operational Actions merged; Builder Agent sandbox and harness pending | DDR-46 content approval; DDR-68–71, 85–87 |
 | 16 | 16A–16C verified | DDR-121, DDR-122; no live knowledge before KM approval |
-| 17 Customer Assistant | Only after all portals complete | DDR-46 |
+| 17 Customer Assistant | Built; UI remains hidden until all portals complete | DDR-46, DDR-90, DDR-92, DDR-123 |
 | 18 / 19 | Demand forecast; ETA + assignment optimisation (advisory) | — |
 | 20 / 21 / 22 | Monitoring & reconciliation; E2E hardening; demo handover + runbooks + known limitations | — |
 
@@ -187,7 +188,7 @@ Task 16C is built and verified. Migration 0027 adds `vector(384)` MiniLM index m
 
 ## 7. Technical cheat-sheet
 
-Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Task 16C migration head is **0027**. Final CI-fix verification memory sample: worker **76.54 MiB**, API **119.7 MiB**, Postgres **126.8 MiB**, Redis **5.39 MiB**, host **8.6 GiB available**. CI gotcha: `uv sync --locked` installs only `api` and `dev` by default; the pinned worker group must remain in `tool.uv.default-groups` because backend type-checking imports the embedding dependencies.
+Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Task 17 migration head is **0028**. K1 runs as `rag_customer`, mounts `knowledge/customer` read-only, stages three Customer documents as DRAFT and publishes none. Customer retrieval calls only `app.retrieve_customer_chunks_hybrid`; live menu/order facts are read-only and session-scoped. Prompt Guard is controlled by `AI_PROMPT_GUARD_ENABLED`; the chat UI is API-only until CD-18. Final CI-fix verification memory sample: worker **76.54 MiB**, API **119.7 MiB**, Postgres **126.8 MiB**, Redis **5.39 MiB**, host **8.6 GiB available**. CI gotcha: `uv sync --locked` installs only `api` and `dev` by default; the pinned worker group must remain in `tool.uv.default-groups` because backend type-checking imports the embedding dependencies.
 
 ### Stack
 - **Backend:** FastAPI modular monolith; **sync** SQLAlchemy 2 + psycopg 3 (async only for WS/Redis/HTTP); PostgreSQL + PostGIS + pgvector (Kitchen vector index migration 0027); Redis; Python with `uv`.
@@ -316,6 +317,7 @@ Rules:
 | 2026-11-12 | 12B / #23 | DDR-116 | dbt 1.12.7 + dbt-postgres 1.11.0 (worker group); `analytics/dbt` (staging, 11 core, 6 marts, 45 tests); P2 stages land → dbt → tests → publish freshness; migration 0015 (reference grants by column, `ops.dataset_freshness`, `ops.pipeline_schedules`, `ops.queue_due_schedules()`); `order.placed` carries `items`; P2 page; real marts empty (all TEST); framework integration tests used `p3_synthetic` as the not-yet-built pipeline stand-in |
 | 2026-11-12 | 13 / #24 | DDR-117 | `modules/reports` + `features/reports` (13 ETL §9 KPIs labelled pending DDR-44; Real/Simulated tabs; audited CSV); `management.reports.view`; migration 0016 (schema usage, `ops.operational_totals()`); dbt `grants` to app_api on marts and dims; P2 reconciles operational totals (6 critical checks); payment/delivery marts gain `kitchen_id` |
 | 2026-11-12 | tooling / branch `tooling-handover-refresh` | rules v1.2 | Handover refresh (status, Task 14 brief, gotchas, memory); builder switched from Claude Code to Codex: `CLAUDE.md` → `AGENTS.md`, `.claude/commands` → `.agents/skills`, guard hook → `.codex/hooks.json` (now also guards `apply_patch` and `.env` reads) |
-| 2026-11-15 | 16A / 16B / 16C / #29 + CI fix | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121–122 | Merged on main `778a863`; migration 0026 persists benchmark evidence; migration 0027 adds MiniLM 384 vector metadata/HNSW hybrid retrieval, SHA-keyed KM approval and the in-app DDR-90 gate; CI fix adds the pinned worker dependency group to uv defaults; owner confirmed MiniLM L6 v2; draft benchmark set remains non-golden |
+| 2026-11-15 | 16A / 16B / 16C / #29 + CI fix / #30 | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121–122 | Merged on main `778a863`; migration 0026 persists benchmark evidence; migration 0027 adds MiniLM 384 vector metadata/HNSW hybrid retrieval, SHA-keyed KM approval and the in-app DDR-90 gate; CI fix adds the pinned worker dependency group to uv defaults; all four CI jobs green on `9dc6871`; owner confirmed MiniLM L6 v2; draft benchmark set remains non-golden |
+| 2026-11-15 | 17 Customer Assistant | DDR-123 | Migration 0028 adds Customer RAG/index isolation, K1 DRAFT-only staging, CA approval/golden-set API/UI, Prompt Guard and read-only Customer Assistant API; worker mounts `knowledge/customer`; host checks, frontend checks and 68/70 E2E passed (2 expected skips); chat UI remains gated by CD-18 |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

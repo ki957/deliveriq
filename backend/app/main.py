@@ -16,6 +16,7 @@ from app.core.db import get_engine
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.request_context import RequestContextMiddleware
+from app.modules.ai.api import customer_router as customer_ai_router
 from app.modules.ai.api import kitchen_router as kitchen_ai_router
 from app.modules.ai.api import router as ai_router
 from app.modules.customers.api import addresses_router
@@ -27,6 +28,7 @@ from app.modules.identity.api import auth_router, me_router
 from app.modules.identity.dependencies import CSRF_HEADER
 from app.modules.inventory.api import router as inventory_router
 from app.modules.kitchen_ops.api import router as kitchen_settings_router
+from app.modules.knowledge.api import customer_router as customer_knowledge_router
 from app.modules.knowledge.api import router as knowledge_router
 from app.modules.management.api import router as management_router
 from app.modules.menu.api import availability_router as menu_availability_router
@@ -53,6 +55,7 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(health_router)
     app.include_router(ai_router)
     app.include_router(kitchen_ai_router)
+    app.include_router(customer_ai_router)
     app.include_router(auth_router)
     app.include_router(me_router)
     app.include_router(pipelines_router)
@@ -67,6 +70,7 @@ def _build(app: FastAPI) -> FastAPI:
     app.include_router(kitchen_settings_router)
     app.include_router(inventory_router)
     app.include_router(knowledge_router)
+    app.include_router(customer_knowledge_router)
     app.include_router(menu_availability_router)
     app.include_router(delivery_router)
     app.include_router(delivery_manage_router)

@@ -513,7 +513,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 - **Gated features:** vector indexing (B, DDR-45 embedding); publishing SOP chunks (A, DDR-46).
 - **Guidance:** English only; Kitchen RAG ingestion on the pipeline framework. Ships the harness `README.md` card (DDR-80).
 - **Acceptance criteria:** Embedding benchmark report (`docs/EMBEDDING_BENCHMARK_REPORT.md`, DDR-89) exists and the owner-confirmed winner is recorded before the dimension is fixed; index records its embedding model; Kitchen golden set passes with 0 leaks (DDR-90); order questions use the exact pinned recipe version; no mixed versions; KS cannot reach KM-only tools; abstains on cook times and temperatures absent from source; no stock-mutation tool exists; TEST recipes indexed in test/demo only, flagged; production profile refuses them (DDR-77).
-- **Status:** 16A and 16B verified; 16C adds migration 0027's MiniLM 384-dimension hybrid index metadata, KM-scoped SHA-keyed knowledge approval, and the in-app DDR-90 Kitchen golden-set gate. The draft benchmark file remains explicitly non-golden.
+- **Status:** 16A–16C merged and CI-green; 16C adds migration 0027's MiniLM 384-dimension hybrid index metadata, KM-scoped SHA-keyed knowledge approval, and the in-app DDR-90 Kitchen golden-set gate. The draft benchmark file remains explicitly non-golden.
 
 ### Task 17 — Customer Assistant
 
@@ -521,6 +521,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 - **Gated features:** live Customer knowledge (A, DDR-46).
 - **Guidance:** English only; Customer RAG ingestion on the pipeline framework. Ships the harness `README.md` card (DDR-80).
 - **Acceptance criteria:** No Kitchen/Management leakage; other customers' orders denied; allergen answers never guarantee safety; Customer golden set passes with 0 cross-customer leaks (DDR-90); Prompt Guard on input behind its flag, with injection results reported on and off; a classifier outage never blocks customers (DDR-92).
+- **Status:** 17A/17B approved to build under DDR-123. The Customer Assistant UI remains hidden until CD-18 is explicitly opened.
 
 ### Task 18 — Demand forecasting
 
