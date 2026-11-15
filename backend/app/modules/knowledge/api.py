@@ -14,6 +14,9 @@ from app.modules.knowledge.schemas import GoldenSetOut, KnowledgeDecisionIn, Kno
 router = APIRouter(
     prefix="/api/v1/knowledge/kitchen", tags=["kitchen-knowledge"], dependencies=[Depends(csrf_protect)]
 )
+customer_router = APIRouter(
+    prefix="/api/v1/knowledge/customer", tags=["customer-knowledge"], dependencies=[Depends(csrf_protect)]
+)
 
 
 def _call[T](fn: Callable[[], T]) -> T:
@@ -60,3 +63,41 @@ def approve_golden_set(
 ) -> GoldenSetOut:
     row = _call(lambda: service.approve_golden_set(principal, set_id, body.reason))
     return GoldenSetOut.model_validate(row)
+
+
+@customer_router.get("/versions", response_model=list[KnowledgeVersionOut])
+def list_customer_versions(principal: CurrentPrincipal) -> list[KnowledgeVersionOut]:
+    rows = _call(lambda: service.list_customer_versions(principal))
+    return [KnowledgeVersionOut.model_validate(row) for row in rows]
+
+
+@customer_router.post("/versions/{version_id}/approve", response_model=KnowledgeVersionOut)
+def approve_customer(
+    version_id: uuid.UUID, body: KnowledgeDecisionIn, principal: CurrentPrincipal
+) -> KnowledgeVersionOut:
+    return KnowledgeVersionOut.model_validate(
+        _call(lambda: service.decide_customer(principal, version_id, approve=True, reason=body.reason))
+    )
+
+
+@customer_router.post("/versions/{version_id}/reject", response_model=KnowledgeVersionOut)
+def reject_customer(
+    version_id: uuid.UUID, body: KnowledgeDecisionIn, principal: CurrentPrincipal
+) -> KnowledgeVersionOut:
+    return KnowledgeVersionOut.model_validate(
+        _call(lambda: service.decide_customer(principal, version_id, approve=False, reason=body.reason))
+    )
+
+
+@customer_router.get("/golden-set", response_model=GoldenSetOut)
+def customer_golden_set(principal: CurrentPrincipal) -> GoldenSetOut:
+    return GoldenSetOut.model_validate(_call(lambda: service.customer_golden_set(principal)))
+
+
+@customer_router.post("/golden-set/{set_id}/approve", response_model=GoldenSetOut)
+def approve_customer_golden_set(
+    set_id: uuid.UUID, body: KnowledgeDecisionIn, principal: CurrentPrincipal
+) -> GoldenSetOut:
+    return GoldenSetOut.model_validate(
+        _call(lambda: service.approve_customer_golden_set(principal, set_id, body.reason))
+    )

@@ -1230,6 +1230,87 @@
         "title": "CopilotOut",
         "type": "object"
       },
+      "CustomerAssistantIn": {
+        "properties": {
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "CustomerAssistantIn",
+        "type": "object"
+      },
+      "CustomerAssistantOut": {
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "grounded": {
+            "title": "Grounded",
+            "type": "boolean"
+          },
+          "guard_status": {
+            "title": "Guard Status",
+            "type": "string"
+          },
+          "retrieval_mode": {
+            "title": "Retrieval Mode",
+            "type": "string"
+          },
+          "simulated": {
+            "default": true,
+            "title": "Simulated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "answer",
+          "citations",
+          "grounded",
+          "retrieval_mode",
+          "guard_status",
+          "conversation_id"
+        ],
+        "title": "CustomerAssistantOut",
+        "type": "object"
+      },
       "CustomerMenuItemOut": {
         "properties": {
           "category": {
@@ -1852,7 +1933,10 @@
             "type": "string"
           },
           "portal": {
-            "const": "KITCHEN",
+            "enum": [
+              "KITCHEN",
+              "CUSTOMER"
+            ],
             "title": "Portal",
             "type": "string"
           },
@@ -2932,9 +3016,16 @@
             "type": "string"
           },
           "kitchen_id": {
-            "format": "uuid",
-            "title": "Kitchen Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kitchen Id"
           },
           "status": {
             "enum": [
@@ -2958,7 +3049,6 @@
           "doc_version",
           "content_sha256",
           "status",
-          "kitchen_id",
           "submitted_at",
           "approved_by",
           "approved_at",
@@ -7330,6 +7420,47 @@
         ]
       }
     },
+    "/api/v1/customer/ai/assistant": {
+      "post": {
+        "operationId": "ask_customer_assistant_api_v1_customer_ai_assistant_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerAssistantIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAssistantOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ask Customer Assistant",
+        "tags": [
+          "customer-ai"
+        ]
+      }
+    },
     "/api/v1/delivery/assignments/{assignment_id}/respond": {
       "post": {
         "description": "Accept within 60 s, or reject with a reason (DL-04).",
@@ -8802,6 +8933,211 @@
         "summary": "Update Settings",
         "tags": [
           "kitchen"
+        ]
+      }
+    },
+    "/api/v1/knowledge/customer/golden-set": {
+      "get": {
+        "operationId": "customer_golden_set_api_v1_knowledge_customer_golden_set_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoldenSetOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Customer Golden Set",
+        "tags": [
+          "customer-knowledge"
+        ]
+      }
+    },
+    "/api/v1/knowledge/customer/golden-set/{set_id}/approve": {
+      "post": {
+        "operationId": "approve_customer_golden_set_api_v1_knowledge_customer_golden_set__set_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "set_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Set Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeDecisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoldenSetOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve Customer Golden Set",
+        "tags": [
+          "customer-knowledge"
+        ]
+      }
+    },
+    "/api/v1/knowledge/customer/versions": {
+      "get": {
+        "operationId": "list_customer_versions_api_v1_knowledge_customer_versions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/KnowledgeVersionOut"
+                  },
+                  "title": "Response List Customer Versions Api V1 Knowledge Customer Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Customer Versions",
+        "tags": [
+          "customer-knowledge"
+        ]
+      }
+    },
+    "/api/v1/knowledge/customer/versions/{version_id}/approve": {
+      "post": {
+        "operationId": "approve_customer_api_v1_knowledge_customer_versions__version_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeDecisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve Customer",
+        "tags": [
+          "customer-knowledge"
+        ]
+      }
+    },
+    "/api/v1/knowledge/customer/versions/{version_id}/reject": {
+      "post": {
+        "operationId": "reject_customer_api_v1_knowledge_customer_versions__version_id__reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeDecisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reject Customer",
+        "tags": [
+          "customer-knowledge"
         ]
       }
     },

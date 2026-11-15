@@ -151,6 +151,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/ai/assistant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask Customer Assistant */
+        post: operations["ask_customer_assistant_api_v1_customer_ai_assistant_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/delivery/assignments/{assignment_id}/respond": {
         parameters: {
             query?: never;
@@ -724,6 +741,91 @@ export interface paths {
          */
         put: operations["update_settings_api_v1_kitchen_settings_put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/knowledge/customer/golden-set": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Customer Golden Set */
+        get: operations["customer_golden_set_api_v1_knowledge_customer_golden_set_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/knowledge/customer/golden-set/{set_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Customer Golden Set */
+        post: operations["approve_customer_golden_set_api_v1_knowledge_customer_golden_set__set_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/knowledge/customer/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Customer Versions */
+        get: operations["list_customer_versions_api_v1_knowledge_customer_versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/knowledge/customer/versions/{version_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Customer */
+        post: operations["approve_customer_api_v1_knowledge_customer_versions__version_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/knowledge/customer/versions/{version_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Customer */
+        post: operations["reject_customer_api_v1_knowledge_customer_versions__version_id__reject_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2425,6 +2527,33 @@ export interface components {
             /** Simulated */
             simulated: boolean;
         };
+        /** CustomerAssistantIn */
+        CustomerAssistantIn: {
+            /** Conversation Id */
+            conversation_id?: string | null;
+            /** Question */
+            question: string;
+        };
+        /** CustomerAssistantOut */
+        CustomerAssistantOut: {
+            /** Answer */
+            answer: string;
+            /** Citations */
+            citations: string[];
+            /** Conversation Id */
+            conversation_id: string | null;
+            /** Grounded */
+            grounded: boolean;
+            /** Guard Status */
+            guard_status: string;
+            /** Retrieval Mode */
+            retrieval_mode: string;
+            /**
+             * Simulated
+             * @default true
+             */
+            simulated: boolean;
+        };
         /** CustomerMenuItemOut */
         CustomerMenuItemOut: {
             /** Category */
@@ -2637,9 +2766,9 @@ export interface components {
             name: string;
             /**
              * Portal
-             * @constant
+             * @enum {string}
              */
-            portal: "KITCHEN";
+            portal: "KITCHEN" | "CUSTOMER";
             /**
              * Status
              * @enum {string}
@@ -3025,11 +3154,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
-            /**
-             * Kitchen Id
-             * Format: uuid
-             */
-            kitchen_id: string;
+            /** Kitchen Id */
+            kitchen_id?: string | null;
             /**
              * Status
              * @enum {string}
@@ -4715,6 +4841,39 @@ export interface operations {
             };
         };
     };
+    ask_customer_assistant_api_v1_customer_ai_assistant_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerAssistantIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAssistantOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     respond_api_v1_delivery_assignments__assignment_id__respond_post: {
         parameters: {
             query?: never;
@@ -5692,6 +5851,151 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["KitchenSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    customer_golden_set_api_v1_knowledge_customer_golden_set_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoldenSetOut"];
+                };
+            };
+        };
+    };
+    approve_customer_golden_set_api_v1_knowledge_customer_golden_set__set_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                set_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KnowledgeDecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoldenSetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_customer_versions_api_v1_knowledge_customer_versions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeVersionOut"][];
+                };
+            };
+        };
+    };
+    approve_customer_api_v1_knowledge_customer_versions__version_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KnowledgeDecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeVersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_customer_api_v1_knowledge_customer_versions__version_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KnowledgeDecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeVersionOut"];
                 };
             };
             /** @description Validation Error */

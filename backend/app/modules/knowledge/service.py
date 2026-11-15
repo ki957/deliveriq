@@ -174,3 +174,114 @@ def approve_golden_set(principal: Principal, set_id: uuid.UUID, reason: str) -> 
     if row is None:
         raise NotFound
     return dict(row)
+
+
+def _customer_approver(principal: Principal) -> None:
+    if not can(principal, Permission.CUSTOMER_KNOWLEDGE_APPROVE):
+        raise Forbidden
+
+
+def list_customer_versions(principal: Principal) -> list[dict[str, object]]:
+    _customer_approver(principal)
+    with get_engine().connect() as conn:
+        rows = (
+            conn.execute(
+                text("""
+            SELECT v.id, d.doc_id, d.display_name, v.doc_version, v.content_sha256,
+                   v.status, v.submitted_at, v.approved_by, v.approved_at, v.decision_reason
+            FROM app.knowledge_document_versions v
+            JOIN app.knowledge_documents d ON d.id=v.document_id
+            WHERE d.portal='CUSTOMER'
+            ORDER BY v.submitted_at DESC, v.id
+        """)
+            )
+            .mappings()
+            .all()
+        )
+    return [dict(row) | {"kitchen_id": None} for row in rows]
+
+
+def decide_customer(
+    principal: Principal, version_id: uuid.UUID, *, approve: bool, reason: str
+) -> dict[str, object]:
+    _customer_approver(principal)
+    if len(reason.strip()) < 3:
+        raise Conflict("A reason of 3 to 500 characters is required")
+    with get_engine().begin() as conn:
+        fn = "app.approve_customer_knowledge" if approve else "app.reject_customer_knowledge"
+        try:
+            conn.execute(
+                text(f"SELECT {fn}(:version, :actor, :reason)"),
+                {"version": version_id, "actor": principal.user_id, "reason": reason.strip()},
+            )
+        except Exception as exc:
+            if "not draft" in str(exc):
+                raise Conflict("Knowledge version is no longer a draft") from exc
+            raise
+        row = (
+            conn.execute(
+                text("""
+            SELECT v.id, d.doc_id, d.display_name, v.doc_version, v.content_sha256,
+                   v.status, v.submitted_at, v.approved_by, v.approved_at, v.decision_reason
+            FROM app.knowledge_document_versions v JOIN app.knowledge_documents d ON d.id=v.document_id
+            WHERE v.id=:version AND d.portal='CUSTOMER'
+        """),
+                {"version": version_id},
+            )
+            .mappings()
+            .one_or_none()
+        )
+    if row is None:
+        raise NotFound
+    return dict(row) | {"kitchen_id": None}
+
+
+def customer_golden_set(principal: Principal) -> dict[str, object]:
+    _customer_approver(principal)
+    with get_engine().connect() as conn:
+        row = (
+            conn.execute(
+                text("""
+            SELECT id, suite, portal, name, approval_label, case_count, leak_count, status,
+                   dataset_hash, approved_by, approved_at, decision_reason
+            FROM ops.ai_golden_sets WHERE suite='DDR-90' AND portal='CUSTOMER'
+            ORDER BY created_at DESC, id LIMIT 1
+        """)
+            )
+            .mappings()
+            .one_or_none()
+        )
+    if row is None:
+        raise NotFound
+    return dict(row)
+
+
+def approve_customer_golden_set(principal: Principal, set_id: uuid.UUID, reason: str) -> dict[str, object]:
+    _customer_approver(principal)
+    if len(reason.strip()) < 3:
+        raise Conflict("A reason of 3 to 500 characters is required")
+    with get_engine().begin() as conn:
+        try:
+            conn.execute(
+                text("SELECT app.approve_customer_golden_set(:set_id, :actor, :reason)"),
+                {"set_id": set_id, "actor": principal.user_id, "reason": reason.strip()},
+            )
+        except Exception as exc:
+            if "golden set" in str(exc):
+                raise Conflict(str(exc).split("CONTEXT", 1)[0].strip()) from exc
+            raise
+        row = (
+            conn.execute(
+                text("""
+            SELECT id, suite, portal, name, approval_label, case_count, leak_count, status,
+                   dataset_hash, approved_by, approved_at, decision_reason
+            FROM ops.ai_golden_sets WHERE id=:set_id
+        """),
+                {"set_id": set_id},
+            )
+            .mappings()
+            .one_or_none()
+        )
+    if row is None:
+        raise NotFound
+    return dict(row)

@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     pseudonym_key: SecretStr = Field(validation_alias="PSEUDONYM_KEY", min_length=32)
     # Comma-separated dev origins allowed for cross-origin requests (DDR-98). Empty = none.
     cors_origins: str = Field(default="", validation_alias="CORS_ORIGINS")
+    ai_prompt_guard_enabled: bool = Field(default=False, validation_alias="AI_PROMPT_GUARD_ENABLED")
 
     @model_validator(mode="after")
     def _mock_otp_only_outside_production(self) -> Settings:

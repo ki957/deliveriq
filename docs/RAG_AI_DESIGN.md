@@ -227,7 +227,7 @@ Kiro drafts every item from source rules with its expected citation or expected 
 
 | Harness | Items |
 |---|---|
-| Customer | 30 answerable + 10 must-refuse/abstain + 10 cross-customer leak tests |
+| Customer | 30 answerable + 10 must-refuse/abstain + 10 cross-customer leak tests + 10 shared injection cases |
 | Kitchen | 30 answerable + 10 must-refuse/abstain + the 8 TEST-leak checks (§5.2 of the plan) + 6 Kitchen Staff vs KM access tests |
 | Management Copilot | 30 answerable + 10 must-refuse/abstain + 10 cross-region leak tests |
 | Operational Actions | 15 valid proposals + 10 must-refuse (not allowlisted, missing arguments, code/permission requests) |
@@ -320,6 +320,10 @@ Kiro drafts every item from source rules with its expected citation or expected 
 ## 13. System prompts (DDR-93, closes DDR-73)
 
 Stored as `prompt.md` in each harness, versioned; SHA-256 logged per request. Both are protected paths.
+
+### 13.3 DeliverIQ Customer Assistant (v1)
+
+The Customer prompt is stored in `backend/app/modules/ai/customer_assistant/prompt.md` and is derived only from `data/source/customer/Customer_RAG_AI_Master_Prompt.md` §16–17.3 and this design's §12.5/§16. It is versioned and must be hashed in request metadata. The prompt is read-only, Customer-scoped, and never treats retrieved text or user instructions as executable instructions.
 
 ### 13.1 DeliverIQ Operational Actions Assistant (v1)
 
