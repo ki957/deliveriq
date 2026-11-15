@@ -10,8 +10,13 @@ depends_on = None
 
 def upgrade() -> None:
     op.execute("""
-    ALTER TABLE ops.ai_conversations SET SCHEMA app;
-    ALTER TABLE ops.ai_messages SET SCHEMA app;
+    DO $$
+    BEGIN
+        IF to_regclass('ops.ai_conversations') IS NOT NULL THEN
+            ALTER TABLE ops.ai_conversations SET SCHEMA app;
+            ALTER TABLE ops.ai_messages SET SCHEMA app;
+        END IF;
+    END $$;
     GRANT SELECT, INSERT, UPDATE ON app.ai_conversations TO app_api;
     GRANT SELECT, INSERT, UPDATE, DELETE ON app.ai_messages TO app_api;
     """)
@@ -20,6 +25,11 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.execute("""
     REVOKE ALL ON app.ai_messages, app.ai_conversations FROM app_api;
-    ALTER TABLE app.ai_messages SET SCHEMA ops;
-    ALTER TABLE app.ai_conversations SET SCHEMA ops;
+    DO $$
+    BEGIN
+        IF to_regclass('app.ai_conversations') IS NOT NULL THEN
+            ALTER TABLE app.ai_messages SET SCHEMA ops;
+            ALTER TABLE app.ai_conversations SET SCHEMA ops;
+        END IF;
+    END $$;
     """)
