@@ -26,6 +26,8 @@ class _Conn:
 
     def execute(self, statement: Any) -> _Result:
         sql = str(statement)
+        if "kitchen_rag_fixture_count" in sql:
+            return _Result(self.counts.get("kitchen_rag.chunks", 0))
         if "synthetic_fixture_counts" in sql:
             return _Result(
                 {
@@ -51,6 +53,7 @@ def test_clean_database_passes() -> None:
     [
         *fixture_guard.FIXTURE_TABLES,
         "ingredients",
+        "kitchen_rag.chunks",
         "synthetic.events",
         "synthetic.manifests",
         "synthetic.gps_tracks",

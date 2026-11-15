@@ -2184,6 +2184,69 @@
         "title": "KitchenAssignmentOut",
         "type": "object"
       },
+      "KitchenCopilotIn": {
+        "properties": {
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          },
+          "recipe_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipe Version Id"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "KitchenCopilotIn",
+        "type": "object"
+      },
+      "KitchenCopilotOut": {
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "grounded": {
+            "title": "Grounded",
+            "type": "boolean"
+          },
+          "retrieval_mode": {
+            "default": "reduced retrieval",
+            "title": "Retrieval Mode",
+            "type": "string"
+          },
+          "simulated": {
+            "default": true,
+            "title": "Simulated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "answer",
+          "citations",
+          "grounded"
+        ],
+        "title": "KitchenCopilotOut",
+        "type": "object"
+      },
       "KitchenDishOut": {
         "properties": {
           "id": {
@@ -7852,6 +7915,47 @@
         "summary": "Pickup",
         "tags": [
           "delivery"
+        ]
+      }
+    },
+    "/api/v1/kitchen/ai/copilot": {
+      "post": {
+        "operationId": "ask_kitchen_copilot_api_v1_kitchen_ai_copilot_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KitchenCopilotIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KitchenCopilotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ask Kitchen Copilot",
+        "tags": [
+          "kitchen-ai"
         ]
       }
     },

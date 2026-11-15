@@ -7,7 +7,7 @@ from typing import cast
 
 import pytest
 
-from app.modules.identity.tests.test_auth_integration import World
+from app.modules.identity.tests.test_auth_integration import World, login
 from app.modules.management.tests.test_management_integration import Team
 
 pytest_plugins = (
@@ -51,3 +51,22 @@ def test_copilot_is_read_only_and_conversation_is_deletable(team: Team, world: W
         "SELECT count(*) FROM ops.ai_requests WHERE harness = 'management_copilot'"
     ).fetchone()
     assert row is not None and cast(int, row[0]) >= 1
+
+
+def test_kitchen_copilot_is_available_to_kitchen_roles_only(world: World) -> None:
+    kitchen_staff = login(
+        world.user("KITCHEN_STAFF", region=world.region_a, kitchen=world.kitchen_a), "kitchen"
+    )
+    kitchen_manager = login(
+        world.user("KITCHEN_MANAGER", region=world.region_a, kitchen=world.kitchen_a), "kitchen"
+    )
+    regional_manager = login(world.user("REGIONAL_MANAGER", region=world.region_a), "management")
+    for session in (kitchen_staff, kitchen_manager):
+        response = session.post(
+            "/api/v1/kitchen/ai/copilot", json={"question": "How do I prepare this dish?"}
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["retrieval_mode"] == "reduced retrieval"
+        assert response.json()["simulated"] is True
+    denied = regional_manager.post("/api/v1/kitchen/ai/copilot", json={"question": "Kitchen guidance"})
+    assert denied.status_code == 403

@@ -48,6 +48,9 @@ def assert_no_fixtures(conn: Connection) -> None:
     synthetic = conn.execute(text("SELECT ops.synthetic_fixture_counts()")).scalar_one()
     counts = fixture_counts(conn)
     counts.update(synthetic)
+    counts["kitchen_rag.chunks"] = int(
+        conn.execute(text("SELECT app.kitchen_rag_fixture_count()")).scalar_one()
+    )
     present = {table: n for table, n in counts.items() if n}
     if present:
         detail = ", ".join(f"{table}={n}" for table, n in sorted(present.items()))

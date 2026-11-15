@@ -20,3 +20,7 @@
 - **Dish availability:** the kitchen requests "unavailable" or "available again" with a reason; the RM (own region) or CA approves or rejects with a reason. Only an approval changes the customer menu.
 - **Settings (KM):** mode and capacities; the DDR-42 test defaults are labelled; a reason is required and audited. The same form is exported as `KitchenSettingsPanel` for Management Kitchen Operations (RM/CA by `kitchen_id`, Task 10B); the backend's `can_change` decides who may save.
 - Every page updates live from the kitchen's hints (DDR-115) and shows "Live · last updated …"; while the socket is down it polls every 10 s and shows "Live updates paused · updates every 10 s · last updated …". Every action refreshes at once.
+
+## Kitchen Copilot (Task 16)
+
+Kitchen Staff and Kitchen Managers can ask the read-only Kitchen Copilot. It uses Kitchen-scoped, published Kitchen RAG evidence and displays citations. Full-text-only answers are labelled reduced retrieval until the embedding benchmark and vector index are approved. K2 stages DRAFT knowledge only; live publishing requires Kitchen Manager approval. No stock or order mutation tools are exposed.

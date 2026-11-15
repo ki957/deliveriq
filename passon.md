@@ -1,6 +1,6 @@
 # passon.md: DeliverIQ handover guide for Codex
 
-**Written:** 2026-11-12 by Kiro; **last updated** after Task 13 (reports). **For:** OpenAI Codex (CLI or IDE extension), continuing the build.
+**Written:** 2026-11-12 by Kiro; **last updated:** 2026-11-15 after Task 16A. **For:** OpenAI Codex (CLI or IDE extension), continuing the build.
 **Read this file first.** It tells you where the project stands, what to read, how to work, and what to build next. `AGENTS.md` points Codex to it and to `.kiro/steering/rules.md` (the binding rules) at every start.
 
 > ## ⛔ Do not (each of these has broken something, or would)
@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-Tasks 0–13 are merged; `main` is at `1465b13` (PR #24, Task 13 reports). This handover refresh is on `tooling-handover-refresh`. The last DDR is **DDR-117**; migration head is **0016**. **Task 14 is next and not planned yet.**
+Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. Task 16A and 16B are built and verified on `task-16-kitchen-rag-copilot`; 16B is pending owner confirmation of the provisional benchmark result. The last registered decision is **DDR-121**; migration head is **0026**.
 
 | Task | Scope | State |
 |---|---|---|
@@ -55,16 +55,22 @@ Tasks 0–13 are merged; `main` is at `1465b13` (PR #24, Task 13 reports). This 
 | 12A | P2 landing, backlog, pseudonymous key (DDR-116) | ✅ merged (PR #22) |
 | 12B | dbt models, P2 run, tests, freshness, schedule | ✅ merged (PR #23) |
 | 13 | Marts and management analytics (DDR-117) | ✅ merged (PR #24) |
+| 14 | Labelled synthetic P3 data (DDR-118) | ✅ merged (PR #26) |
+| 15 | AI gateway and Management Copilot (DDR-119) | ✅ merged (PR #27) |
+| 15A | Management Operational Actions (DDR-120) | ✅ merged (PR #28) |
+| 16A | Kitchen RAG text retrieval, K2 drafts, Kitchen Copilot | ✅ built and verified on `task-16-kitchen-rag-copilot` |
 | tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | 🟡 on `tooling-handover-refresh` |
-| 14 – 22 | See §6 | ⬜ not started |
+| 16B / 16C | Embedding winner, hybrid retrieval, KM approval and golden set | 16B ✅ benchmark verified; provisional MiniLM result awaiting owner confirmation; 16C not started |
+| 17–22 | See plan | ⬜ not started |
 
 **Milestones** (plan §4.1):
 - M1 Foundation (0–4): done.
 - M2 Core order flow (5–9): done.
-- **M3 Ops & data (10–14): 10–13 merged; only Task 14 remains.**
-- M4 AI (15–17), M5 ML & polish (18–22): not started.
+- M3 Ops & data (10–14): done; Task 14 is merged.
+- M4 AI (15–17): Task 15 and 15A are merged; Task 16A and 16B are built and verified. Wait for owner confirmation before recording the winner or starting 16C.
+- M5 ML & polish (18–22): not started.
 
-**First thing to do:** if `tooling-handover-refresh` is not merged yet, wait for the owner. Then sync `main`, check CI, and plan Task 14 with `$start-task 14` (P3 synthetic data) with a decision sheet (plan "### Task 14", DDR-56, DDR-74; the reports Simulated tab and `analytics_synthetic` grants are waiting for it).
+**Next:** owner confirms or changes the provisional MiniLM result from the DDR-89 report. Then record point (7) in DDR-121 and only afterward plan 16C; do not set a vector dimension before confirmation.
 
 ---
 
@@ -89,7 +95,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 | File | What it is | Read when |
 |---|---|---|
 | `DELIVERIQ_EXECUTION_PLAN.md` | **The task list.** §5 decision classes (B/A/P/G) and §5.1 matrix; §5.2 TEST fixtures + the **8 leak controls**; §6 cross-cutting acceptance criteria for every UI task; §7 every task with Depends on / Gated features / Acceptance criteria / Status line; §8 dependency map | Start of every task |
-| `DESIGN_DECISION_REGISTER.md` | Every decision, DDR-01 → **DDR-117**. Part A Decided (owner tables 2026-11-11 and 2026-11-12; per-task rows DDR-101–117), Part B former proposals (all decided), **Part C open items** (DDR-06, 15, 41, 42, 43, 44, 45, 46), out-of-scope list | Before any design choice; add a new DDR row per task's decisions |
+| `DESIGN_DECISION_REGISTER.md` | Every decision, DDR-01 → **DDR-121**. Part A Decided (owner tables and per-task rows through DDR-121), Part B former proposals (all decided), **Part C open items** (DDR-06, 15, 41, 42, 43, 44, 45, 46), out-of-scope list | Before any design choice; add a new DDR row per task's decisions |
 | `PORTAL_REQUIREMENTS_MATRIX.md` | Requirement IDs per portal: CU-*, KI-*, DL-*, MG-*, SH-*, PL-*; role-permission tables (§3.1 Kitchen, §5 Management); **§7 canonical status machines + display labels per portal**; §10 AI guardrails | Writing any feature or label |
 | `CODE_STRUCTURE_DESIGN.md` | Repo layout, module template (api/schemas/service/domain/repository), dependency rules, frontend feature layout, testing layers, **§13 review checklist** | Writing code; end-of-task review |
 | `DOCKER_DEPLOYMENT_DESIGN.md` | Compose profiles (`core`, `worker`, `e2e`, `osrm`, `agent`), RAM budget, which profiles may run together, §17 approved deviations | Touching infra or starting profiles |
@@ -114,8 +120,9 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 
 ### 3.5 Per-module "README cards" (current behaviour, kept up to date)
 - `backend/app/modules/*/README.md`: identity, menu, recipes, pipelines, customers, pricing, orders, payments, kitchen_ops, inventory, delivery, management, realtime, notifications, reports, health.
-- `backend/app/pipelines/README.md` (framework) and `backend/app/pipelines/p2_elt/README.md`; `analytics/dbt/README.md` (models, tests, grants, the `dataset` var).
-- `frontend/src/features/*/README.md`: auth, ordering, recipes, approvals, data-pipelines, kitchen, delivery, management, notifications, reports.
+- AI harness card: `backend/app/modules/ai/kitchen_copilot/README.md` (read-only Kitchen Copilot, reduced full-text retrieval, no approved live knowledge yet).
+- `backend/app/pipelines/README.md` (framework), `backend/app/pipelines/p2_elt/README.md`; `analytics/dbt/README.md` (models, tests, grants, the `dataset` var).
+- `frontend/src/features/*/README.md`: auth, ordering, recipes, approvals, data-pipelines, kitchen (including Kitchen Copilot), delivery, management, notifications, reports.
 - These are the fastest way to learn what a module already does.
 
 ---
@@ -139,7 +146,7 @@ Owner's instruction in this session → `docs/DESIGN_DECISION_REGISTER.md` (Deci
 1. Inspect the task (plan §7), the DDRs and the code it touches.
 2. Present a **plan + a decision sheet** in the §9 template: every value or behaviour the sources leave undefined, each with options and a ✔ recommendation. **Never invent** prices, thresholds, rules or formulas. Undefined values go on the sheet.
 3. Wait for the owner. Typical replies are "go + approve all" or "will do as u recommend".
-4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-117**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
+4. Record the approved sheet as a new **DDR row** (the next number after the last row; the last is **DDR-121**) in the register's Part A list. Update the Matrix or plan where a decision changes them, and show the change list first.
 5. Build one task at a time on branch `task-NN-short-name`. Large tasks split into **A (backend)** and **B (UI)**.
 6. Verify (below), self-review against `CODE_STRUCTURE_DESIGN.md` §13 plus security, scope and leak controls, and grade findings Blocker/High/Medium/Low. Blocker and High must be fixed; Medium and Low are fixed or logged.
 7. Commit (stage **files by name**, never `git add .`; check no `.env` is staged) and report.
@@ -158,39 +165,17 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Next task: 14 (Labelled synthetic data generator, P3)
+## 5. Next task: 16C (Hybrid retrieval, KM approval and golden set)
 
-**Not planned yet.** Run `$start-task 14`: plan + decision sheet, then the next DDR row after DDR-117. Read plan "### Task 14", DDR-50, DDR-56, DDR-74, DDR-78, DDR-117 (4), DATA_PIPELINE (P3 and dbt sections; grep `P3`), `backend/app/pipelines/README.md`, `backend/app/pipelines/p2_elt/README.md` and `analytics/dbt/README.md`.
+Task 16B is verified. The corrected DDR-89 run passes GTE and MiniLM; the rule’s provisional result is MiniLM L6 v2 after the Recall@5 tie and lower-RSS tie-break. Owner confirmation is required before DDR-121 point (7), vector dimension selection or 16C. The 90-case set remains draft, not the DDR-90 golden set; KM approval and in-app golden-set work remain in 16C under DDR-46.
 
-**Plan acceptance criteria (summary):** P3 runs on the pipeline framework in the Data group; writes `synthetic.events`; the same dbt models build `analytics_synthetic`; demo seed 7 days × 10 orders/day and ML set 90 days × 30 orders/day, generated offline once (DDR-56); a few full synthetic GPS tracks (DDR-78); fixed seed is deterministic; every row flagged synthetic; real marts unaffected; "Simulated data" label wherever it appears; RM sees P3 runs read-only; `TEST –` or explicitly synthetic menu items only, never SOP dishes.
-
-**Already in place (don't rebuild):**
-- Pipeline row `p3_synthetic` (DATA group, role `p3_synth`) from migration 0005. `p3_synth` has USAGE on `app`, `synthetic`, `analytics_synthetic`, `ops`; CREATE on `analytics_synthetic`; SELECT on `app.menu_items`; SELECT, INSERT on `synthetic.events`. `migrations/tests/test_grants.py` asserts what it must not read.
-- dbt macro `analytics/dbt/macros/generate_schema_name.sql`: with `--vars '{dataset: analytics_synthetic}'` the `analytics` models build into `analytics_synthetic`.
-- `ops.dataset_freshness` (migration 0015) already allows the dataset `analytics_synthetic`.
-- Migration 0016 gives `app_api` USAGE on `analytics_synthetic`; table SELECT comes from dbt `grants`, so it exists only after a P3 dbt run.
-- Reports (`modules/reports`, `features/reports`) have a Simulated tab that says "Not built yet (Task 14)".
-
-**Open questions for the sheet (sources leave them undefined):**
-- DATA_PIPELINE §2.4 and line ~243 say the same models switch source (`raw` → `synthetic`) by a dbt variable; `analytics/dbt/models/sources.yml` has only the real source today. Not defined: where synthetic staging and core rows land. `staging` is shared today, and real and synthetic must never share a table (DDR-74); `p3_synth` cannot create in `staging`.
-- Generator inputs: seed value, order-time distribution, dish mix, synthetic customers and riders, statuses and cancellations. None are defined; offer labelled test defaults.
-- Where the 90-day ML set is stored and how "generated offline once" is triggered (CLI vs pipeline input).
-- How many GPS tracks and where they live (GPS stays in `app.delivery_locations` for real data, DDR-78).
-- What the reports Simulated tab shows once data exists (same KPIs, labelled "Simulated data").
-
-**Must change when P3 is implemented:** framework tests use `p3_synthetic` as the "pipeline with no implementation" stand-in (`pipelines/framework/tests/test_queue_integration.py`, `test_context_integration.py`, `modules/pipelines/tests/test_pipelines_integration.py` line ~314, `test_fault_inputs.py`). Give them another stand-in.
-
-**Known leftovers:** stale TEST orders from customer E2E (D16, Task 21); E2E-created staff use `TEST – E2E Agent …` names and are removed by the spec.
-
----
-
-## 6. Remaining tasks after 13 (full criteria in plan §7)
+## 6. Remaining tasks after 15A (full criteria in plan §7)
 
 | Task | Summary | Key gates / notes |
 |---|---|---|
-| 14 Synthetic P3 | `synthetic` schema, 7d×10 demo, 90d×30 ML (DDR-56) | DDR-74 separation |
-| 15 / 15A / 15B / 15C | AI gateway + Management Copilot; Operational Actions (CA, confirmed, audited); Builder Agent sandbox + harness (PRs only, never merges) | Groq key in `.env` (§5.3 of plan); DDR-46 content approval; DDR-68–71, 85–87 |
-| 16 Kitchen RAG | Kitchen Copilot (read-only) | DDR-45 embedding benchmark (B for vector dims) |
+| 14 Synthetic P3 | Labelled deterministic synthetic data and separate marts | ✅ merged (#26), DDR-74 separation |
+| 15 / 15A / 15B / 15C | AI gateway + Management Copilot; Operational Actions merged; Builder Agent sandbox and harness pending | DDR-46 content approval; DDR-68–71, 85–87 |
+| 16 | 16A verified; 16B benchmark and 16C after winner choice | DDR-45; DDR-46; no live knowledge before KM approval |
 | 17 Customer Assistant | Only after all portals complete | DDR-46 |
 | 18 / 19 | Demand forecast; ETA + assignment optimisation (advisory) | — |
 | 20 / 21 / 22 | Monitoring & reconciliation; E2E hardening; demo handover + runbooks + known limitations | — |
@@ -201,6 +186,8 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ## 7. Technical cheat-sheet
 
+Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Last host sample before benchmark work: **7.6 GiB available**.
+
 ### Stack
 - **Backend:** FastAPI modular monolith; **sync** SQLAlchemy 2 + psycopg 3 (async only for WS/Redis/HTTP); PostgreSQL + PostGIS (+ pgvector later); Redis; Python with `uv`.
 - **Frontend:** React + TypeScript strict + Vite + Tailwind + TanStack Query + react-router; **API client generated from OpenAPI, never hand-written**.
@@ -210,7 +197,7 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ### Repo map
 - `backend/app/{core,shared,modules,pipelines,worker,cli}`
-- `backend/migrations/versions/0001–0016` (**head = 0016**; `migrations/tests/test_schema_and_seeds.py` asserts the head; bump it with each migration)
+- `backend/migrations/versions/0001–0026` (**head = 0026**; migration 0026 persists DDR-89 evaluation runs/results through worker-executable SECURITY DEFINER functions)
 - `analytics/dbt/` (P2 models: staging, core, marts; tests; `generate_schema_name` macro)
 - `frontend/src/{app,portals,features,shared}`
 - `tests/e2e/{specs,__screenshots__}`
@@ -248,7 +235,7 @@ What changed (files) · evidence per acceptance criterion (test names or command
 - E2E helpers retry a superseded OTP sign-in and a taken TEST number (`helpers.ts`); keep that when adding sign-in flows.
 - Only `delivery.spec` puts an agent online; two online agents take each other's offers.
 - The integration world picks a free `REG-TST-*` code. Leftover `KIT-TST-*` rows from a killed run can shift the CA screenshot; clear them before updating baselines.
-- Framework tests use `p3_synthetic` as the unimplemented pipeline (see §5); Task 14 must give them another stand-in.
+- Framework tests use `p3_synthetic` as the unimplemented pipeline stand-in; Task 14 now implements P3, so update this stand-in when convenient.
 - `PSEUDONYM_KEY` in `.env` (HMAC for `customer_key`, DDR-116; at least 32 characters) is required by every backend container, so Compose refuses to start without it. Name it, never print it.
 
 ### Git
@@ -303,7 +290,7 @@ Rules:
 - One sheet per task, at the plan step.
 - Mark exactly one ✔ per item.
 - Name the class when it applies (B = don't build, A = build behind a disabled flag or labelled test default, P = label, G = gate; plan §5).
-- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-117**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
+- After approval, add one register row `DDR-<next>` (the next number after the last row; the last is **DDR-121**) with numbered points (1), (2)…, matching D-numbers, in `docs/DESIGN_DECISION_REGISTER.md` after the last DDR row in Part A. Cite it in code comments as `DDR-nnn (3)`.
 
 ---
 
@@ -325,8 +312,9 @@ Rules:
 | 2026-11-12 | 11A / #20 | DDR-115 | Migration 0012 (`app.rt_notify` triggers); `modules/realtime` (listener → Redis → hub); `/api/v1/realtime` hints `{topic, kind, id}`; `shared/realtime` + `useLiveRefresh`; pages poll only while the socket is down; only `delivery.spec` puts an agent online in E2E (two online agents take each other's offers) |
 | 2026-11-12 | 11B / #21 | DDR-115 (10)–(12) | Migration 0013 (`app.notifications` by triggers; `purge_notifications`, `purge_auth` for the worker); `/api/v1/me/notifications`; bell + page (customer, KM, agent); `reset-shared` closes pending TEST dish requests; E2E helpers retry superseded OTP sign-ins and taken TEST numbers; mutations refetch in the background and hints refetch once per 250 ms burst |
 | 2026-11-12 | 12A / #22 | DDR-116 (5), (6), (10), (12) | Migration 0014 (`ops.outbox_backlog()`, backlog notice); worker thread `p2-landing` as `p2_elt`; `customer_key` (HMAC, `PSEUDONYM_KEY`) on `order.placed`; `GET /api/v1/pipelines/p2/backlog` CA only; overview panel. First start lands every older event (3,472 locally) |
-| 2026-11-12 | 12B / #23 | DDR-116 | dbt 1.12.7 + dbt-postgres 1.11.0 (worker group); `analytics/dbt` (staging, 11 core, 6 marts, 45 tests); P2 stages land → dbt → tests → publish freshness; migration 0015 (reference grants by column, `ops.dataset_freshness`, `ops.pipeline_schedules`, `ops.queue_due_schedules()`); `order.placed` carries `items`; P2 page; real marts empty (all TEST); framework tests now use `p3_synthetic` as the unimplemented pipeline |
+| 2026-11-12 | 12B / #23 | DDR-116 | dbt 1.12.7 + dbt-postgres 1.11.0 (worker group); `analytics/dbt` (staging, 11 core, 6 marts, 45 tests); P2 stages land → dbt → tests → publish freshness; migration 0015 (reference grants by column, `ops.dataset_freshness`, `ops.pipeline_schedules`, `ops.queue_due_schedules()`); `order.placed` carries `items`; P2 page; real marts empty (all TEST); framework integration tests used `p3_synthetic` as the not-yet-built pipeline stand-in |
 | 2026-11-12 | 13 / #24 | DDR-117 | `modules/reports` + `features/reports` (13 ETL §9 KPIs labelled pending DDR-44; Real/Simulated tabs; audited CSV); `management.reports.view`; migration 0016 (schema usage, `ops.operational_totals()`); dbt `grants` to app_api on marts and dims; P2 reconciles operational totals (6 critical checks); payment/delivery marts gain `kitchen_id` |
 | 2026-11-12 | tooling / branch `tooling-handover-refresh` | rules v1.2 | Handover refresh (status, Task 14 brief, gotchas, memory); builder switched from Claude Code to Codex: `CLAUDE.md` → `AGENTS.md`, `.claude/commands` → `.agents/skills`, guard hook → `.codex/hooks.json` (now also guards `apply_patch` and `.env` reads) |
+| 2026-11-15 | 16A / 16B / branch `task-16-kitchen-rag-copilot` | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121 | Migration 0026 persists evaluation evidence; corrected DDR-89 benchmark in the built worker image; GTE and MiniLM pass, provisional MiniLM tie-break result; no vector dimension fixed and 16C not started |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

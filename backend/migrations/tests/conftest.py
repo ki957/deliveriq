@@ -31,6 +31,7 @@ ROLE_PASSWORD_ENV = {
     "rag_customer": "RAG_CUSTOMER_PASSWORD",
     "rag_kitchen": "RAG_KITCHEN_PASSWORD",
     "rag_management": "RAG_MANAGEMENT_PASSWORD",
+    "worker": "WORKER_PASSWORD",
 }
 
 Conn = psycopg.Connection[tuple[object, ...]]

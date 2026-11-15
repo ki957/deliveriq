@@ -7,7 +7,7 @@ from collections.abc import Callable
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.modules.ai import service
+from app.modules.ai import kitchen_copilot, service
 from app.modules.ai.actions import service as actions
 from app.modules.ai.schemas import (
     ActionConfirmIn,
@@ -20,11 +20,16 @@ from app.modules.ai.schemas import (
     AiStatusOut,
     CopilotIn,
     CopilotOut,
+    KitchenCopilotIn,
+    KitchenCopilotOut,
 )
 from app.modules.identity.dependencies import CurrentPrincipal, csrf_protect
 
 router = APIRouter(
     prefix="/api/v1/management/ai", tags=["management-ai"], dependencies=[Depends(csrf_protect)]
+)
+kitchen_router = APIRouter(
+    prefix="/api/v1/kitchen/ai", tags=["kitchen-ai"], dependencies=[Depends(csrf_protect)]
 )
 
 
@@ -107,3 +112,14 @@ def confirm_action(
     return ActionResultOut(
         result=_action_call(lambda: actions.confirm(principal, proposal_id, body.idempotency_key))
     )
+
+
+@kitchen_router.post("/copilot", response_model=KitchenCopilotOut)
+def ask_kitchen_copilot(body: KitchenCopilotIn, principal: CurrentPrincipal) -> KitchenCopilotOut:
+    try:
+        answer, citations = kitchen_copilot.ask(
+            principal, body.question, str(body.recipe_version_id) if body.recipe_version_id else None
+        )
+    except kitchen_copilot.Forbidden:
+        raise HTTPException(status_code=403, detail="Forbidden") from None
+    return KitchenCopilotOut(answer=answer, citations=citations, grounded=bool(citations), simulated=True)

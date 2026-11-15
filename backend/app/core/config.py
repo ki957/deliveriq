@@ -9,7 +9,7 @@ from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
-AppEnv = Literal["local", "test", "production"]
+AppEnv = Literal["local", "test", "demo", "production"]
 # MOCK_OTP is local/test only (#15 §4.2, DDR-96). No SMS provider exists in the POC (DDR-40),
 # so production runs with "disabled": OTP requests fail closed with a clear error.
 OtpAdapter = Literal["mock", "disabled"]

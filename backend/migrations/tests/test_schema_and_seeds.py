@@ -46,7 +46,7 @@ def test_all_approved_schemas_exist(api: Conn) -> None:
 
 
 def test_migrations_at_head(migrator: Conn) -> None:
-    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0021"
+    assert one(migrator, "SELECT version_num FROM public.alembic_version") == "0026"
 
 
 def test_is_test_fixture_on_all_five_tables(api: Conn) -> None:
@@ -101,3 +101,22 @@ def test_pipeline_registry(api: Conn) -> None:
         ("p2_elt", "DATA", "p2_elt"),
         ("p3_synthetic", "DATA", "p3_synth"),
     ]
+
+
+def test_ai_eval_tables_have_expected_columns(migrator: Conn) -> None:
+    rows = migrator.execute(
+        "SELECT table_name, column_name FROM information_schema.columns "
+        "WHERE table_schema = 'ops' AND table_name IN ('ai_eval_runs', 'ai_eval_results')"
+    ).fetchall()
+    columns = {(row[0], row[1]) for row in rows}
+    assert {
+        ("ai_eval_runs", "suite"),
+        ("ai_eval_runs", "dataset_hash"),
+        ("ai_eval_runs", "approval_label"),
+        ("ai_eval_runs", "runtime_settings"),
+        ("ai_eval_results", "candidate"),
+        ("ai_eval_results", "pinned_revision"),
+        ("ai_eval_results", "artifact_hash"),
+        ("ai_eval_results", "dimension"),
+        ("ai_eval_results", "metrics"),
+    } <= columns

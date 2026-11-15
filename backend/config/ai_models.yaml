@@ -8,6 +8,7 @@
   },
   "harnesses": {
     "management_copilot": {"default_model": "fast", "required_capabilities": ["chat"]},
-    "management_actions": {"default_model": "fast", "required_capabilities": ["chat", "structured_output", "tool_calling"]}
+    "management_actions": {"default_model": "fast", "required_capabilities": ["chat", "structured_output", "tool_calling"]},
+    "kitchen_copilot": {"default_model": "fast", "required_capabilities": ["chat"]}
   }
 }

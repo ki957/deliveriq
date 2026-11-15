@@ -43,6 +43,10 @@ class MockAdapter:
     def complete(self, *, model: ModelSpec, messages: list[dict[str, str]]) -> str:
         del model
         user = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
+        system = next((m["content"] for m in messages if m["role"] == "system"), "")
+        if "DeliverIQ Kitchen Copilot" in system and "[S1]" in user:
+            excerpt = user.split("[S1]", 1)[1].split("\n\n[S2]", 1)[0].strip()
+            return "Simulated source excerpt [S1]: " + excerpt[:500]
         return (
             "Management Copilot response. I can provide read-only operational context "
             "when approved knowledge is available. Your request was: " + user[:500]
