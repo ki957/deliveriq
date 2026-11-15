@@ -313,3 +313,28 @@ export function useCannotFulfil() {
     ),
   );
 }
+
+export type AiStatus = S["AiStatusOut"];
+export type AiSettings = S["AiSettingsOut"];
+export type CopilotResponse = S["CopilotOut"];
+
+export function useAiStatus() {
+  return useQuery({
+    queryKey: ["management", "ai", "status"],
+    queryFn: async () => unwrap(await api.GET("/api/v1/management/ai/status")),
+  });
+}
+
+export function useAiSettings() {
+  return useQuery({
+    queryKey: ["management", "ai", "settings"],
+    queryFn: async () => unwrap(await api.GET("/api/v1/management/ai/settings")),
+  });
+}
+
+export function useAskCopilot() {
+  return useMutation({
+    mutationFn: async (body: S["CopilotIn"]) =>
+      unwrap(await api.POST("/api/v1/management/ai/copilot", { body })),
+  });
+}

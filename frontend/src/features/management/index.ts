@@ -7,3 +7,5 @@ export { OrdersPage } from "./components/orders-page";
 export { ManagementOverviewPage } from "./components/overview-page";
 export { PaymentsPage } from "./components/payments-page";
 export { StaffPage } from "./components/staff-page";
+
+export { AiCopilotPage } from "./components/ai-copilot-page";

@@ -298,6 +298,8 @@ Sources define OTP login, sessions, trusted devices and RBAC (PL-02–PL-06, Pha
 
 ## Part B — Former proposals, approved as written (Decided 2026-11-12)
 
+| DDR-119 | **Task 15 AI platform (approved 2026-11-15):** (1) mock adapter is the default and live provider calls require configured keys; (2) Management knowledge remains unavailable and labelled pending approval until DDR-46; (3) AI settings are Central Administrator only; Regional Managers and other roles are denied; (4) conversation memory keeps the last six turns, supports user deletion, and retains request metadata for 90 days; (5) Task 15 ships the gateway, routing/capability checks, AI status/settings, read-only Management Copilot and tests; Operational Actions and Builder Agent remain Tasks 15A–15C. |
+
 The owner approved DDR-21–25 and DDR-27–29 as written on 2026-11-12. DDR-26 was superseded by DDR-85. Per-row "Proposed" labels below are historical; every row is Decided.
 
 ### DDR-21 Shared design tokens (Decided 2026-11-12)

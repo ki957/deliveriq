@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "providers": {"mock": {"adapter": "mock", "host": "local", "key_env": null}},
+  "models": {
+    "fast": {"provider": "mock", "capabilities": ["chat"]},
+    "strong": {"provider": "mock", "capabilities": ["chat", "structured_output"]},
+    "guard": {"provider": "mock", "capabilities": ["classification"]}
+  },
+  "harnesses": {"management_copilot": {"default_model": "fast", "required_capabilities": ["chat"]}}
+}

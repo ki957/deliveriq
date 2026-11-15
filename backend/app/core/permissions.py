@@ -91,6 +91,9 @@ class Permission(StrEnum):
     PIPELINES_OPERATE = "pipelines.operate"
     # The product-owner sign-off is recorded by a CA account (DDR-106); includes reading recipes to sign.
     RECIPES_PRODUCT_OWNER_SIGNOFF = "recipes.signoff.product_owner"
+    # AI platform: CA controls routing; management roles may use the read-only copilot.
+    MGMT_AI_COPILOT = "management.ai.copilot"
+    MGMT_AI_SETTINGS = "management.ai.settings"
 
 
 P = Permission
@@ -119,6 +122,7 @@ _MGMT_SHARED = frozenset(
         P.MGMT_AUDIT_REGIONAL,
         P.MENU_PUBLISH,
         P.PIPELINES_VIEW,
+        P.MGMT_AI_COPILOT,
     }
 )
 
@@ -157,6 +161,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
         P.MGMT_AUDIT_GLOBAL,
         P.PIPELINES_OPERATE,
         P.RECIPES_PRODUCT_OWNER_SIGNOFF,
+        P.MGMT_AI_SETTINGS,
     },
 }
 
