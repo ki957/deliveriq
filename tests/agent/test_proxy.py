@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 # pytest assertions are the test idiom.
-# ruff: noqa: S101, S603
+# ruff: noqa: S101, S603, S607
 import json
 import subprocess
 import sys
