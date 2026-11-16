@@ -173,6 +173,6 @@ frontend-check:
 test-integration: env-check
 	@set -a; . ./.env; set +a; \
 	DELIVERIQ_INTEGRATION=1 \
-	INTEGRATION_API_URL="http://127.0.0.1:$${API_HOST_PORT:-8000}" \
-	INTEGRATION_DB_PORT="$${POSTGRES_HOST_PORT:-5433}" \
+	INTEGRATION_API_URL="$${INTEGRATION_API_URL:-http://127.0.0.1:$${API_HOST_PORT:-8000}}" \
+	INTEGRATION_DB_PORT="$${INTEGRATION_DB_PORT:-$${POSTGRES_HOST_PORT:-5433}}" \
 	$(UV) run pytest -m integration -v
