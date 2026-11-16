@@ -107,7 +107,7 @@ def history(world: World, machine: str, entity: str) -> list[tuple[Any, ...]]:
 def events(world: World, order_id: str) -> list[tuple[Any, ...]]:
     return rows(
         world,
-        "SELECT event_type, is_test_fixture, published_at IS NULL FROM app.outbox WHERE aggregate_id = %s ORDER BY id",
+        "SELECT event_type, is_test_fixture FROM app.outbox WHERE aggregate_id = %s ORDER BY id",
         order_id,
     )
 
@@ -260,7 +260,7 @@ def test_cod_goes_straight_to_the_kitchen_with_snapshots_and_flags(
         world, "SELECT bool_and(is_test_fixture) FROM app.order_items WHERE order_id = %s", order["id"]
     )
     assert scalar(world, "SELECT is_test_fixture FROM app.payments WHERE order_id = %s", order["id"])
-    assert events(world, order["id"]) == [("order.placed", True, True)]
+    assert events(world, order["id"]) == [("order.placed", True)]
     assert [h[1] for h in history(world, "fulfilment", order["id"])] == ["PLACED", "PENDING_KITCHEN"]
 
 
@@ -596,24 +596,33 @@ def test_a_killed_connection_before_commit_loses_both(world: World) -> None:
     )
 
 
-def test_committed_events_wait_unpublished_for_the_relay(world: World, customer: httpx.Client) -> None:
+def test_committed_events_are_available_to_the_relay(world: World, customer: httpx.Client) -> None:
     order = place(customer, body(world, "COD", ("A", 5))).json()
-    # Committed with the order; the worker relay (Task 12) publishes it later; nothing is lost meanwhile.
-    assert (
-        scalar(
-            world,
-            "SELECT count(*) FROM app.outbox WHERE aggregate_id = %s AND published_at IS NULL",
-            order["id"],
-        )
-        == 1
-    )
-    envelope = rows(
+    # The worker may already have landed the row. Either state must retain the same event exactly once.
+    [envelope] = rows(
         world,
-        "SELECT event_version, aggregate_type, region_id, kitchen_id, data ? 'order_id' FROM app.outbox "
-        "WHERE aggregate_id = %s",
+        "SELECT event_id, published_at IS NULL, event_version, aggregate_type, region_id, kitchen_id, "
+        "data ? 'order_id' FROM app.outbox "
+        "WHERE aggregate_id = %s AND event_type = 'order.placed'",
         order["id"],
-    )[0]
-    assert envelope == (1, "order", world.region_a, world.kitchen_a, True)
+    )
+    event_id, unpublished, version, aggregate_type, region_id, kitchen_id, has_order_id = envelope
+    assert (version, aggregate_type, region_id, kitchen_id, has_order_id) == (
+        1,
+        "order",
+        world.region_a,
+        world.kitchen_a,
+        True,
+    )
+    landed = rows(
+        world,
+        "SELECT event_type, parse_status, parse_error, is_test_fixture FROM raw.events WHERE event_id = %s",
+        event_id,
+    )
+    if unpublished:
+        assert landed == []
+    else:
+        assert landed == [("order.placed", "accepted", None, True)]
 
 
 # ---------------------------------------------------------------- fixture flags (DDR-109, leak controls)
