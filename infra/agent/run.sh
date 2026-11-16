@@ -50,18 +50,22 @@ if [[ "$MODE" == "check" ]]; then
       echo "FAIL: core service $service is not running for the direct-IP isolation probe" >&2
       exit 1
     fi
-    service_ip="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$core_container")"
-    if [[ -z "$service_ip" ]]; then
+    service_ips="$(docker inspect "$core_container" | python3 -c 'import json,sys; item=json.load(sys.stdin)[0]; ips=sorted({network.get("IPAddress", "") for network in item["NetworkSettings"]["Networks"].values() if network.get("IPAddress")}); print("\n".join(ips))')"
+    if [[ -z "$service_ips" ]]; then
       echo "FAIL: core service $service has no container IP for the direct-IP isolation probe" >&2
       exit 1
     fi
-    if docker exec "$CONTAINER_ID" python -c 'import socket,sys;
-try: socket.create_connection((sys.argv[1],int(sys.argv[2])),timeout=2).close()
-except OSError: raise SystemExit(0)
-raise SystemExit(1)' "$service_ip" "$port"; then
-      echo "FAIL: sandbox reached core service $service by container IP" >&2
-      exit 1
-    fi
+    while IFS= read -r service_ip; do
+      [[ -z "$service_ip" ]] && continue
+      probe_result="$(docker exec "$CONTAINER_ID" python -c 'import socket,sys;
+try: connection=socket.create_connection((sys.argv[1],int(sys.argv[2])),timeout=2)
+except OSError: print("BLOCKED")
+else: connection.close(); print("REACHED")' "$service_ip" "$port")"
+      if [[ "$probe_result" != "BLOCKED" ]]; then
+        echo "FAIL: sandbox reached core service $service by container IP" >&2
+        exit 1
+      fi
+    done <<< "$service_ips"
   done
   echo "PASS: direct egress and Postgres/Redis container-IP connections are denied"
   echo "PASS: agent isolation, resource and egress checks"
