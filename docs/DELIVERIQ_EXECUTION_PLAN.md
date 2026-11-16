@@ -544,7 +544,11 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 ### Task 20 — Monitoring, reconciliation and optional scheduling (no Dagster)
 
 - **Depends on:** Tasks 12–14, 18.
-- **Acceptance criteria:** Optional schedules run from the worker timer (DDR-59, DDR-66); run-history and reconciliation views show persisted results; failed runs keep raw data and retry safely; memory cost measured.
+- **Decisions:** DDR-126. Reuse `ops.pipeline_schedules`, `ops.queue_due_schedules()` (migration 0015), `ops.operational_totals()` and the six P2 operational reconciliation checks (DDR-117 (8)), `ops.dataset_freshness`, and persisted run/stage/DQ results. No Dagster. Migration 0028–0030 are already used; do not reuse their identifiers. Add migration 0031 only if implementation demonstrates a schema gap.
+- **Scope:** Verify and complete the worker-timer schedule path and persisted monitoring views using the existing Management Data & Pipelines surfaces. Keep DDR-64 scope and permissions, DDR-66 schedule defaults, and DDR-67 retry/concurrency/history rules. No delivery/ETA code, agent profile or AI modules.
+- **Acceptance criteria:** (1) An enabled optional P2 schedule is queued by the worker timer and never creates a second active run. (2) Run history and P2 reconciliation views display persisted run, stage and `ops.dq_results` records. (3) Failed runs preserve landed raw data and a whole-run retry is safe and idempotent. (4) Record stack-only idle and active-P2 memory snapshots with `docker stats --no-stream` and `free -h`.
+- **Evidence:** Worker timer integration test; pipeline API/UI and E2E checks for persisted run history and reconciliation; P2 failure/retry and raw replay integration checks; recorded Docker/host memory output. Run the Docker gates under the `deliveriq-t20` stack lock and stop the worker and stack afterward.
+- **Status:** Approved for implementation. No schema gap is currently identified; migration 0031 remains conditional under DDR-126 (1).
 
 ### Task 21 — End-to-end hardening
 

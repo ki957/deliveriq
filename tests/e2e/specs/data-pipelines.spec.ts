@@ -112,6 +112,12 @@ test("Central Administrator runs P2 from the UI: dbt stages, tests and freshness
   }
   const quality = page.getByRole("region", { name: "Quality checks" });
   await expect(quality).toContainText("Reconcile orders (critical)");
+  await expect(quality).toContainText("Reconcile operational orders (critical)");
+  await expect(quality).toContainText("Reconcile operational order payable (critical)");
+  await expect(quality).toContainText("Reconcile operational payments succeeded (critical)");
+  await expect(quality).toContainText("Reconcile operational payments failed (critical)");
+  await expect(quality).toContainText("Reconcile operational consumption (critical)");
+  await expect(quality).toContainText("Reconcile operational deliveries (critical)");
   await expect(quality).toContainText("Zero fixture rows (critical)");
   await expect(quality).toContainText("Raw freshness (warning)");
   await expect(page.getByTestId("count-test_events_excluded")).not.toHaveText("0");
