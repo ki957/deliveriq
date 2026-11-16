@@ -12,6 +12,7 @@ import pytest
 from app.shared.agent_egress import GITHUB_HOSTS, configured_provider_hosts, parse_connect_target
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+SNAPSHOT_SCRIPT = REPO_ROOT / "infra/agent/snapshot.py"
 
 
 def generate_override(tmp_path: Path, config: dict[str, object]) -> dict[str, object]:
@@ -140,3 +141,48 @@ def test_agent_environment_contains_only_selected_provider_key_and_github_token(
     print("sandbox secret environment names: " + ", ".join(sorted(environment_names)))
     assert environment_names == {"GITHUB_TOKEN", "GROQ_API_KEY"}
     assert "OPENROUTER_API_KEY" not in environment_names
+
+
+def test_untracked_secret_file_is_not_seeded_and_dirty_checkout_is_refused(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    workspace = tmp_path / "workspace"
+    source.mkdir()
+    subprocess.run(["git", "init", str(source)], check=True, capture_output=True, text=True)
+    (source / "committed.txt").write_text("committed", encoding="utf-8")
+    subprocess.run(["git", "-C", str(source), "add", "committed.txt"], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(source),
+            "-c",
+            "user.name=Sandbox Test",
+            "-c",
+            "user.email=sandbox-test@example.invalid",
+            "commit",
+            "-m",
+            "seed",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    (source / "secret.pem").write_text("dummy secret", encoding="utf-8")
+
+    subprocess.run(
+        [sys.executable, str(SNAPSHOT_SCRIPT), "clone-head", str(source), str(workspace)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    dirty_result = subprocess.run(
+        [sys.executable, str(SNAPSHOT_SCRIPT), "check-clean", str(source)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert (workspace / "committed.txt").is_file()
+    assert not (workspace / "secret.pem").exists()
+    assert dirty_result.returncode != 0
+    assert "working tree is not clean" in dirty_result.stderr
