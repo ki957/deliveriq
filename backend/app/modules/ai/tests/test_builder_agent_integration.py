@@ -28,6 +28,8 @@ BUILDER = "/api/v1/management/ai/builder"
 
 @pytest.fixture(autouse=True)
 def cleanup_builder_rows(world: World) -> Iterator[None]:
+    world.db.execute("DELETE FROM ops.builder_agent_proposals")
+    world.db.execute("DELETE FROM ops.builder_agent_jobs")
     yield
     if world.users:
         world.db.execute("DELETE FROM ops.builder_agent_proposals WHERE user_id = ANY(%s)", (world.users,))
