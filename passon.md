@@ -1,6 +1,6 @@
 # passon.md: DeliverIQ handover guide for Codex
 
-**Written:** 2026-11-12 by Kiro; **last updated:** 2026-11-16 after Task 19A fallback-range verification. **For:** OpenAI Codex (CLI or IDE extension), continuing the build.
+**Written:** 2026-11-12 by Kiro; **last updated:** 2026-11-17 after Task 22 and owner sign-off recording. **For:** OpenAI Codex (CLI or IDE extension), continuing the build.
 **Read this file first.** It tells you where the project stands, what to read, how to work, and what to build next. `AGENTS.md` points Codex to it and to `.kiro/steering/rules.md` (the binding rules) at every start.
 
 > ## ⛔ Do not (each of these has broken something, or would)
@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-All work through Task 21 is merged on `main` at `852a36a` (PR #41; Task 21 UI/E2E is PR #40). Merged task PRs: 0–4B #1–#6; 5A–5C #7–#9; 7 #10; 6A–6B #11–#12; 8A #13; tooling #14; 8B #15; 9A/9B #16–#17; 10A/10B #18–#19; 11A/11B #20–#21; 12A/12B #22–#23; 13 #24; 14 #26; 15/15A #27–#28; 16A–16C #29 (CI fix #30); 17A #31; 18 #32; 17B #33; 19A #34 (main CI fix #35); 20 #36; 15B #37; 19B #38; 15C #39; 21 #40/#41. Task 17B's measured 60-case evaluation remains DRAFT pending CA approval. Task 18 is under DDR-124. Task 19A is under DDR-125. Task 20 is under DDR-126. Current migration head is **0032**; Task 20 migration 0031 was not needed, and Task 15C added 0031–0032. Task 22 is being completed on `task-22-handover` under DDR-130. The Customer Assistant UI remains gated by CD-18.
+All work through Task 22 is merged on `main` at `1b38acd` (PR #42; Task 21 UI/E2E is PR #40 and backend is PR #41). Merged task PRs: 0–4B #1–#6; 5A–5C #7–#9; 7 #10; 6A–6B #11–#12; 8A #13; tooling #14; 8B #15; 9A/9B #16–#17; 10A/10B #18–#19; 11A/11B #20–#21; 12A/12B #22–#23; 13 #24; 14 #26; 15/15A #27–#28; 16A–16C #29 (CI fix #30); 17A #31; 18 #32; 17B #33; 19A #34 (main CI fix #35); 20 #36; 15B #37; 19B #38; 15C #39; 21 #40/#41; 22 #42. Task 17B's measured 60-case evaluation remains DRAFT pending CA approval. Task 18 is under DDR-124. Task 19A is under DDR-125. Task 20 is under DDR-126. Task 22 is under DDR-130. Current migration head is **0032**. Owner sign-off: no knowledge documents were reviewed or approved, and none were rejected; K-K1–K-K3 and K-C1–K-C3 remain DRAFT. Kitchen and Customer golden sets: no, both remain DRAFT. Automated axe checks passed; manual keyboard/screen-reader checks 1–4 were not performed and remain open. The Customer Assistant UI remains gated by CD-18.
 
 | Task | Scope | State |
 |---|---|---|
@@ -65,16 +65,16 @@ All work through Task 21 is merged on `main` at `852a36a` (PR #41; Task 21 UI/E2
 | 17B | Customer Assistant acceptance verification and persisted golden-set evaluation | ✅ merged in PR #33 at `e0e2bb7`; all four CI jobs passed; evaluation remains DRAFT pending CA approval |
 | 18 | Demand Forecasting (DDR-124) | ✅ merged in PR #32 at `b317bee`; all four CI jobs passed |
 | tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | ✅ merged |
-| 17–22 | See plan | 17A–17B #31/#33, 18 #32, 19A #34 + CI fix #35, 20 #36, 15B #37, 19B #38, 15C #39, and 21 #40/#41 are merged; Task 22 is locally verified on `task-22-handover`, PR pending |
+| 17–22 | See plan | Tasks 17A–22 are merged through PR #42 at `1b38acd`; owner sign-off outcomes are recorded below |
 
 **Milestones** (plan §4.1):
 - M1 Foundation (0–4): done.
 - M2 Core order flow (5–9): done.
 - M3 Ops & data (10–14): done; Task 14 is merged.
 - M4 AI (15–17): Tasks 15, 15A, 16, 17A and 17B are merged.
-- M5 ML & polish (18–22): Tasks 18, 19, and 20 are merged; Tasks 21 and its dependencies are merged in PRs #37–#41. Task 22 is locally verified on `task-22-handover`, PR pending.
+- M5 ML & polish (18–22): Tasks 18–22 are merged in PRs #32, #34–#42; Task 21 manual accessibility and Task 22 document/golden-set approvals remain open.
 
-**Current:** Task 21 is merged in PRs #40/#41 at `852a36a`. Its backend gates passed: `make check` (421 unit tests), integration (278 passed), `make agent-check` (421 unit + 10 proxy tests), backup/restore at head 0032 (9 regions, 9 kitchens, 57 menu items, 68 pipeline runs, 808 raw events), reduced retrieval without the worker, and P2 (45 dbt tests, 6 reconciliation checks). Resource sample: idle API 101.1 MiB, Postgres 32.56 MiB, Redis 4.754 MiB, worker 43.35 MiB; during P2 API 142.5 MiB, Postgres 42.79 MiB, Redis 4.668 MiB, worker 87.5 MiB; host 15 GiB total, 7.6 GiB idle / 7.5 GiB during P2 available. E2E/UI merged in #40; manual keyboard/screen-reader pass remains owner-pending. Task 22 is implemented and locally verified on `task-22-handover`; review its report and open the PR from the compare link. After it merges and CI is green, update this handover and continue with any owner-open items. Current migration head: 0032. Open items are all of register Part C plus the owner-pending knowledge/golden approvals, CD-18 Customer Assistant UI gate, and Task 21 manual accessibility pass.
+**Current:** Task 21 is merged in PRs #40/#41 at `852a36a`; Task 22 is merged in PR #42 at `1b38acd`. Task 21 backend gates passed: `make check` (421 unit tests), integration (278 passed), `make agent-check` (421 unit + 10 proxy tests), backup/restore at head 0032 (9 regions, 9 kitchens, 57 menu items, 68 pipeline runs, 808 raw events), reduced retrieval without the worker, and P2 (45 dbt tests, 6 reconciliation checks). Resource sample: idle API 101.1 MiB, Postgres 32.56 MiB, Redis 4.754 MiB, worker 43.35 MiB; during P2 API 142.5 MiB, Postgres 42.79 MiB, Redis 4.668 MiB, worker 87.5 MiB; host 15 GiB total, 7.6 GiB idle / 7.5 GiB during P2 available. E2E/UI merged in #40. Owner sign-off: automated axe checks passed; manual checks 1–4 were not performed. No knowledge documents were reviewed or approved, and none were rejected; K-K1–K-K3 and K-C1–K-C3 remain DRAFT. Kitchen/Customer golden sets: no, both remain DRAFT. Current migration head: 0032. Other open items are every item in register Part C and the CD-18 Customer Assistant UI gate.
 
 ---
 
@@ -170,9 +170,9 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Current task: Task 22 handover
+## 5. Current task: Owner sign-off record
 
-Task 22 is implemented on `task-22-handover` from main `852a36a`. It adds three command-first runbooks, a production-profile Make target and integration test, and a final status update. Local gates passed: `make check` (421 unit tests), full integration (279 passed), production profile (one integration test plus fixture-loader refusal), source hashes (21/21), undefined-DDR check, and `git diff --check`. The fresh clone/runbook passed with generated local credentials, unique Compose ports and project name, and Vite proxying to the chosen API port; the public menu API returned HTTP 200 through the frontend. The throwaway project's containers and volume were removed. No frontend files changed, so frontend-check was not required. CI runs after the owner opens the PR from the compare link. Once merged and CI is green, update §2 and §10 with its PR number and merge SHA.
+Task 22 merged in PR #42 at `1b38acd`. Owner sign-off is recorded in plan Tasks 21–22: automated axe passed; manual checks 1–4 were not performed; K-K1–K-K3 and K-C1–K-C3 remain unreviewed DRAFT; neither golden set is approved; no documents were rejected. Follow up by completing the four manual checks, having KM/CA review the matching knowledge documents, then reviewing the Kitchen and Customer golden sets in the app.
 
 ## 6. Task status and remaining work (full criteria in plan §7)
 
@@ -184,12 +184,12 @@ Task 22 is implemented on `task-22-handover` from main `852a36a`. It adds three 
 | 17B Customer Assistant verification | ✅ merged PR #33 at `e0e2bb7`; evaluation stays DRAFT until CA approval | DDR-90, DDR-92, DDR-123 |
 | 19 ETA + assignment optimisation | ✅ merged PRs #34, #35, #38 | DDR-19, DDR-55, DDR-56, DDR-74, DDR-78, DDR-113, DDR-118, DDR-124, DDR-125 |
 | 20 Monitoring & reconciliation | ✅ merged in PR #36 at `190210a` | DDR-126; no schema gap; migration 0031 was later used by Task 15C |
-| 21 | ✅ merged PRs #40/#41 at `852a36a`; manual accessibility pass still owner-pending | DDR-129; Task 21 results and memory are in §2/§7 |
-| 22 | Locally verified on `task-22-handover`; PR pending | DDR-48–50, DDR-130; runbooks and production-profile gate |
+| 21 | ✅ merged PRs #40/#41 at `852a36a`; automated axe passed, manual checks 1–4 not performed | DDR-129; Task 21 results and memory are in §2/§7 |
+| 22 | ✅ merged in PR #42 at `1b38acd`; owner sign-off outcomes recorded | DDR-48–50, DDR-130; open DRAFT review and golden-set approval |
 
-**Remaining-work order:** Task 22 PR/CI, then merge. No later task is scheduled in the current plan.
+**Remaining-work order:** complete owner sign-off follow-ups: manual accessibility 1–4, CA/KM knowledge review, then golden-set approval. No later implementation task is scheduled in the current plan.
 
-**Still-open decisions:** every item in register Part C (DDR-06, DDR-15, DDR-41–44); Task 22 known limitations are listed in `docs/runbooks/known-limitations.md`. Owner-pending: DRAFT knowledge and golden sets await CA/KM approval, CD-18 gates the Customer Assistant UI, and the Task 21 manual keyboard/screen-reader pass remains. DDR-45/46 are resolved by DDR-121/122.
+**Still-open decisions:** every item in register Part C (DDR-06, DDR-15, DDR-41–44); Task 22 known limitations are listed in `docs/runbooks/known-limitations.md`. Owner-pending: K-K1–K-K3 and K-C1–K-C3 remain unreviewed DRAFT; Kitchen and Customer golden sets remain DRAFT; CD-18 gates the Customer Assistant UI; Task 21 manual keyboard/screen-reader checks 1–4 remain unperformed. No documents were rejected. DDR-45/46 are resolved by DDR-121/122.
 
 ---
 
@@ -341,6 +341,6 @@ Rules:
 | 2026-11-16 | Task 19B ETA and assignment UI / PR #38 | DDR-125 | Merged; post-pickup ETA ranges and read-only suggestions; manual assignment preserved |
 | 2026-11-16 | Task 15C Builder Agent harness / PR #39 | DDR-128 | Merged; CA-reviewed mock PR workflow, migrations 0031–0032 |
 | 2026-11-16 | Task 21 E2E hardening / PRs #40–#41 | DDR-129 | Merged at `852a36a`; backend results and resource figures are recorded in §2; manual keyboard/screen-reader pass remains owner-pending |
-| 2026-11-17 | Task 22 demo handover / PR pending | DDR-48–50, DDR-130 | Local gates and fresh-machine runbook passed; production-profile test rejects the loader and hides a Kitchen TEST canary; DRAFT approvals, CD-18 and manual accessibility remain open |
+| 2026-11-17 | Task 22 demo handover / PR #42 | DDR-48–50, DDR-130 | Merged at `1b38acd`; local gates and fresh-machine runbook passed. Owner sign-off: no knowledge documents reviewed/approved/rejected; K-K1–K-K3 and K-C1–K-C3 remain DRAFT; Kitchen and Customer golden sets not approved; axe passed; manual checks 1–4 not performed. |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.
