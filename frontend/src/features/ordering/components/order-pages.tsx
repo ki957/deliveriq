@@ -96,6 +96,7 @@ export function OrderPage() {
         {o.is_test_fixture ? <TestBadge label="Test order" /> : null}
       </div>
       <p className="mt-1 text-sm text-text-muted">Placed {formatDateTime(o.placed_at)}</p>
+      <EtaEstimate order={o} />
       <Tracking order={o} />
       <PaymentSimulator order={o} />
       <CancelOrder order={o} />
@@ -142,6 +143,63 @@ export function OrderPage() {
           </p>
         </section>
       </div>
+    </section>
+  );
+}
+
+function formatTravelTime(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.round(totalSeconds));
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  if (minutes === 0) return `${remainder} sec`;
+  return remainder === 0 ? `${minutes} min` : `${minutes} min ${remainder} sec`;
+}
+
+function EtaEstimate({ order }: { order: Order }) {
+  if (order.eta_available_after_pickup) {
+    return (
+      <section
+        aria-labelledby="eta-estimate"
+        className="mt-4 rounded-panel border border-border bg-surface p-4"
+        data-testid="eta-estimate"
+      >
+        <h2 id="eta-estimate" className="text-lg font-semibold">
+          Estimated travel time
+        </h2>
+        <p className="mt-1 text-sm">{order.eta_message ?? "ETA available after pickup"}</p>
+      </section>
+    );
+  }
+
+  if (
+    order.fulfilment_status !== "OUT_FOR_DELIVERY" ||
+    order.eta_lower_seconds == null ||
+    order.eta_upper_seconds == null
+  ) {
+    return null;
+  }
+
+  const noRange = order.eta_source === "rough_estimate";
+  const value = noRange
+    ? formatTravelTime(order.eta_lower_seconds)
+    : `${formatTravelTime(order.eta_lower_seconds)} – ${formatTravelTime(order.eta_upper_seconds)}`;
+
+  return (
+    <section
+      aria-labelledby="eta-estimate"
+      className="mt-4 rounded-panel border border-border bg-surface p-4"
+      data-testid="eta-estimate"
+    >
+      <h2 id="eta-estimate" className="text-lg font-semibold">
+        Estimated remaining travel time
+      </h2>
+      <p className="mt-1 text-xl font-semibold" data-testid="eta-value">
+        {value}
+      </p>
+      <p className="mt-1 text-sm text-text-muted">{order.eta_label}</p>
+      {order.eta_advisory_only ? (
+        <p className="mt-1 text-xs text-text-muted">Advisory estimate; travel time may vary.</p>
+      ) : null}
     </section>
   );
 }

@@ -1,7 +1,16 @@
 import { lazy, Suspense } from "react";
 import { Link } from "react-router";
 
-import { useAgents, useDeliveries, useForceOffline, type Agent, type Delivery } from "../api";
+import {
+  useAgents,
+  useAssignmentSuggestions,
+  useDeliveries,
+  useForceOffline,
+  useOrders,
+  type Agent,
+  type Delivery,
+  type OrderRow,
+} from "../api";
 import { PageHeader, ReasonAction, TableBox, Td, Th } from "./common";
 import { useCan } from "@/shared/auth/require-permission";
 import { queryState } from "@/shared/ui/query-state";
@@ -27,7 +36,12 @@ export function DeliveryOpsPage() {
     <section className="mx-auto max-w-6xl space-y-6">
       <PageHeader title="Delivery Operations" updatedAt={deliveries.dataUpdatedAt} />
 
-      {canAssign ? <AgentsSection /> : null}
+      {canAssign ? (
+        <>
+          <AgentsSection />
+          <AssignmentCandidatesSection />
+        </>
+      ) : null}
 
       <section aria-labelledby="live" className="space-y-2">
         <h2 id="live" className="text-lg font-semibold">
@@ -89,6 +103,88 @@ export function DeliveryOpsPage() {
         ) : null}
       </section>
     </section>
+  );
+}
+
+function AssignmentCandidatesSection() {
+  const accepted = useOrders(1, { status: "ACCEPTED" });
+  const preparing = useOrders(1, { status: "PREPARING" });
+  const ready = useOrders(1, { status: "READY_FOR_PICKUP" });
+  const queries = [accepted, preparing, ready];
+  const states = queries.map((query) => queryState(query, { loading: "Loading orders awaiting an agent…" }));
+  const state = states.find(Boolean);
+  if (state) return <section aria-labelledby="assignment-suggestions">{state}</section>;
+
+  const candidates = new Map<string, OrderRow>();
+  for (const query of queries) {
+    for (const order of query.data?.rows ?? []) {
+      if (order.agent_name === null && order.assignment_status === null) {
+        candidates.set(order.id, order);
+      }
+    }
+  }
+  const orders = [...candidates.values()];
+
+  return (
+    <section aria-labelledby="assignment-suggestions" className="space-y-2">
+      <div>
+        <h2 id="assignment-suggestions" className="text-lg font-semibold">
+          Advisory assignment suggestions
+        </h2>
+        <p className="text-sm text-text-muted">
+          Suggestions follow least recently offered first. They never offer or assign an agent; use the
+          existing manual assignment action when needed.
+        </p>
+      </div>
+      {orders.length === 0 ? (
+        <p className="text-sm">No accepted, preparing, or ready orders are awaiting an agent.</p>
+      ) : (
+        <ul className="space-y-2" aria-label="Orders awaiting an agent">
+          {orders.map((order) => (
+            <AssignmentCandidate key={order.id} order={order} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function AssignmentCandidate({ order }: { order: OrderRow }) {
+  const suggestions = useAssignmentSuggestions(order.id);
+  const state = queryState(suggestions, {
+    loading: "Loading suggestions…",
+    notFound: "Order no longer awaits an agent",
+  });
+
+  return (
+    <li className="rounded-panel border border-border bg-surface p-3" data-testid="assignment-candidate">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Link to={`/management/orders/${order.id}`} className="font-medium underline">
+          Order {order.id.slice(0, 8)}
+        </Link>
+        <StatusBadge tone="info" label={order.status_label} />
+      </div>
+      <p className="mt-1 text-xs text-text-muted">{order.kitchen_name}</p>
+      {order.is_test_fixture ? <TestBadge label="Test order" /> : null}
+      {state ??
+        ((suggestions.data ?? []).length === 0 ? (
+          <p className="mt-2 text-sm">No eligible agents are currently available.</p>
+        ) : (
+          <ol
+            className="mt-2 space-y-1 text-sm"
+            aria-label={`Suggested agents for order ${order.id.slice(0, 8)}`}
+          >
+            {(suggestions.data ?? []).map((agent, index) => (
+              <li key={agent.agent_id}>
+                {index + 1}. {agent.display_name} ·{" "}
+                {agent.last_offered_at
+                  ? `Last offered ${formatDateTime(agent.last_offered_at)}`
+                  : "No prior offer"}
+              </li>
+            ))}
+          </ol>
+        ))}
+    </li>
   );
 }
 
