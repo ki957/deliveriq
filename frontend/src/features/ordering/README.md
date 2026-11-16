@@ -1,6 +1,6 @@
 # Ordering feature (Customer)
 
-**Purpose and scope:** the customer journey from location to a placed order: serviceability, menu with search and filters, dish page, persisted cart, bill, coupon, checkout, simulated payment, order list and detail with cancellation (CU-01–CU-21, DDR-109, DDR-110). Live tracking (Task 9), support and profile pages are separate.
+**Purpose and scope:** the customer journey from location to a placed order: serviceability, menu with search and filters, dish page, persisted cart, bill, coupon, checkout, simulated payment, order list and detail with cancellation and the post-pickup remaining-travel ETA (CU-01–CU-21, DDR-109, DDR-110, DDR-125). Live tracking (Task 9), support and profile pages are separate.
 
 | Item          | Value                                                                                                                                                                                                                                                                                        |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -18,6 +18,7 @@
 - The bill, blockers, coupon result and serviceability all come from the backend quote. A changed price (after the 30-minute hold) needs "Accept new price"; unavailable dishes are removed only after confirmation.
 - Placement sends the prices the customer saw and one `Idempotency-Key` per attempt; a refusal gets a new key on retry (DDR-109).
 - Prepaid orders show a labelled payment simulator (success, failure, timeout); failure or timeout cancels the order. Cancellation is offered until kitchen acceptance, after confirmation; prepaid is refunded in full.
+- ETA appears only after pickup and describes remaining travel time. Before pickup, the order view says “ETA available after pickup”; synthetic-location estimates retain the API's “Simulated” label. If no ready profile exists, the point estimate is labelled “rough estimate, no range available” (DDR-125).
 - TEST dishes and TEST orders carry a "Test data" / "Test order" badge.
 
 ## Not built here

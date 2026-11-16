@@ -557,6 +557,68 @@ describe("orders (CU-19–CU-21)", () => {
     expect(within(tracking).getByText(/13\.0831, 80\.2709/)).toBeInTheDocument();
   });
 
+  it("shows the pickup gate before any ETA is available", async () => {
+    mockApi({
+      "GET /api/v1/me": () => json(CUSTOMER),
+      [`GET /api/v1/orders/${ORDER}`]: () => json(order()),
+    });
+    renderAt(`/customer/orders/${ORDER}`);
+
+    const eta = await screen.findByTestId("eta-estimate");
+    expect(eta).toHaveTextContent("ETA available after pickup");
+    expect(screen.getByTestId("order-status")).toHaveTextContent("Order Placed");
+    expect(screen.queryByTestId("eta-value")).not.toBeInTheDocument();
+  });
+
+  it("shows a simulated remaining-travel range only after pickup", async () => {
+    mockApi({
+      "GET /api/v1/me": () => json(CUSTOMER),
+      [`GET /api/v1/orders/${ORDER}`]: () =>
+        json(
+          order({
+            fulfilment_status: "OUT_FOR_DELIVERY",
+            status_label: "Out for delivery",
+            eta_available_after_pickup: false,
+            eta_label: "Simulated · estimated range",
+            eta_lower_seconds: 501,
+            eta_message: null,
+            eta_source: "estimated_range",
+            eta_upper_seconds: 790,
+          }),
+        ),
+    });
+    renderAt(`/customer/orders/${ORDER}`);
+
+    const eta = await screen.findByTestId("eta-estimate");
+    expect(within(eta).getByTestId("eta-value")).toHaveTextContent("8 min 21 sec – 13 min 10 sec");
+    expect(eta).toHaveTextContent("Simulated · estimated range");
+    expect(eta).toHaveTextContent("Advisory estimate");
+  });
+
+  it("labels a no-profile point estimate as having no range", async () => {
+    mockApi({
+      "GET /api/v1/me": () => json(CUSTOMER),
+      [`GET /api/v1/orders/${ORDER}`]: () =>
+        json(
+          order({
+            fulfilment_status: "OUT_FOR_DELIVERY",
+            status_label: "Out for delivery",
+            eta_available_after_pickup: false,
+            eta_label: "Simulated · rough estimate, no range available",
+            eta_lower_seconds: 501,
+            eta_message: null,
+            eta_source: "rough_estimate",
+            eta_upper_seconds: 501,
+          }),
+        ),
+    });
+    renderAt(`/customer/orders/${ORDER}`);
+
+    const eta = await screen.findByTestId("eta-estimate");
+    expect(within(eta).getByTestId("eta-value")).toHaveTextContent("8 min 21 sec");
+    expect(eta).toHaveTextContent("rough estimate, no range available");
+  });
+
   it("has no simulator for Cash on Delivery", async () => {
     mockApi({
       "GET /api/v1/me": () => json(CUSTOMER),
