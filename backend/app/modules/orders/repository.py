@@ -17,6 +17,8 @@ _ORDER_COLUMNS = """
     o.is_test_fixture, o.idempotency_key, o.request_hash, o.food_subtotal_paise, o.delivery_fee_paise,
     o.discount_paise, o.payable_paise, o.delivery_address, o.road_km_estimated, o.placed_at, o.updated_at,
     o.accepted_at,
+    ST_Y(o.delivery_location::geometry) AS destination_lat,
+    ST_X(o.delivery_location::geometry) AS destination_lng,
     EXISTS (SELECT 1 FROM app.delivery_assignments a WHERE a.order_id = o.id AND a.status = 'ACCEPTED')
         AS assignment_accepted
 """
@@ -42,6 +44,8 @@ class OrderRow:
     placed_at: datetime
     updated_at: datetime
     accepted_at: datetime | None
+    destination_lat: float | None
+    destination_lng: float | None
     assignment_accepted: bool
 
 

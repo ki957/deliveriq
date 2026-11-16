@@ -59,7 +59,7 @@ Source key: **#1** Customer_Dashboard_Requirements · **#2** Customer_Dashboard_
 | CU-17 | Checkout sequence: review → validate → address → ₹500 → coupon → tax/delivery → payment → place → simulate/COD → kitchen | #1 §9 | CD-11, CD-12 | Approved |
 | CU-18 | Prepaid requires simulated success before kitchen; COD proceeds | #1 §9 | CD-11 | Approved |
 | CU-19 | Cancellation only before kitchen acceptance; kitchen rejection cancels; simulated refund for prepaid only | #1 §10 | CD-13 | Approved |
-| CU-20 | Estimated delivery range; live agent map only after pickup | #1 §10 | CD-14 | Approved |
+| CU-20 | Before pickup, show status and “ETA available after pickup”; after pickup, show remaining travel time to the customer as a range. Live agent map only after pickup. Synthetic-location estimates are labelled “Simulated”. | #1 §10 | CD-14 | DDR-125 |
 | CU-21 | Order history, details, reorder (current price/stock), invoice download | #1 §11 | CD-15 | Approved |
 | CU-22 | Reviews: food rating, delivery rating, written review | #1 §11 | CD-16 | Approved |
 | CU-23 | Profile: name, verified mobile, email (all required), preferences, spice preference, declared allergies, favourites | #1 §11 | — | Approved |

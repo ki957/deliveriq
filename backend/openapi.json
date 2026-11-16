@@ -308,6 +308,43 @@
         "title": "AgentOut",
         "type": "object"
       },
+      "AgentSuggestionOut": {
+        "properties": {
+          "advisory_only": {
+            "default": true,
+            "title": "Advisory Only",
+            "type": "boolean"
+          },
+          "agent_id": {
+            "format": "uuid",
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "last_offered_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Offered At"
+          }
+        },
+        "required": [
+          "agent_id",
+          "display_name",
+          "last_offered_at"
+        ],
+        "title": "AgentSuggestionOut",
+        "type": "object"
+      },
       "AiModelOut": {
         "properties": {
           "capabilities": {
@@ -4380,6 +4417,71 @@
             "title": "Discount Paise",
             "type": "integer"
           },
+          "eta_advisory_only": {
+            "default": true,
+            "title": "Eta Advisory Only",
+            "type": "boolean"
+          },
+          "eta_available_after_pickup": {
+            "default": false,
+            "title": "Eta Available After Pickup",
+            "type": "boolean"
+          },
+          "eta_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eta Label"
+          },
+          "eta_lower_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eta Lower Seconds"
+          },
+          "eta_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eta Message"
+          },
+          "eta_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eta Source"
+          },
+          "eta_upper_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eta Upper Seconds"
+          },
           "food_subtotal_paise": {
             "anyOf": [
               {
@@ -7963,6 +8065,54 @@
           }
         },
         "summary": "Failure Decision",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/v1/delivery/manage/orders/{order_id}/suggestions": {
+      "get": {
+        "description": "Read-only advisory suggestions using DDR-113 (3); this route never offers or assigns.",
+        "operationId": "assignment_suggestions_api_v1_delivery_manage_orders__order_id__suggestions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AgentSuggestionOut"
+                  },
+                  "title": "Response Assignment Suggestions Api V1 Delivery Manage Orders  Order Id  Suggestions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assignment Suggestions",
         "tags": [
           "delivery"
         ]

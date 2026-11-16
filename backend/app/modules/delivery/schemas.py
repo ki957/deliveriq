@@ -149,6 +149,13 @@ class AgentOut(BaseModel):
     live_order_id: uuid.UUID | None
 
 
+class AgentSuggestionOut(BaseModel):
+    agent_id: uuid.UUID
+    display_name: str
+    last_offered_at: datetime | None
+    advisory_only: bool = True
+
+
 class AssignIn(BaseModel):
     agent_user_id: uuid.UUID
     reason: str = Field(min_length=1, max_length=REASON_MAX)

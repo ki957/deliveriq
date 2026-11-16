@@ -490,6 +490,22 @@ def agents(principal: Principal) -> list[repo.AgentRow]:
         return repo.agents(conn, regions)
 
 
+def assignment_suggestions(principal: Principal, order_id: uuid.UUID) -> list[repo.AgentSuggestionRow]:
+    """Advisory-only read path; candidate selection follows DDR-113 (3), without writing offers."""
+    if not can(principal, P.MGMT_AGENTS_ASSIGN) and not any(
+        grant.region_id and can(principal, P.MGMT_AGENTS_ASSIGN, region_id=grant.region_id)
+        for grant in principal.grants
+    ):
+        raise Forbidden
+    with get_engine().connect() as conn:
+        try:
+            region = repo.order_region(conn, order_id)
+        except LookupError:
+            raise NotFound from None
+        _manager_role(principal, region)
+        return repo.assignment_suggestions(conn, order_id, region)
+
+
 # ---------------------------------------------------------------- profile and history (#7 §9; DDR-113 (15))
 def history(principal: Principal) -> list[repo.HistoryRow]:
     _agent_region(principal)

@@ -99,6 +99,13 @@ class OrderOut(BaseModel):
     # Customer's own order, while Out for delivery only (DDR-113 (6), (8)).
     delivery_code: str | None = None
     live_location: LiveLocationOut | None = None
+    eta_available_after_pickup: bool = False
+    eta_message: str | None = None
+    eta_lower_seconds: int | None = None
+    eta_upper_seconds: int | None = None
+    eta_source: str | None = None
+    eta_label: str | None = None
+    eta_advisory_only: bool = True
 
 
 # ---------------------------------------------------------------- cart and quote (DDR-110)

@@ -125,6 +125,16 @@ def order_out(view: service.OrderView) -> OrderOut:
         )
         if view.location
         else None,
+        eta_available_after_pickup=o.fulfilment_status
+        not in {"OUT_FOR_DELIVERY", "DELIVERED", "DELIVERY_FAILED", "CANCELLED", "REJECTED"},
+        eta_message="ETA available after pickup"
+        if o.fulfilment_status
+        not in {"OUT_FOR_DELIVERY", "DELIVERED", "DELIVERY_FAILED", "CANCELLED", "REJECTED"}
+        else None,
+        eta_lower_seconds=view.eta.lower_seconds if view.eta else None,
+        eta_upper_seconds=view.eta.upper_seconds if view.eta else None,
+        eta_source=view.eta.source if view.eta else None,
+        eta_label=("Simulated" if view.eta.simulated else "Trained on simulated data") if view.eta else None,
     )
 
 
