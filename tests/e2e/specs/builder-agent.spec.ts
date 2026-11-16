@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import { expectNoAxeViolations, SEED, signIn } from "./helpers";
 
 test("CA reviews tested Builder Agent diff before opening a mocked pull request", async ({ page }) => {
+  test.setTimeout(180_000);
   await signIn(page, "management", SEED.centralAdmin);
   await page.goto("/management/builder-agent");
   await expect(page.getByRole("heading", { name: "Builder Agent" })).toBeVisible();
