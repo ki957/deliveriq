@@ -571,6 +571,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 - **Depends on:** Task 21.
 - **Known limitations (DDR-49):** real kitchen location (DDR-39), SMS provider (DDR-40), final branding (DDR-08), imagery (DDR-47), real menu data and no SOP activation (DDR-32, DDR-50), final kitchen defaults (DDR-42), audit retention and KPI definitions (DDR-44), SOP single-source limitation.
 - **Acceptance criteria:** Fresh machine reproduces the demo from the runbook; zero `is_test_fixture` rows and fixture loader disabled in a production-profile run (DDR-48); known-limitations section lists every unresolved DDR.
+- **Status:** Implemented on `task-22-handover` from `852a36a`. `make check` passed (421 unit tests); full integration passed (279 tests); `make production-profile-check` passed its production loader-refusal and Kitchen RAG canary checks; `make verify-sources` passed 21/21; undefined-DDR check was empty. Fresh-clone runbook passed with a unique Compose project and ports, generated local credentials, and Vite proxying to the custom API port; the public menu API returned HTTP 200 through the frontend. Temporary project containers and volume were removed. No frontend files changed. Open items are the known limitations listed in `docs/runbooks/known-limitations.md` and its owner-pending approvals/gates.
 
 ---
 

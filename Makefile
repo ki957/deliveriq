@@ -6,6 +6,7 @@
         openapi-check check env-check build up down restart ps logs migrate stats fixtures \
         e2e e2e-setup e2e-update frontend-check db-roles worker worker-down pipeline \
         agent agent-check agent-down agent-harness agent-integration backup-restore-check
+.PHONY: production-profile-check
 
 UV := env -u VIRTUAL_ENV uv
 PY_PATH := PYTHONPATH=backend
@@ -124,6 +125,10 @@ reset-fixtures: env-check
 # A throwaway Compose project and volume are created and removed by the drill script.
 backup-restore-check: env-check
 	$(PY_PATH) $(UV) run python -m app.cli.backup_restore_drill
+
+# Isolated production-profile smoke check; the target owns and removes this Compose volume.
+production-profile-check: env-check
+	APP_ENV=production bash scripts/production_profile_check.sh
 
 # Playwright in the pinned container against the running core stack (needs `make up` + `make fixtures`).
 # Needs the core stack, the worker and fixtures (`make up worker fixtures`). Setup makes the data
