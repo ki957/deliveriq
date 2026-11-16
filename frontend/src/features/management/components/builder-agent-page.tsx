@@ -71,7 +71,8 @@ export function BuilderAgentPage() {
           {current.error_message && <p role="alert">{current.error_message}</p>}
           <p>{current.summary}</p>
           <p className="text-sm text-text-muted">
-            Model: {current.logical_model ?? "strong"}. Unit tests: {current.test_result.passed === true ? "passed" : "pending"}
+            Model: {current.logical_model ?? "strong"}. Unit tests:{" "}
+            {current.test_result.passed === true ? "passed" : "pending"}
           </p>
           <h3 className="font-medium">Changed files</h3>
           <ul className="list-inside list-disc">
@@ -96,9 +97,7 @@ export function BuilderAgentPage() {
               className="min-h-11 rounded-control bg-primary px-4 text-primary-foreground disabled:opacity-50"
               type="button"
               disabled={confirm.isPending || current.test_result.passed !== true}
-              onClick={() =>
-                confirm.mutate(current.task_id)
-              }
+              onClick={() => confirm.mutate(current.task_id)}
             >
               {confirm.isPending ? "Confirming…" : "Confirm and open pull request"}
             </button>

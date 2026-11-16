@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import uuid
 from pathlib import Path
@@ -208,9 +209,10 @@ def process_next_job() -> bool:
         if confirmation is not None:
             task_id = confirmation.id
             conn.execute(
-                text(
-                    "UPDATE ops.builder_agent_jobs SET state = 'PUBLISHING', updated_at = now() WHERE id = :id"
-                ),
+                text("""
+                    UPDATE ops.builder_agent_jobs
+                    SET state = 'PUBLISHING', updated_at = now() WHERE id = :id
+                """),
                 {"id": task_id},
             )
             action = "publish"
@@ -229,23 +231,26 @@ def process_next_job() -> bool:
                 return False
             task_id, user_id, request = job.id, job.user_id, job.request
             conn.execute(
-                text(
-                    "UPDATE ops.builder_agent_jobs SET state = 'PROCESSING', updated_at = now() WHERE id = :id"
-                ),
+                text("""
+                    UPDATE ops.builder_agent_jobs
+                    SET state = 'PROCESSING', updated_at = now() WHERE id = :id
+                """),
                 {"id": task_id},
             )
             action = "build"
 
     if action == "publish":
         return _process_confirmation(task_id)
-    assert request is not None and user_id is not None
+    if request is None or user_id is None:
+        raise Invalid("The Builder Agent queue item is incomplete")
     try:
         proposal = _build_proposal(request)
         with get_engine().begin() as conn:
             conn.execute(
                 text("""
                 INSERT INTO ops.builder_agent_proposals
-                    (id, user_id, request, summary, files, diff, test_result, base_sha, prompt_sha256, logical_model)
+                    (id, user_id, request, summary, files, diff, test_result, base_sha,
+                     prompt_sha256, logical_model)
                 VALUES
                     (:id, :user_id, :request, :summary, CAST(:files AS jsonb), :diff,
                      CAST(:tests AS jsonb), :base_sha, :prompt_hash, :logical_model)
@@ -306,8 +311,11 @@ def _process_confirmation(task_id: uuid.UUID) -> bool:
     if row is None:
         return True
     try:
+        git = shutil.which("git")
+        if git is None:
+            raise Invalid("Git is unavailable to the host runner")
         current_head = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+            [git, "rev-parse", "HEAD"],
             cwd=_repository_root(),
             capture_output=True,
             text=True,

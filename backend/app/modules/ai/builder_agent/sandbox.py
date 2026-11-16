@@ -143,7 +143,7 @@ class AgentWorkspace:
                 "none",
                 "--read-only",
                 "--tmpfs",
-                "/tmp:rw,noexec,nosuid,size=64m",
+                "/tmp:rw,noexec,nosuid,size=64m",  # noqa: S108
                 "--mount",
                 f"type=bind,source={self.root},target=/workspace,readonly",
                 "--workdir",
