@@ -242,6 +242,52 @@ describe("order detail", () => {
   });
 });
 
+describe("delivery operations assignment suggestions", () => {
+  it("shows ranked suggestions as advisory only and does not assign", async () => {
+    const candidate = row({
+      fulfilment_status: "ACCEPTED",
+      status_label: "Accepted",
+      agent_name: null,
+      assignment_status: null,
+    });
+    const { calls } = mockApi({
+      "GET /api/v1/me": () => json(RM),
+      "GET /api/v1/management/deliveries": () => json([]),
+      "GET /api/v1/delivery/manage/agents": () => json([]),
+      "GET /api/v1/management/regions": () => json(REGIONS),
+      "GET /api/v1/management/orders": () => json({ rows: [candidate], total: 1, page: 1, page_size: 50 }),
+      [`GET /api/v1/delivery/manage/orders/${ORDER}/suggestions`]: () =>
+        json([
+          {
+            advisory_only: true,
+            agent_id: "agent-first",
+            display_name: "First TEST Agent",
+            last_offered_at: null,
+          },
+          {
+            advisory_only: true,
+            agent_id: "agent-second",
+            display_name: "Second TEST Agent",
+            last_offered_at: "2026-11-15T12:00:00Z",
+          },
+        ]),
+    });
+    renderAt("/management/delivery");
+
+    const suggestions = await screen.findByRole("region", { name: "Advisory assignment suggestions" });
+    expect(calls.map((call) => `${call.method} ${new URL(call.url).pathname}`)).toContain(
+      `GET /api/v1/delivery/manage/orders/${ORDER}/suggestions`,
+    );
+    await waitFor(() => expect(suggestions).toHaveTextContent("First TEST Agent"));
+    expect(suggestions).toHaveTextContent("Order 0d0d0d0d");
+    expect(suggestions).toHaveTextContent("1. First TEST Agent · No prior offer");
+    expect(suggestions).toHaveTextContent("2. Second TEST Agent · Last offered");
+    expect(suggestions).toHaveTextContent("They never offer or assign an agent");
+    expect(screen.queryByRole("button", { name: /assign/i })).not.toBeInTheDocument();
+    expect(calls.some((call) => call.method === "POST" && call.url.includes("/assign"))).toBe(false);
+  });
+});
+
 const STAFF: Staff[] = [
   {
     assignment_id: "g1",

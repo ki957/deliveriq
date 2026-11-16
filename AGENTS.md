@@ -12,6 +12,8 @@ Hard limits that are never relaxed:
 - Stage files by name (never `git add .` or `-A`); never push to `main`, force-push, `reset --hard`, `clean -f`, `branch -D` or use `--no-verify`; never change git config. The owner merges.
 - Never rebase a branch after it has been pushed. If a PR is behind `main`, the owner updates it with GitHub's **Update branch** button. If that update conflicts, use `git merge origin/main` locally, resolve the conflict, run `make check` and `make frontend-check`, then push normally.
 - One task at a time, on its own branch. Plan and decision sheet first; never invent values.
+- After the owner says “approve” or “go”, run routine local commands without asking; stop only for destructive or broad actions, actions outside this repo, or undefined values requiring a decision sheet.
+- Verification efficiency: run each gate once on final code and rerun only if covered code changed; update E2E screenshots only after a screenshot assertion fails or a new screenshot is added, inspecting only affected images. The PR's CI is the second E2E run; never run E2E twice locally. Use the shared Docker lock only for integration, E2E and pipeline runs, never for a memory-only snapshot; use the last stack run's memory figures. After a clean rebase, run only `make check` and `make frontend-check` locally; CI covers the remaining gates.
 - No SOP recipe is ever activated (DDR-50); real and synthetic data never share a table (DDR-74).
 
 Project skills (`.agents/skills/`): `$start-task`, `$verify`, `$report`, `$ship`.

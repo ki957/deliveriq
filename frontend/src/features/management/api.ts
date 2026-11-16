@@ -19,6 +19,7 @@ export type AuditRow = S["AuditOut"];
 export type Staff = S["StaffOut"];
 export type StaffIn = S["StaffIn"];
 export type Agent = S["AgentOut"];
+export type AssignmentSuggestion = S["AgentSuggestionOut"];
 
 // DDR-115 (5), (8): live hints for every region in scope; poll while the tab is visible when they are down.
 export const POLL_MS = 10_000;
@@ -89,6 +90,7 @@ export const keys = {
   orders: (page: number, f: OrderFilters) => ["management", "orders", page, f] as const,
   order: (id: string) => ["management", "order", id] as const,
   deliveries: ["management", "deliveries"] as const,
+  assignmentSuggestions: (orderId: string) => ["management", "assignment-suggestions", orderId] as const,
   agents: ["management", "agents"] as const,
   refunds: ["management", "refunds"] as const,
   inventory: (kitchenId: string) => ["management", "inventory", kitchenId] as const,
@@ -156,6 +158,22 @@ export function useDeliveries() {
   return useQuery({
     queryKey: keys.deliveries,
     queryFn: async () => unwrap(await api.GET("/api/v1/management/deliveries")),
+    ...poll,
+  });
+}
+
+/** DDR-125: a read-only advisory query; it never writes an offer or assignment. */
+export function useAssignmentSuggestions(orderId: string) {
+  const poll = usePoll();
+  return useQuery({
+    queryKey: keys.assignmentSuggestions(orderId),
+    queryFn: async () =>
+      unwrap(
+        await api.GET("/api/v1/delivery/manage/orders/{order_id}/suggestions", {
+          params: { path: { order_id: orderId } },
+        }),
+      ),
+    enabled: Boolean(orderId),
     ...poll,
   });
 }
