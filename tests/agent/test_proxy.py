@@ -61,21 +61,13 @@ def test_proxy_allows_github_and_exact_configured_provider_hosts(tmp_path: Path)
 def test_provider_allowlist_tracks_host_changes_in_ai_models_config(tmp_path: Path) -> None:
     config_path = tmp_path / "ai_models.yaml"
     config_path.write_text(
-        json.dumps(
-            {"providers": {"selected": {"adapter": "openai_compatible", "host": "api.groq.com"}}}
-        ),
+        json.dumps({"providers": {"selected": {"adapter": "openai_compatible", "host": "api.groq.com"}}}),
         encoding="utf-8",
     )
     groq_hosts = configured_provider_hosts(config_path)
 
     config_path.write_text(
-        json.dumps(
-            {
-                "providers": {
-                    "selected": {"adapter": "openai_compatible", "host": "openrouter.ai"}
-                }
-            }
-        ),
+        json.dumps({"providers": {"selected": {"adapter": "openai_compatible", "host": "openrouter.ai"}}}),
         encoding="utf-8",
     )
     openrouter_hosts = configured_provider_hosts(config_path)
