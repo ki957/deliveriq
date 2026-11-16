@@ -127,8 +127,16 @@ def world() -> Iterator[World]:
             "AND NOT EXISTS (SELECT 1 FROM app.recipe_signoffs s WHERE s.signed_by = u.id)",
             (ids,),
         )
-        db.execute("DELETE FROM app.kitchens WHERE id = %s", (w.kitchen_b,))
-        db.execute("DELETE FROM app.regions WHERE id = %s", (w.region_b,))
+        db.execute(
+            "DELETE FROM app.kitchens k WHERE k.id = %s "
+            "AND NOT EXISTS (SELECT 1 FROM app.recipes r WHERE r.kitchen_id = k.id)",
+            (w.kitchen_b,),
+        )
+        db.execute(
+            "DELETE FROM app.regions r WHERE r.id = %s "
+            "AND NOT EXISTS (SELECT 1 FROM app.kitchens k WHERE k.region_id = r.id)",
+            (w.region_b,),
+        )
         db.close()
 
 
