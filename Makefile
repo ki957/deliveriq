@@ -5,7 +5,7 @@
 .PHONY: help install lint format typecheck imports test test-integration verify-sources openapi \
         openapi-check check env-check build up down restart ps logs migrate stats fixtures \
         e2e e2e-setup e2e-update frontend-check db-roles worker worker-down pipeline \
-        agent agent-check agent-down agent-harness
+        agent agent-check agent-down agent-harness agent-integration
 
 UV := env -u VIRTUAL_ENV uv
 PY_PATH := PYTHONPATH=backend
@@ -37,6 +37,7 @@ help:
 	@echo "  agent-check      Run sandbox isolation checks and unit tests in the sandbox"
 	@echo "  agent-down       Stop and remove an interrupted Builder Agent run"
 	@echo "  agent-harness   Run the host-side Builder Agent queue worker"
+	@echo "  agent-integration Run only Builder Agent integration tests"
 	@echo "  frontend-check   Frontend typecheck, lint, unit tests, API client check, build"
 	@echo "  stats            docker stats snapshot"
 	@echo "  test-integration Integration tests against the running core stack"
@@ -147,6 +148,12 @@ agent-down: env-check
 
 agent-harness: env-check
 	$(UV) run python -m app.cli.builder_agent_worker
+agent-integration: env-check
+	@set -a; . ./.env; set +a; \
+	DELIVERIQ_INTEGRATION=1 \
+	INTEGRATION_API_URL="http://127.0.0.1:$${API_HOST_PORT:-8000}" \
+	INTEGRATION_DB_PORT="$${POSTGRES_HOST_PORT:-5433}" \
+	$(UV) run pytest -m integration -k builder -v
 
 frontend-check:
 	cd frontend && npm run typecheck && npm run lint && npm test && npm run api:check && npm run build
