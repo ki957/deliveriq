@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from typing import cast
 
+import httpx
 import pytest
 
-from app.modules.identity.tests.test_auth_integration import World, login
+from app.modules.identity.tests.test_auth_integration import World, client, login
 from app.modules.management.tests.test_management_integration import Team
 
 pytest_plugins = (
@@ -70,3 +72,58 @@ def test_kitchen_copilot_is_available_to_kitchen_roles_only(world: World) -> Non
         assert response.json()["simulated"] is True
     denied = regional_manager.post("/api/v1/kitchen/ai/copilot", json={"question": "Kitchen guidance"})
     assert denied.status_code == 403
+
+
+def test_five_harnesses_enforce_the_role_matrix(world: World, team: Team) -> None:
+    """Every platform role is checked at the public endpoint for each AI harness."""
+    delivery_agent = login(world.user("DELIVERY_AGENT", region=world.region_a), "delivery")
+    sessions = {
+        "CUSTOMER": team.customer,
+        "KITCHEN_STAFF": team.ks,
+        "KITCHEN_MANAGER": team.km,
+        "DELIVERY_AGENT": delivery_agent,
+        "REGIONAL_MANAGER": team.rm,
+        "CENTRAL_ADMIN": team.ca,
+    }
+    requests: dict[str, Callable[[httpx.Client], httpx.Response]] = {
+        "CUSTOMER_ASSISTANT": lambda c: c.post(
+            "/api/v1/customer/ai/assistant", json={"question": "What is on the public menu?"}
+        ),
+        "KITCHEN_COPILOT": lambda c: c.post(
+            "/api/v1/kitchen/ai/copilot", json={"question": "How should I prepare the dish?"}
+        ),
+        "MANAGEMENT_COPILOT": lambda c: c.post(
+            "/api/v1/management/ai/copilot", json={"question": "Summarize operational status"}
+        ),
+        "OPERATIONAL_ACTIONS": lambda c: c.post(
+            "/api/v1/management/ai/actions/proposals", json={"request": "Show status"}
+        ),
+        "BUILDER_AGENT": lambda c: c.post(
+            "/api/v1/management/ai/builder/tasks",
+            json={"request": "Document the existing AI harnesses in their README."},
+        ),
+    }
+    permitted = {
+        "CUSTOMER_ASSISTANT": {"CUSTOMER"},
+        "KITCHEN_COPILOT": {"KITCHEN_STAFF", "KITCHEN_MANAGER"},
+        "MANAGEMENT_COPILOT": {"REGIONAL_MANAGER", "CENTRAL_ADMIN"},
+        "OPERATIONAL_ACTIONS": {"CENTRAL_ADMIN"},
+        "BUILDER_AGENT": {"CENTRAL_ADMIN"},
+    }
+    for harness, request in requests.items():
+        for role, session in sessions.items():
+            response = request(session)
+            if role not in permitted[harness]:
+                assert response.status_code == 403, (harness, role, response.status_code, response.text)
+            else:
+                assert 200 <= response.status_code < 300, (harness, role, response.status_code, response.text)
+                if harness == "BUILDER_AGENT":
+                    task_id = response.json()["task_id"]
+                    world.db.execute(
+                        "DELETE FROM ops.builder_agent_proposals WHERE user_id = "
+                        "(SELECT user_id FROM ops.builder_agent_jobs WHERE id = %s)",
+                        (task_id,),
+                    )
+                    world.db.execute("DELETE FROM ops.builder_agent_jobs WHERE id = %s", (task_id,))
+    with client() as anonymous:
+        assert requests["CUSTOMER_ASSISTANT"](anonymous).status_code == 200

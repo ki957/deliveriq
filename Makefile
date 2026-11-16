@@ -5,7 +5,7 @@
 .PHONY: help install lint format typecheck imports test test-integration verify-sources openapi \
         openapi-check check env-check build up down restart ps logs migrate stats fixtures \
         e2e e2e-setup e2e-update frontend-check db-roles worker worker-down pipeline \
-        agent agent-check agent-down agent-harness agent-integration
+        agent agent-check agent-down agent-harness agent-integration backup-restore-check
 
 UV := env -u VIRTUAL_ENV uv
 PY_PATH := PYTHONPATH=backend
@@ -38,6 +38,7 @@ help:
 	@echo "  agent-down       Stop and remove an interrupted Builder Agent run"
 	@echo "  agent-harness   Run the host-side Builder Agent queue worker"
 	@echo "  agent-integration Run only Builder Agent integration tests"
+	@echo "  backup-restore-check Dump and restore the current DB in a disposable Compose project"
 	@echo "  frontend-check   Frontend typecheck, lint, unit tests, API client check, build"
 	@echo "  stats            docker stats snapshot"
 	@echo "  test-integration Integration tests against the running core stack"
@@ -120,6 +121,10 @@ fixtures: env-check
 reset-fixtures: env-check
 	$(COMPOSE) run --rm migrate python -m app.cli.fixtures reset-shared
 
+# A throwaway Compose project and volume are created and removed by the drill script.
+backup-restore-check: env-check
+	$(PY_PATH) $(UV) run python -m app.cli.backup_restore_drill
+
 # Playwright in the pinned container against the running core stack (needs `make up` + `make fixtures`).
 # Needs the core stack, the worker and fixtures (`make up worker fixtures`). Setup makes the data
 # independent of earlier runs: the real SOP import (idempotent, through the worker) and one fresh
@@ -168,6 +173,6 @@ frontend-check:
 test-integration: env-check
 	@set -a; . ./.env; set +a; \
 	DELIVERIQ_INTEGRATION=1 \
-	INTEGRATION_API_URL="http://127.0.0.1:$${API_HOST_PORT:-8000}" \
-	INTEGRATION_DB_PORT="$${POSTGRES_HOST_PORT:-5433}" \
-	$(UV) run pytest -m integration -v
+	INTEGRATION_API_URL="$${INTEGRATION_API_URL:-http://127.0.0.1:$${API_HOST_PORT:-8000}}" \
+	INTEGRATION_DB_PORT="$${INTEGRATION_DB_PORT:-$${POSTGRES_HOST_PORT:-5433}}" \
+	$(UV) run pytest -m integration -v $(INTEGRATION_TESTS)

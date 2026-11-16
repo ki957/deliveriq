@@ -319,6 +319,47 @@ def test_accepting_twice_or_a_rejected_order_is_refused(world: World, staff: Sta
     assert staff.ks.post(f"{KITCHEN}/{order_id}/reject", json={"reason": " "}).status_code == 422
 
 
+def test_one_order_has_one_winner_when_two_kitchen_users_accept_concurrently(
+    world: World, staff: Staff
+) -> None:
+    order_id = order_of(world, staff.customer, staff.address, "A", 5)
+    barrier = threading.Barrier(2)
+    results: list[int] = []
+
+    def accept(session: httpx.Client) -> None:
+        barrier.wait()
+        results.append(session.post(f"{KITCHEN}/{order_id}/accept").status_code)
+
+    threads = [threading.Thread(target=accept, args=(session,)) for session in (staff.ks, staff.km)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=30)
+    assert not any(thread.is_alive() for thread in threads)
+    assert sorted(results) == [200, 409]
+    assert status(world, order_id) == "ACCEPTED"
+    assert (
+        scalar(
+            world,
+            "SELECT count(*) FROM app.status_history WHERE machine = 'fulfilment' AND entity_id = %s "
+            "AND to_status = 'ACCEPTED'",
+            order_id,
+        )
+        == 1
+    )
+    assert (
+        scalar(
+            world,
+            "SELECT count(*) FROM app.stock_reservations WHERE order_id = %s AND status = 'RESERVED'",
+            order_id,
+        )
+        == 2
+    )
+    assert (
+        staff.km.post(f"{KITCHEN}/{order_id}/reject", json={"reason": "Integration test"}).status_code == 200
+    )
+
+
 def test_capacity_holds_under_concurrent_acceptance(world: World, staff: Staff) -> None:
     active = int(staff.ks.get(KITCHEN).json()["intake"]["active_orders"])
     settings = staff.km.get(SETTINGS).json()
@@ -794,6 +835,53 @@ def test_inventory_roles_and_low_stock_alerts(world: World, staff: Staff) -> Non
             json={"low_stock_threshold": None, "reason": "Integration test: clear"},
         )
         assert cleared.status_code == 200
+
+
+def test_competing_stock_reductions_are_serialized_and_reversible(world: World, staff: Staff) -> None:
+    row = next(item for item in staff.km.get(INVENTORY).json() if item["name"] == "TEST – Ingredient 5")
+    ingredient_id = row["ingredient_id"]
+    amount = Decimal("6000")
+    reason = f"Integration test: competing reductions {uuid.uuid4()}"
+    barrier = threading.Barrier(2)
+    results: list[httpx.Response] = []
+
+    def adjust(session: httpx.Client) -> None:
+        barrier.wait()
+        results.append(
+            session.post(
+                f"{INVENTORY}/{ingredient_id}/adjust",
+                json={"delta": str(-amount), "reason": reason},
+            )
+        )
+
+    try:
+        threads = [threading.Thread(target=adjust, args=(session,)) for session in (staff.km, staff.km)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=30)
+        assert not any(thread.is_alive() for thread in threads)
+        assert sorted(response.status_code for response in results) == [200, 422]
+        after = next(
+            item for item in staff.km.get(INVENTORY).json() if item["ingredient_id"] == ingredient_id
+        )
+        assert Decimal(after["on_hand"]) == Decimal(row["on_hand"]) - amount
+        applied = world.db.execute(
+            "SELECT count(*) FROM app.stock_movements WHERE ingredient_id = %s AND reason = %s",
+            (ingredient_id, reason),
+        ).fetchone()
+        assert applied is not None and applied[0] == 1
+    finally:
+        applied_count = sum(response.status_code == 200 for response in results)
+        if applied_count:
+            restored = staff.km.post(
+                f"{INVENTORY}/{ingredient_id}/adjust",
+                json={
+                    "delta": str(amount * applied_count),
+                    "reason": "Integration test: restore competing reductions",
+                },
+            )
+            assert restored.status_code == 200, restored.text
 
 
 def test_kitchen_routes_deny_other_kitchens_and_non_kitchen_roles(world: World, staff: Staff) -> None:

@@ -11,7 +11,7 @@ from sqlalchemy import text
 
 from app.ai import gateway
 from app.core.db import get_engine
-from app.core.permissions import Permission, Principal, can
+from app.core.permissions import Permission, Principal, Role, can
 from app.shared.audit import write_event
 
 P = Permission
@@ -42,8 +42,19 @@ def _require(principal: Principal, permission: Permission) -> None:
         raise Forbidden
 
 
+def _require_management_copilot(principal: Principal) -> None:
+    """Allow a regional grant to use the read-only copilot within its assigned region."""
+    if any(
+        can(principal, P.MGMT_AI_COPILOT, region_id=grant.region_id)
+        for grant in principal.grants
+        if grant.role in {Role.REGIONAL_MANAGER, Role.CENTRAL_ADMIN}
+    ):
+        return
+    raise Forbidden
+
+
 def status(principal: Principal) -> Status:
-    _require(principal, P.MGMT_AI_COPILOT)
+    _require_management_copilot(principal)
     catalog = gateway.load_catalog()
     with get_engine().connect() as conn:
         row = conn.execute(
@@ -99,7 +110,7 @@ def set_settings(principal: Principal, logical_model: str, reason: str) -> tuple
 def copilot(
     principal: Principal, question: str, conversation_id: uuid.UUID | None
 ) -> tuple[str, uuid.UUID, str]:
-    _require(principal, P.MGMT_AI_COPILOT)
+    _require_management_copilot(principal)
     start = time.monotonic()
     model = settings_for_request(principal)
     with get_engine().begin() as conn:
@@ -171,7 +182,7 @@ def settings_for_request(principal: Principal) -> str | None:
 
 
 def delete_conversation(principal: Principal, conversation_id: uuid.UUID) -> None:
-    _require(principal, P.MGMT_AI_COPILOT)
+    _require_management_copilot(principal)
     with get_engine().begin() as conn:
         result = conn.execute(
             text(

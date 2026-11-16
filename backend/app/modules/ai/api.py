@@ -185,6 +185,8 @@ def ask_customer_assistant(
         answer, citations, mode, conversation_id, guard_status = customer_assistant.ask(
             principal, body.question, body.conversation_id
         )
+    except customer_assistant.Forbidden:
+        raise HTTPException(status_code=403, detail="Forbidden") from None
     except customer_assistant.NotFound:
         raise HTTPException(status_code=404, detail="Conversation not found") from None
     return CustomerAssistantOut(

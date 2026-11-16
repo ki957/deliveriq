@@ -6,11 +6,12 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
-EXPECTED_PROJECT = "deliveriq-t15b"
+EXPECTED_PROJECT = os.environ.get("COMPOSE_PROJECT_NAME", "deliveriq")
 TMP_TARGET = chr(47) + "tmp"
 TMPFS_WORKSPACE_ROOT = str(Path(chr(47)).joinpath("dev", "shm", "deliveriq-agent."))
 EXPECTED_MOUNTS = {"/workspace"}
@@ -72,8 +73,8 @@ def main() -> None:
         text=True,
     )
     projects = {row["Name"] for row in json.loads(listing.stdout)}
-    require(EXPECTED_PROJECT in projects, "Compose project deliveriq-t15b is not running")
-    print("PASS: docker compose ls reports deliveriq-t15b")
+    require(EXPECTED_PROJECT in projects, f"Compose project {EXPECTED_PROJECT} is not running")
+    print(f"PASS: docker compose ls reports {EXPECTED_PROJECT}")
 
     item = inspect_container(sys.argv[1])
     mounts = item.get("Mounts", [])

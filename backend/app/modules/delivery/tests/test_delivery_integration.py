@@ -9,6 +9,7 @@ orders (leftovers of failed runs are rejected by the KM through the API) and lea
 from __future__ import annotations
 
 import os
+import threading
 import uuid
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
@@ -246,6 +247,40 @@ def test_only_online_agents_get_offers_and_accepting_shows_agent_assigned(world:
     assert blocked.status_code == 409
     crew.km.post(f"{KITCHEN}/{order_id}/reject", json={"reason": "Integration test"})
     assert crew.agents[0].get(f"{DELIVERY}/me").json()["assignment"] is None  # revoked with the order
+
+
+def test_two_agents_cannot_both_accept_one_offer(world: World, crew: Crew) -> None:
+    for agent in crew.agents:
+        offline(agent)
+    order_id = accepted_order(world, crew)
+    online(crew.agents[0])
+    offer_id = offer_of(crew.agents[0], order_id)
+    assert offer_id is not None
+    barrier = threading.Barrier(2)
+    outcomes: list[tuple[int, str]] = []
+
+    def respond(agent: httpx.Client) -> None:
+        barrier.wait()
+        response = agent.post(f"{DELIVERY}/assignments/{offer_id}/respond", json={"accept": True})
+        outcomes.append((response.status_code, str(response.json().get("order", {}).get("agent_id", ""))))
+
+    threads = [threading.Thread(target=respond, args=(agent,)) for agent in crew.agents]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=30)
+    assert not any(thread.is_alive() for thread in threads)
+    assert sorted(status for status, _ in outcomes) == [200, 404]
+    assignment = world.db.execute(
+        "SELECT status, agent_user_id FROM app.delivery_assignments WHERE id = %s", (offer_id,)
+    ).fetchone()
+    assert assignment is not None and assignment[0] == "ACCEPTED"
+    assert assignment[1] == crew.agent_ids[0]
+    assert scalar(world, "SELECT count(*) FROM app.delivery_assignments WHERE order_id = %s "
+                  "AND status = 'ACCEPTED'", order_id) == 1  # fmt: skip
+    assert (
+        crew.km.post(f"{KITCHEN}/{order_id}/reject", json={"reason": "Integration test"}).status_code == 200
+    )
 
 
 def test_assignment_suggestions_are_read_only_and_manager_scoped(world: World, crew: Crew) -> None:

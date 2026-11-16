@@ -116,13 +116,27 @@ def world() -> Iterator[World]:
     finally:
         mobiles = w.mobiles or []
         ids = [u for (u,) in db.execute("SELECT id FROM app.users WHERE mobile_e164 = ANY(%s)", (mobiles,))]
+        db.execute("DELETE FROM ops.prompt_guard_events WHERE user_id = ANY(%s)", (ids,))
         db.execute("DELETE FROM app.role_assignments WHERE user_id = ANY(%s)", (ids,))
         db.execute("DELETE FROM app.sessions WHERE user_id = ANY(%s)", (ids,))
         db.execute("DELETE FROM app.trusted_devices WHERE user_id = ANY(%s)", (ids,))
         db.execute("DELETE FROM app.otp_challenges WHERE mobile_e164 = ANY(%s)", (mobiles,))
-        db.execute("DELETE FROM app.users WHERE id = ANY(%s)", (ids,))
-        db.execute("DELETE FROM app.kitchens WHERE id = %s", (w.kitchen_b,))
-        db.execute("DELETE FROM app.regions WHERE id = %s", (w.region_b,))
+        # Recipe sign-offs are append-only audit records; keep a user row if one is their actor.
+        db.execute(
+            "DELETE FROM app.users u WHERE u.id = ANY(%s) "
+            "AND NOT EXISTS (SELECT 1 FROM app.recipe_signoffs s WHERE s.signed_by = u.id)",
+            (ids,),
+        )
+        db.execute(
+            "DELETE FROM app.kitchens k WHERE k.id = %s "
+            "AND NOT EXISTS (SELECT 1 FROM app.recipes r WHERE r.kitchen_id = k.id)",
+            (w.kitchen_b,),
+        )
+        db.execute(
+            "DELETE FROM app.regions r WHERE r.id = %s "
+            "AND NOT EXISTS (SELECT 1 FROM app.kitchens k WHERE k.region_id = r.id)",
+            (w.region_b,),
+        )
         db.close()
 
 
