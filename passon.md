@@ -31,7 +31,7 @@ It also has an ETL/ELT data platform (pipelines P1–P3, dbt) and five AI harnes
 
 ## 2. Status at handover
 
-Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. The tooling handover branch is merged. Task 16A, 16B and 16C are merged on `main` at `778a863` (DDR-121, DDR-122), and the CI fix is merged in PR #30 at `9dc6871`; the owner confirmed MiniLM L6 v2 as the 16B winner. Task 17A is merged in PR #31 at `7c8e807`; Task 17B follow-up verification is in progress on `task-17b-assistant-verification`. Task 18 merged as PR #32 at `b317bee` under DDR-124; all four CI jobs passed. The Customer Assistant UI remains gated by CD-18. No migration was needed for Task 18; migration head remains **0028**. The last registered decision is **DDR-124**.
+Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Task 15 (#27), and Task 15A (#28) are merged. The tooling handover branch is merged. Task 16A, 16B and 16C are merged on `main` at `778a863` (DDR-121, DDR-122), and the CI fix is merged in PR #30 at `9dc6871`; the owner confirmed MiniLM L6 v2 as the 16B winner. Task 17A is merged in PR #31 at `7c8e807`; Task 17B verification is complete on `task-17b-assistant-verification`, awaiting owner approval before push. Task 18 merged as PR #32 at `b317bee` under DDR-124; all four CI jobs passed. The Customer Assistant UI remains gated by CD-18. Task 17B adds migration 0029; current migration head is **0029**. The last registered decision is **DDR-124**.
 
 | Task | Scope | State |
 |---|---|---|
@@ -62,19 +62,19 @@ Tasks 0–15A are merged on `main` through PR #28 (`017e61e`). Task 14 (#26), Ta
 | 15C | Builder Agent harness (DDR-71, DDR-80, Task 21 dependency) | ⬜ not started; Task 21 depends on 15C |
 | 16A / 16B / 16C | Kitchen RAG, embedding winner, hybrid retrieval, KM approval and golden-set gate | ✅ merged on `main` (`778a863`); CI fix merged in PR #30 (`9dc6871`) |
 | 17A | Customer RAG/K1, Customer Assistant guard/tools, CA approval UI and golden-set draft | ✅ merged in PR #31 at `7c8e807`; all four CI jobs passed |
-| 17B | Customer Assistant acceptance verification and persisted golden-set evaluation | 🔄 in progress on `task-17b-assistant-verification`; includes stranded commit `da19f7f` |
+| 17B | Customer Assistant acceptance verification and persisted golden-set evaluation | ✅ implementation and verification complete on `task-17b-assistant-verification`; awaiting owner approval before push; includes stranded commit `da19f7f` |
 | 18 | Demand Forecasting (DDR-124) | ✅ merged in PR #32 at `b317bee`; all four CI jobs passed |
 | tooling | Handover refresh and switch to Codex: this guide, `AGENTS.md`, `.agents/skills/`, `.codex/` | ✅ merged |
-| 17–22 | See plan | 17A merged; 17B in progress; 18 merged; 19–22 not started |
+| 17–22 | See plan | 17A and 18 merged; 17B verified, awaiting approval; 19–22 not started |
 
 **Milestones** (plan §4.1):
 - M1 Foundation (0–4): done.
 - M2 Core order flow (5–9): done.
 - M3 Ops & data (10–14): done; Task 14 is merged.
-- M4 AI (15–17): Task 15 and 15A are merged; Tasks 16 and 17 are merged.
-- M5 ML & polish (18–22): Task 18 built locally; Tasks 19–22 remain.
+- M4 AI (15–17): Task 15 and 15A are merged; Tasks 16 and 17A are merged; Task 17B is verified and awaits owner approval.
+- M5 ML & polish (18–22): Task 18 is merged; Tasks 19–22 remain.
 
-**Current:** Task 17B is in progress on `task-17b-assistant-verification`. It adds named acceptance evidence for Customer Assistant isolation, allergen wording, tool-sourced live facts, Prompt Guard on/off behavior and outage handling, plus a real persisted 60-case Customer golden-set evaluation that remains DRAFT pending CA approval. The stranded handover commit `da19f7f` is included. Task 18 merged as PR #32 at `b317bee` under DDR-124; its seven-day synthetic ingredient forecast is advisory-only. After Task 17B, work proceeds in this order: Task 19 → Task 20 → Task 15B → Task 15C → Task 21 → Task 22. Task 21 depends on 15C; 15B and 15C have not started.
+**Current:** Task 17B verification is complete on `task-17b-assistant-verification`, including named isolation, allergen, live-fact, Prompt Guard and 60-case DDR-90 evaluation evidence. The measured evaluation remains DRAFT pending CA approval in the app. The stranded handover commit `da19f7f` is included. Task 18 merged as PR #32 at `b317bee` under DDR-124; its seven-day synthetic ingredient forecast is advisory-only. The owner must approve the Task 17B report before push. After Task 17B is merged and main CI is green, proceed in this order: Task 19 → Task 20 → Task 15B → Task 15C → Task 21 → Task 22. Task 21 depends on 15C.
 
 ---
 
@@ -169,9 +169,9 @@ What changed (files) · evidence per acceptance criterion (test names or command
 
 ---
 
-## 5. Current task: 17B Customer Assistant Verification (DDR-123)
+## 5. Next task: 19 ETA Prediction and Assignment Optimisation
 
-Task 17A merged in PR #31 at `7c8e807`; Task 18 merged in PR #32 at `b317bee` and all four CI jobs passed. This follow-up proves the Task 17 acceptance criteria with named tests: cross-customer order denial and anonymous public-only access; `rag_customer` grant scope, import-linter and retrieval isolation; approved allergen wording; read-tool sourcing for live facts; Prompt Guard on/off results and fail-open logged classifier outage/rate limit; and the complete DDR-90 60-case set. Persist a real evaluation to `ops.ai_eval_runs` and `ops.ai_eval_results`, measure `leak_count`, and leave the golden-set status DRAFT until CA approval in the app. Keep the customer golden set at 60 cases (30 answerable, 10 must-refuse, 10 cross-customer leak, 10 injection). K1 staged K-C1–C3 as DRAFT for CA review (`draft_chunks_staged=3`, `published=0`); no Customer chunks are published pending approval. Task 21 depends on 15C.
+Start Task 19 only after Task 17B is approved and merged and main CI is green; then run `$start-task 19`. Before planning, grep the execution plan at `### Task 19`, §5.2 and §6; DDR-19, DDR-55 (road-distance adapter), DDR-56, DDR-74, DDR-78 (synthetic GPS tracks), DDR-113 (delivery and assignment), DDR-118, DDR-124 (reuse Task 18's model pattern); the delivery, management and reports README cards; and the Task 18 forecasting code. Cover rule-based fallback when the model is unavailable, preserved manager override, ETA ranges, labelled synthetic-location results and advisory-only output. Suggestions never auto-assign; DDR-113 assignment rules remain the source of truth. Put every undefined feature, range width, baseline and pass bar on the decision sheet with a ✔ recommendation; invent no values. Present the plan, proposed split and decision sheet, write no code, then wait for owner approval.
 
 ## 6. Remaining tasks after 15A (full criteria in plan §7)
 
@@ -180,11 +180,13 @@ Task 17A merged in PR #31 at `7c8e807`; Task 18 merged in PR #32 at `b317bee` an
 | 14 Synthetic P3 | Labelled deterministic synthetic data and separate marts | ✅ merged (#26), DDR-74 separation |
 | 15 / 15A / 15B / 15C | AI gateway + Management Copilot; Operational Actions merged; Builder Agent sandbox and harness pending | DDR-46 content approval; DDR-68–71, 85–87 |
 | 16 | 16A–16C verified | DDR-121, DDR-122; no live knowledge before KM approval |
-| 17B Customer Assistant verification | In progress; persisted evaluation stays DRAFT until CA approval | DDR-90, DDR-92, DDR-123 |
+| 17B Customer Assistant verification | Verified; persisted evaluation stays DRAFT until CA approval; report awaits owner approval | DDR-90, DDR-92, DDR-123 |
 | 19 ETA + assignment optimisation | Advisory predictions; rule-based fallback and manager override | DDR-19, DDR-55, DDR-56, DDR-74, DDR-78, DDR-113, DDR-118, DDR-124 |
 | 20 Monitoring & reconciliation | Planned | See plan §7 |
 | 15B / 15C Builder Agent | Pending; 15C is a dependency for Task 21 | DDR-68–71, DDR-80, DDR-85–87 |
 | 21 / 22 | E2E hardening; demo handover + runbooks + known limitations | Task 21 depends on 15C |
+
+**Remaining-work order:** 17B → 19 → 20 → 15B → 15C → 21 → 22. Task 21 depends on 15C.
 
 **Still-open decisions** (register Part C): DDR-06 food-card Add (B, Task 6), DDR-15 background GPS (B), DDR-41 lost-mobile recovery (B), DDR-42 final kitchen defaults (A, test defaults in use), DDR-43 GPS interval (A), DDR-44 refund thresholds/KPIs/audit/YAML (B/A). DDR-45 and DDR-46 are closed by DDR-121 and DDR-122. Follow plan §5: don't build B items, keep A items behind a disabled flag or labelled test default, and label P items.
 
@@ -192,7 +194,7 @@ Task 17A merged in PR #31 at `7c8e807`; Task 18 merged in PR #32 at `b317bee` an
 
 ## 7. Technical cheat-sheet
 
-Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Task 17 migration head is **0028**. K1 runs as `rag_customer` and mounts `knowledge/customer` read-only; the three source cards remain DRAFT and no Customer chunks are published before CA approval. Customer retrieval calls only `app.retrieve_customer_chunks_hybrid`; live menu/order facts are read-only and session-scoped. Prompt Guard is controlled by `AI_PROMPT_GUARD_ENABLED`; the chat UI is API-only until CD-18. Task 18 reads only `analytics_synthetic.ml_mart_inventory_consumption` and `ml_dim_ingredient` after `ops.synthetic_status()` reports the ML profile ready with a content hash. No migration, forecast table or model artifact was added. Final local memory snapshot: API **123.4 MiB**, worker **70.4 MiB**, Postgres **145 MiB**, Redis **5.121 MiB**; host **8.7 GiB available**. P3’s ML profile is a fixed 90-day synthetic dataset with 30 orders each day; it is created explicitly and its manifest is reused. CI gotcha: `uv sync --locked` installs only `api` and `dev` by default; the pinned worker group must remain in `tool.uv.default-groups` because backend type-checking imports the embedding dependencies.
+Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE **364.57 MiB**, E5 **300.59 MiB**, GTE **242.41 MiB**, MiniLM **175.52 MiB**; cgroup peak was informational only. The worker image was rebuilt successfully after allowing `dbt-core-experimental-parser==2.0.11` to finish building; benchmark containers used no host mounts. Current migration head is **0029** (Task 17B adds prompt guard events and customer-golden evaluation metadata). K1 runs as `rag_customer` and mounts `knowledge/customer` read-only; the three source cards remain DRAFT and no Customer chunks are published before CA approval. Customer retrieval calls only `app.retrieve_customer_chunks_hybrid`; live menu/order facts are read-only and session-scoped, including `TEMPORARILY_UNAVAILABLE` menu status for current availability. Prompt Guard is controlled by `AI_PROMPT_GUARD_ENABLED`; the chat UI is API-only until CD-18. Task 18 reads only `analytics_synthetic.ml_mart_inventory_consumption` and `ml_dim_ingredient` after `ops.synthetic_status()` reports the ML profile ready with a content hash. No forecast table or model artifact was added. Task 17B final local memory snapshot after verification: API **119.9 MiB**, worker **57.43 MiB**, Postgres **147.5 MiB**, Redis **5.145 MiB**; host **7.2 GiB available**. E2E completed 68 passed, 2 annotated skips. P3’s ML profile is a fixed 90-day synthetic dataset with 30 orders each day; it is created explicitly and its manifest is reused. CI gotcha: `uv sync --locked` installs only `api` and `dev` by default; the pinned worker group must remain in `tool.uv.default-groups` because backend type-checking imports the embedding dependencies. Branch protection on `main` is off. Task 15C needs branch protection and a GitHub fine-grained token scoped to repository contents and pull requests (plan §5.3).
 
 ### Stack
 - **Backend:** FastAPI modular monolith; **sync** SQLAlchemy 2 + psycopg 3 (async only for WS/Redis/HTTP); PostgreSQL + PostGIS + pgvector (Kitchen vector index migration 0027); Redis; Python with `uv`.
@@ -203,7 +205,7 @@ Task 16B resource sample: corrected candidate steady-state added VmRSS was BGE *
 
 ### Repo map
 - `backend/app/{core,shared,modules,pipelines,worker,cli}`
-- `backend/migrations/versions/0001–0028` (**head = 0028**; migration 0026 persists DDR-89 evaluation runs/results, migration 0027 adds Kitchen vector/index metadata and approvals, and migration 0028 adds Customer RAG/K1 and CA approval; Task 18 adds no migration)
+- `backend/migrations/versions/0001–0029` (**head = 0029**; migration 0026 persists DDR-89 evaluation runs/results, migration 0027 adds Kitchen vector/index metadata and approvals, migration 0028 adds Customer RAG/K1 and CA approval, and migration 0029 adds Prompt Guard events/customer golden evaluation metadata; Task 18 adds no migration)
 - `analytics/dbt/` (P2 models: staging, core, marts; tests; `generate_schema_name` macro)
 - `frontend/src/{app,portals,features,shared}`
 - `tests/e2e/{specs,__screenshots__}`
@@ -324,6 +326,7 @@ Rules:
 | 2026-11-12 | tooling / branch `tooling-handover-refresh` | rules v1.2 | Handover refresh (status, Task 14 brief, gotchas, memory); builder switched from Claude Code to Codex: `CLAUDE.md` → `AGENTS.md`, `.claude/commands` → `.agents/skills`, guard hook → `.codex/hooks.json` (now also guards `apply_patch` and `.env` reads) |
 | 2026-11-15 | 16A / 16B / 16C / #29 + CI fix / #30 | DDR-45, DDR-46, DDR-57, DDR-77, DDR-80, DDR-88–90, DDR-121–122 | Merged on main `778a863`; migration 0026 persists benchmark evidence; migration 0027 adds MiniLM 384 vector metadata/HNSW hybrid retrieval, SHA-keyed KM approval and the in-app DDR-90 gate; CI fix adds the pinned worker dependency group to uv defaults; all four CI jobs green on `9dc6871`; owner confirmed MiniLM L6 v2; draft benchmark set remains non-golden |
 | 2026-11-15 | 17 Customer Assistant / #31 | DDR-123 | Merged at `7c8e807`; all four CI jobs green. Migration 0028 adds Customer RAG/K1 and CA approval; chat UI remains gated by CD-18 |
-| 2026-11-15 | 18 Demand Forecasting | DDR-124 | Read-only seven-day ingredient forecast in Management Reports; ready ML profile only, seasonal-mean model passed the two-window MAE backtest, CA/RM kitchen scope enforced; 366 backend unit tests, 213 frontend tests, 263 integration tests and E2E twice (68 passed, 2 expected skips); no migration or screenshot baseline changes |
+| 2026-11-15 | 18 Demand Forecasting / #32 | DDR-124 | Read-only seven-day ingredient forecast in Management Reports; ready ML profile only, seasonal-mean model passed the two-window MAE backtest, CA/RM kitchen scope enforced; merged at `b317bee`, all four CI jobs passed; no migration or screenshot baseline changes |
+| 2026-11-16 | 17B Customer Assistant verification | DDR-90, DDR-92, DDR-123 | Cherry-picked stranded `da19f7f`; fixed guard classifier capability selection and live availability reads; named acceptance tests, persisted measured 60-case evaluation remains DRAFT; migration 0029; 376 backend unit, 213 frontend, 268 integration passed; E2E 68 passed, 2 annotated skips; report awaits owner approval before push |
 
 **Update this file** when a task closes: §2 status table, §5 next-task brief, and a §10 changelog line. The next session starts here.

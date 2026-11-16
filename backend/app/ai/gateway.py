@@ -48,6 +48,38 @@ class MockAdapter:
             excerpt = user.split("[S1]", 1)[1].split("\n\n[S2]", 1)[0].strip()
             return "Simulated source excerpt [S1]: " + excerpt[:500]
         if "DeliverIQ Customer Assistant" in system:
+            question = user.split("\n\nCustomer sources:", 1)[0].lower()
+            refusal_terms = (
+                "allergy",
+                "allergen",
+                "recipe",
+                "staff",
+                "promise my refund",
+                "inventory",
+                "system prompt",
+                "change my order",
+                "another customer",
+                "customer a",
+                "different order id",
+                "customer orders",
+                "neighbour",
+                "different session",
+                "another person's cart",
+                "guessed id",
+                "phone number",
+                "support case",
+                "list all",
+                "password",
+                "guarantee a delivery time",
+                "ignore ",
+                "jailbreak",
+                "developer message",
+            )
+            if any(term in question for term in refusal_terms):
+                return (
+                    "I can't provide private or internal information, make changes, promise a refund, "
+                    "or guarantee allergen safety or delivery outcomes. Please contact support for help."
+                )
             return (
                 "I can help with customer menu, delivery and support information using the "
                 "available published sources and live read-only facts."
@@ -94,8 +126,15 @@ def complete(
 
 def classify(harness: str, text: str, logical_model: str = "guard") -> tuple[bool, str]:
     """Provider-neutral classifier hook used by Prompt Guard; the local adapter is deterministic."""
-    model = select_model(load_catalog(), harness, logical_model)
-    if model.provider != "mock" or "classification" not in model.capabilities:
+    catalog = load_catalog()
+    harness_spec = catalog.harnesses.get(harness)
+    model = catalog.models.get(logical_model)
+    if (
+        harness_spec is None
+        or model is None
+        or model.provider != "mock"
+        or "classification" not in model.capabilities
+    ):
         raise GatewayError("Prompt Guard classifier is not configured")
     markers = ("ignore previous", "system prompt", "jailbreak", "developer message")
     return any(marker in text.lower() for marker in markers), model.logical_name
