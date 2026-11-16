@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 MODE="${1:-shell}"
+python3 infra/agent/snapshot.py check-clean "$ROOT"
 if ! git ls-files --cached -z | python3 -c '
 import sys
 
@@ -27,17 +28,7 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-git clone --quiet --no-hardlinks --local . "$TMP_DIR/repo"
-find "$TMP_DIR/repo" -maxdepth 1 -type f \( -name '.env' -o -name '.env.*' \) ! -name '.env.example' -delete
-git diff --binary HEAD -- . ':(exclude).env' ':(exclude).env.*' ':(exclude)data/source/**' > "$TMP_DIR/task.patch"
-git -C "$TMP_DIR/repo" apply "$TMP_DIR/task.patch"
-while IFS= read -r source_file; do
-  case "$source_file" in
-    .env|.env.*|*/.env|*/.env.*|data/source/*) continue ;;
-  esac
-  mkdir -p "$TMP_DIR/repo/$(dirname "$source_file")"
-  cp -a -- "$source_file" "$TMP_DIR/repo/$source_file"
-done < <(git ls-files --others --exclude-standard)
+python3 infra/agent/snapshot.py clone-head "$ROOT" "$TMP_DIR/repo"
 python3 infra/agent/compose_override.py backend/config/ai_models.yaml "$TMP_DIR/override.json" "$TMP_DIR/repo"
 "${COMPOSE[@]}" up -d --build egress-proxy >/dev/null
 CONTAINER_ID="$("${COMPOSE[@]}" run --detach --rm agent sleep infinity)"
@@ -47,15 +38,32 @@ if [[ "$MODE" == "check" ]]; then
   docker exec "$CONTAINER_ID" pytest -m "not integration" -q
   docker exec "$CONTAINER_ID" pytest tests/agent/test_proxy.py -q
   docker exec "$CONTAINER_ID" curl --silent --show-error --output /dev/null --fail --location --connect-timeout 8 --max-time 20 https://github.com/
-  if docker exec "$CONTAINER_ID" curl --silent --show-error --output /dev/null --fail --connect-timeout 5 --max-time 10 -x http://egress-proxy:3128 https://example.com/; then
-    echo "FAIL: non-allowlisted egress succeeded"
+  if docker exec "$CONTAINER_ID" curl --noproxy '*' --silent --output /dev/null --fail --connect-timeout 5 --max-time 10 https://example.com/; then
+    echo "FAIL: direct non-allowlisted egress succeeded"
     exit 1
   fi
-  docker exec "$CONTAINER_ID" python -c 'import socket; targets=(("postgres",5432),("redis",6379));
-for host,port in targets:
- try: socket.create_connection((host,port),timeout=2)
- except OSError: continue
- raise SystemExit(f"FAIL: sandbox reached {host}:{port}")'
+  for service_port in postgres:5432 redis:6379; do
+    service="${service_port%:*}"
+    port="${service_port#*:}"
+    core_container="$(docker compose --project-directory . -f infra/compose.yaml --profile core ps -q "$service")"
+    if [[ -z "$core_container" ]]; then
+      echo "FAIL: core service $service is not running for the direct-IP isolation probe" >&2
+      exit 1
+    fi
+    service_ip="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$core_container")"
+    if [[ -z "$service_ip" ]]; then
+      echo "FAIL: core service $service has no container IP for the direct-IP isolation probe" >&2
+      exit 1
+    fi
+    if docker exec "$CONTAINER_ID" python -c 'import socket,sys;
+try: socket.create_connection((sys.argv[1],int(sys.argv[2])),timeout=2).close()
+except OSError: raise SystemExit(0)
+raise SystemExit(1)' "$service_ip" "$port"; then
+      echo "FAIL: sandbox reached core service $service by container IP" >&2
+      exit 1
+    fi
+  done
+  echo "PASS: direct egress and Postgres/Redis container-IP connections are denied"
   echo "PASS: agent isolation, resource and egress checks"
 elif [[ "$MODE" == "shell" ]]; then
   docker exec -it "$CONTAINER_ID" bash
