@@ -559,7 +559,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 - **Depends on:** Tasks 15A, 15C, 17, 19, 20.
 - **Acceptance criteria:** Golden and failure paths pass; full RBAC matrix including CA/RM publication scope, pipeline permissions and AI harness permissions; concurrency; AI isolation and all guardrail-matrix tests (`PORTAL_REQUIREMENTS_MATRIX.md` §10); backup/restore drill; full accessibility pass (automated + manual keyboard/screen-reader); full mobile matrix; visual regression reviewed; resource report; all eight §5.2 leak controls pass (DDR-129 corrects the stale “seven” count).
-- **Status:** Backend hardening code and tests are implemented; verification is in progress. Lane C owns UI, accessibility, mobile and E2E acceptance. Idle/P2 resource figures will be recorded after the stack-only measurement.
+- **Status:** Backend verification passed: `make check` (421 unit tests), `timeout 1200 make test-integration` (278 passed), `make agent-check` (421 unit tests + 10 proxy tests), backup/restore (head `0032`; 9 regions, 9 kitchens, 57 menu items, 68 pipeline runs, 808 raw events), worker-down reduced retrieval, and the P2 pipeline (45 dbt tests, 6 reconciliation checks). Stack-only `docker stats --no-stream`: idle API 101.1 MiB, Postgres 32.56 MiB, Redis 4.754 MiB, worker 43.35 MiB; during P2 API 142.5 MiB, Postgres 42.79 MiB, Redis 4.668 MiB, worker 87.5 MiB. `free -h`: idle 15 GiB total / 7.6 GiB available; during P2 15 GiB total / 7.5 GiB available. Lane C owns UI, accessibility, mobile and E2E acceptance; no local E2E was run.
 
 ### Task 22 — Demo handover
 
