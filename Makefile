@@ -5,7 +5,7 @@
 .PHONY: help install lint format typecheck imports test test-integration verify-sources openapi \
         openapi-check check env-check build up down restart ps logs migrate stats fixtures \
         e2e e2e-setup e2e-update frontend-check db-roles worker worker-down pipeline \
-        agent agent-check agent-down
+        agent agent-check agent-down agent-harness
 
 UV := env -u VIRTUAL_ENV uv
 PY_PATH := PYTHONPATH=backend
@@ -36,6 +36,7 @@ help:
 	@echo "  agent            Start an isolated one-task Builder Agent shell"
 	@echo "  agent-check      Run sandbox isolation checks and unit tests in the sandbox"
 	@echo "  agent-down       Stop and remove an interrupted Builder Agent run"
+	@echo "  agent-harness   Run the host-side Builder Agent queue worker"
 	@echo "  frontend-check   Frontend typecheck, lint, unit tests, API client check, build"
 	@echo "  stats            docker stats snapshot"
 	@echo "  test-integration Integration tests against the running core stack"
@@ -143,6 +144,9 @@ agent-check: env-check
 	bash infra/agent/run.sh check
 agent-down: env-check
 	bash infra/agent/stop.sh
+
+agent-harness: env-check
+	$(UV) run python -m app.cli.builder_agent_worker
 
 frontend-check:
 	cd frontend && npm run typecheck && npm run lint && npm test && npm run api:check && npm run build

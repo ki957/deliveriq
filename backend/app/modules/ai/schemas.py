@@ -68,6 +68,30 @@ class ActionResultOut(BaseModel):
     result: dict[str, object]
 
 
+class BuilderTaskIn(BaseModel):
+    request: str = Field(min_length=1, max_length=2000)
+
+
+class BuilderTaskOut(BaseModel):
+    task_id: uuid.UUID
+    status: str
+    summary: str
+    changed_files: list[str]
+    diff: str
+    test_result: dict[str, object]
+    logical_model: str | None = None
+    branch: str | None = None
+    pull_request_url: str | None = None
+    error_message: str | None = None
+
+
+class BuilderConfirmOut(BaseModel):
+    task_id: uuid.UUID
+    status: str
+    branch: str | None = None
+    pull_request_url: str | None = None
+
+
 class KitchenCopilotIn(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     recipe_version_id: uuid.UUID | None = None

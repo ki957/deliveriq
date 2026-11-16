@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.core.permissions import Principal
 from app.modules.ai import customer_assistant, kitchen_copilot, service
 from app.modules.ai.actions import service as actions
+from app.modules.ai.builder_agent import service as builder_agent
 from app.modules.ai.schemas import (
     ActionConfirmIn,
     ActionProposalOut,
@@ -20,6 +21,9 @@ from app.modules.ai.schemas import (
     AiSettingsIn,
     AiSettingsOut,
     AiStatusOut,
+    BuilderConfirmOut,
+    BuilderTaskIn,
+    BuilderTaskOut,
     CopilotIn,
     CopilotOut,
     CustomerAssistantIn,
@@ -119,6 +123,34 @@ def confirm_action(
     return ActionResultOut(
         result=_action_call(lambda: actions.confirm(principal, proposal_id, body.idempotency_key))
     )
+
+
+def _builder_call[T](fn: Callable[[], T]) -> T:
+    try:
+        return fn()
+    except builder_agent.Forbidden:
+        raise HTTPException(status_code=403, detail="Forbidden") from None
+    except builder_agent.NotFound:
+        raise HTTPException(status_code=404, detail="Not found") from None
+    except builder_agent.Invalid as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
+
+
+@router.post("/builder/tasks", response_model=BuilderTaskOut, status_code=202)
+def propose_builder_task(body: BuilderTaskIn, principal: CurrentPrincipal) -> BuilderTaskOut:
+    return BuilderTaskOut.model_validate(
+        _builder_call(lambda: builder_agent.enqueue(principal, body.request))
+    )
+
+
+@router.get("/builder/tasks/{task_id}", response_model=BuilderTaskOut)
+def get_builder_task(task_id: uuid.UUID, principal: CurrentPrincipal) -> BuilderTaskOut:
+    return BuilderTaskOut.model_validate(_builder_call(lambda: builder_agent.task(principal, task_id)))
+
+
+@router.post("/builder/tasks/{task_id}/confirm", response_model=BuilderConfirmOut)
+def confirm_builder_task(task_id: uuid.UUID, principal: CurrentPrincipal) -> BuilderConfirmOut:
+    return BuilderConfirmOut.model_validate(_builder_call(lambda: builder_agent.confirm(principal, task_id)))
 
 
 @kitchen_router.post("/copilot", response_model=KitchenCopilotOut)

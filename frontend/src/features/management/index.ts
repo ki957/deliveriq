@@ -10,3 +10,4 @@ export { StaffPage } from "./components/staff-page";
 
 export { AiCopilotPage } from "./components/ai-copilot-page";
 export { OperationalActionsPage } from "./components/operational-actions-page";
+export { BuilderAgentPage } from "./components/builder-agent-page";
