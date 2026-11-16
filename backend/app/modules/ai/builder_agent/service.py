@@ -285,14 +285,25 @@ def process_next_job() -> bool:
                 text("UPDATE ops.builder_agent_jobs SET state = 'REVIEW', updated_at = now() WHERE id = :id"),
                 {"id": task_id},
             )
-    except (Invalid, SandboxError, gateway.GatewayError) as exc:
+    except (
+        Invalid,
+        SandboxError,
+        gateway.GatewayError,
+        subprocess.SubprocessError,
+        OSError,
+    ) as exc:
+        error = (
+            str(exc)[:250]
+            if isinstance(exc, (Invalid, SandboxError, gateway.GatewayError))
+            else "The isolated sandbox runner failed"
+        )
         with get_engine().begin() as conn:
             conn.execute(
                 text("""
                 UPDATE ops.builder_agent_jobs SET state = 'FAILED', error_message = :error, updated_at = now()
                 WHERE id = :id
                 """),
-                {"error": str(exc)[:250], "id": task_id},
+                {"error": error, "id": task_id},
             )
     return True
 
@@ -361,14 +372,24 @@ def _process_confirmation(task_id: uuid.UUID) -> bool:
                 correlation_id=None,
                 after={"branch": pr.branch, "pull_request_number": pr.number},
             )
-    except (Invalid, github.GitHubPublishError) as exc:
+    except (
+        Invalid,
+        github.GitHubPublishError,
+        subprocess.SubprocessError,
+        OSError,
+    ) as exc:
+        error = (
+            str(exc)[:250]
+            if isinstance(exc, (Invalid, github.GitHubPublishError))
+            else "The host runner could not publish the pull request"
+        )
         with get_engine().begin() as conn:
             conn.execute(
                 text("""
                 UPDATE ops.builder_agent_jobs SET state = 'FAILED', error_message = :error, updated_at = now()
                 WHERE id = :id
             """),
-                {"error": str(exc)[:250], "id": task_id},
+                {"error": error, "id": task_id},
             )
     return True
 
