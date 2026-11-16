@@ -116,6 +116,7 @@ def world() -> Iterator[World]:
     finally:
         mobiles = w.mobiles or []
         ids = [u for (u,) in db.execute("SELECT id FROM app.users WHERE mobile_e164 = ANY(%s)", (mobiles,))]
+        db.execute("DELETE FROM ops.prompt_guard_events WHERE user_id = ANY(%s)", (ids,))
         db.execute("DELETE FROM app.role_assignments WHERE user_id = ANY(%s)", (ids,))
         db.execute("DELETE FROM app.sessions WHERE user_id = ANY(%s)", (ids,))
         db.execute("DELETE FROM app.trusted_devices WHERE user_id = ANY(%s)", (ids,))
