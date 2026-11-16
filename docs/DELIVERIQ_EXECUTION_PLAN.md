@@ -1,7 +1,7 @@
 # DeliverIQ — Execution Plan
 
-**Version:** 2.7 (Task 14 P3 decisions approved 2026-11-14, DDR-118)
-**Status:** Approved sequence; implementation not started. Docker/deployment, data pipeline, code structure and RAG/AI designs approved.
+**Version:** 2.8 (Task 19 decisions approved 2026-11-16, DDR-125)
+**Status:** Approved sequence; Task 19A backend implemented and locally verified on `task-19-eta-assignment`; 19B UI waits for owner approval after the 19A report.
 **Companion documents:** `SOURCE_DOCUMENT_INVENTORY.md`, `PORTAL_REQUIREMENTS_MATRIX.md`, `DESIGN_DECISION_REGISTER.md` (DDR-nn), `KITCHEN_SOURCE_VALIDATION.md`, `DOCKER_DEPLOYMENT_DESIGN.md`, `DATA_PIPELINE_DESIGN.md`, `CODE_STRUCTURE_DESIGN.md`, `RAG_AI_DESIGN.md`
 
 ---
@@ -533,7 +533,13 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 ### Task 19 — ETA prediction and assignment optimization
 
 - **Depends on:** Tasks 9, 18.
-- **Acceptance criteria:** Rule-based fallback works when the model is unavailable; manager override preserved; ETAs shown as ranges; results on synthetic location labelled.
+- **Decisions:** DDR-125.
+- **Split:** 19A backend and synthetic training/evaluation path; 19B Customer order view and Management Delivery Operations UI, started only after owner approval of the 19A report.
+- **ETA:** After pickup only, show remaining travel time to the customer as a range. Before pickup show delivery status and “ETA available after pickup”. Do not estimate kitchen preparation time (DDR-32). Use DDR-55 road distance for real deliveries. The labelled simulation default is 15 m per 5 s (about 11 km/h). If a ready `ml_eta_v2` profile exists but its model is not exposed, calibrate the rule fallback range from the rule baseline's chronological held-out residuals and label it “estimated range”; require measured coverage at the labelled 80% test target. If no ready profile exists, show only the point estimate labelled “rough estimate, no range available”. If a ready profile cannot calibrate a range, ETA is unavailable; do not invent a fixed width.
+- **Training and evaluation:** Use a new immutable `ml_eta_v2` profile; keep Task 18's `ml` profile unchanged. Simulation defaults are straight-line distance Uniform(0.1, 4.0 km), DDR-55 adapter road distance ≤6 km, speed 15 m per 5 s, additional trip delay Uniform(0, 300 s), seed 56 with the new profile/generator version. Training excludes customer PII and real GPS. Evaluate against the rule-based estimate with Task 18's chronological rolling-origin approach; model must strictly beat baseline and meet the 80% coverage test default. State that the model is evaluated on data from our own generator, so results demonstrate pipeline operation, not real-world accuracy.
+- **Assignment:** Suggestions are advisory and read-only. DDR-111 (6) says: “Assignment at acceptance (DDR-51): in the same transaction an `OFFERED` assignment goes to an eligible agent (active, in the order's region, no live assignment, least recently assigned first); none eligible → ‘Awaiting agent’, kitchen not blocked.” DDR-113 (3) says: “Re-offer goes to the next eligible online agent, never one who already rejected or let this order expire; none eligible → ‘Awaiting agent’, the sweep retries.” The current `app.offer_next` implementation in migration 0011 further specifies active, same-region, online agents with no live offer/delivery and orders by prior `offered_at` ascending (`NULLS FIRST`). Per the owner clarification in DDR-125, Task 19 keeps this **least recently offered** order because offer history includes rejected and expired offers and spreads offers over time; this clarification changes no code. Preserve the existing scoped, audited manager assignment/override. Suggestions never write assignments.
+- **Acceptance criteria:** With a ready profile, model failure falls back to a held-out-calibrated rule range meeting the 80% target; with no ready profile, show the rule point labelled “rough estimate, no range available”; if a ready profile cannot calibrate the range, leave ETA unavailable. Manager override is preserved; ETA is a remaining-travel range shown only after pickup; synthetic-location estimates are labelled “Simulated”; assignment suggestions never auto-assign.
+- **Status:** 19A implemented and locally verified; 19B gated on owner approval after the 19A verification report.
 
 ### Task 20 — Monitoring, reconciliation and optional scheduling (no Dagster)
 
@@ -552,6 +558,10 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 - **Acceptance criteria:** Fresh machine reproduces the demo from the runbook; zero `is_test_fixture` rows and fixture loader disabled in a production-profile run (DDR-48); known-limitations section lists every unresolved DDR.
 
 ---
+
+### Change history
+
+- **v2.8 (2026-11-16):** Recorded approved Task 19 choices in DDR-125; clarified post-pickup ETA, simulation/training limits, assignment ordering, and 19A/19B gate.
 
 ## 8. Dependency map
 

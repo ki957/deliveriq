@@ -74,6 +74,13 @@ class AgentRow:
 
 
 @dataclass(frozen=True)
+class AgentSuggestionRow:
+    id: uuid.UUID
+    name: str
+    last_offered_at: datetime | None
+
+
+@dataclass(frozen=True)
 class OtpRow:
     order_id: uuid.UUID
     nonce: str
@@ -292,6 +299,34 @@ def agents(conn: Connection, regions: list[uuid.UUID] | None) -> list[AgentRow]:
         {"all_regions": regions is None, "regions": regions or []},
     ).all()
     return sorted((AgentRow(*r) for r in rows), key=lambda a: a.name)
+
+
+def assignment_suggestions(
+    conn: Connection, order_id: uuid.UUID, region_id: uuid.UUID
+) -> list[AgentSuggestionRow]:
+    """Read-only mirror of DDR-113 (3); never calls app.offer_next or creates an assignment."""
+    rows = conn.execute(
+        text(
+            "SELECT u.id, u.display_name, "
+            "(SELECT max(a.offered_at) FROM app.delivery_assignments a WHERE a.agent_user_id = u.id) "
+            "FROM app.users u JOIN app.agent_availability av ON av.agent_user_id = u.id "
+            "AND av.status = 'ONLINE' "
+            "WHERE u.status = 'ACTIVE' AND EXISTS (SELECT 1 FROM app.role_assignments r "
+            "WHERE r.user_id = u.id AND r.role = 'DELIVERY_AGENT' AND r.region_id = :region "
+            "AND r.revoked_at IS NULL) "
+            "AND NOT EXISTS (SELECT 1 FROM app.delivery_assignments a WHERE a.agent_user_id = u.id "
+            "AND a.status IN ('OFFERED', 'ACCEPTED', 'FAILURE_REQUESTED')) "
+            "AND NOT EXISTS (SELECT 1 FROM app.delivery_assignments a WHERE a.agent_user_id = u.id "
+            "AND a.order_id = :order AND a.status IN ('REJECTED', 'EXPIRED')) "
+            "AND NOT EXISTS (SELECT 1 FROM app.delivery_assignments a WHERE a.order_id = :order "
+            "AND a.status IN ('OFFERED', 'ACCEPTED', 'FAILURE_REQUESTED')) "
+            "AND EXISTS (SELECT 1 FROM app.orders o WHERE o.id = :order AND o.region_id = :region "
+            "AND o.fulfilment_status IN ('ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP')) "
+            "ORDER BY 3 NULLS FIRST, u.id"
+        ),
+        {"order": order_id, "region": region_id},
+    ).all()
+    return [AgentSuggestionRow(*row) for row in rows]
 
 
 # ---------------------------------------------------------------- delivery codes (DL-11; DDR-113 (6))

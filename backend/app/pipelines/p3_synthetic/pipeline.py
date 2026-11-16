@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import text
 
 from app.core.config import get_settings
+from app.modules.delivery import eta
 from app.pipelines.framework.context import DataError, RunContext
 from app.pipelines.framework.registry import register
 from app.pipelines.p2_elt.pipeline import run_dbt
@@ -90,6 +91,73 @@ def _tracks(ctx: RunContext, events: list[g.Event], reference: dict[str, Any]) -
 def run(ctx: RunContext) -> None:
     if not get_settings().is_local_or_test:
         raise DataError("P3 synthetic generation is local/test only")
+    if ctx.input_ref == eta.PROFILE:
+        with ctx.data.begin():
+            existing = ctx.data.execute(
+                text(
+                    "SELECT date_to, content_sha256, sample_count "
+                    "FROM synthetic.eta_profiles WHERE profile = :p"
+                ),
+                {"p": eta.PROFILE},
+            ).first()
+            stored = (
+                ctx.data.execute(
+                    text(
+                        "SELECT sample_day, road_km, duration_seconds FROM synthetic.eta_training_samples "
+                        "WHERE profile = :p ORDER BY sample_day, sample_id"
+                    ),
+                    {"p": eta.PROFILE},
+                ).all()
+                if existing
+                else []
+            )
+        if existing:
+            rows = tuple(
+                eta.Sample(day, float(distance), float(duration)) for day, distance, duration in stored
+            )
+            generated = eta.generate_profile(existing.date_to)
+            if (
+                len(rows) != existing.sample_count
+                or eta.profile_digest(generated) != existing.content_sha256
+                or not eta.same_profile_samples(rows, generated)
+            ):
+                raise DataError("The immutable ml_eta_v2 profile failed its stored hash check")
+            end = existing.date_to
+        else:
+            end = datetime.now(ZoneInfo("Asia/Kolkata")).date() - timedelta(days=1)
+            rows = eta.generate_profile(end)
+        evaluation = eta.evaluate(rows, min(r.day for r in rows), max(r.day for r in rows))
+        with ctx.stage("generate ETA simulation profile") as counts:
+            counts.rows_out = len(rows)
+            counts.detail = {
+                "profile": eta.PROFILE,
+                "generator_version": eta.PROFILE_VERSION,
+                "seed": eta.SIMULATION_SEED,
+                "label": "Simulated",
+                "model_mae": evaluation.model_mae,
+                "baseline_mae": evaluation.baseline_mae,
+                "interval_coverage": evaluation.coverage,
+                "rule_interval_coverage": evaluation.rule_interval_coverage,
+                "passed": evaluation.passed,
+                "evaluation_scope": "Own generator data; pipeline evidence, not real-world accuracy",
+            }
+        if not evaluation.passed:
+            raise DataError("ml_eta_v2 failed the rolling-origin MAE or 80% interval-coverage test default")
+        if existing:
+            count, digest = len(rows), existing.content_sha256
+            with ctx.stage("reuse immutable ETA profile") as counts:
+                counts.rows_in = counts.rows_out = count
+                counts.detail = {"content_sha256": digest, "profile": eta.PROFILE, "reused": True}
+        else:
+            with ctx.stage("persist immutable ETA profile") as counts, ctx.data.begin():
+                try:
+                    count, digest = eta.persist_profile(ctx.data, rows, end)
+                except ValueError as exc:
+                    raise DataError(str(exc)) from None
+                counts.rows_in, counts.rows_out = len(rows), count
+                counts.detail = {"content_sha256": digest, "profile": eta.PROFILE}
+        ctx.counts.update({"profile": eta.PROFILE, "samples": count, "sha256": digest})
+        return
     profile = "ml" if ctx.input_ref == "ml" else "demo"
     if ctx.input_ref not in ("demo", "ml"):
         raise DataError("unknown P3 profile")

@@ -34,7 +34,7 @@ FORBIDDEN_INSERTS = {
 ALLOWED_INSERTS = {
     "p1_sop": ["app.recipes", "app.ingredients", "app.recipe_ingredients", "ops.source_registry"],
     "p2_elt": ["raw.events"],
-    "p3_synth": ["synthetic.events"],
+    "p3_synth": ["synthetic.events", "synthetic.eta_profiles", "synthetic.eta_training_samples"],
 }
 RAG_SCHEMAS = {
     "rag_customer": "customer_rag",
@@ -89,6 +89,14 @@ def test_roles_cannot_write_outside_their_targets(migrator: Conn, role: str, tab
 def test_pipeline_roles_can_write_their_targets(migrator: Conn, role: str, tables: list[str]) -> None:
     for table in tables:
         assert _has(migrator, role, table, "INSERT"), f"{role} cannot INSERT into {table}"
+
+
+def test_eta_profile_is_insert_once_and_read_only_after_generation(migrator: Conn) -> None:
+    for table in ("synthetic.eta_profiles", "synthetic.eta_training_samples"):
+        assert not _has(migrator, "p3_synth", table, "UPDATE")
+        assert not _has(migrator, "p3_synth", table, "DELETE")
+    assert one(migrator, "SELECT has_function_privilege('app_api', 'ops.eta_profile_status()', 'EXECUTE')")
+    assert one(migrator, "SELECT has_function_privilege('app_api', 'ops.eta_profile_samples()', 'EXECUTE')")
 
 
 def test_p1_cannot_create_fixture_or_active_recipes(role_conn: Callable[[str], Conn]) -> None:

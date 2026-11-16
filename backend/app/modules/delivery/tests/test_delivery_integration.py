@@ -248,6 +248,23 @@ def test_only_online_agents_get_offers_and_accepting_shows_agent_assigned(world:
     assert crew.agents[0].get(f"{DELIVERY}/me").json()["assignment"] is None  # revoked with the order
 
 
+def test_assignment_suggestions_are_read_only_and_manager_scoped(world: World, crew: Crew) -> None:
+    for agent in crew.agents:
+        offline(agent)
+    order_id = accepted_order(world, crew)
+    before = scalar(world, "SELECT count(*) FROM app.delivery_assignments WHERE order_id = %s", order_id)
+
+    response = crew.rm.get(f"{MANAGE}/orders/{order_id}/suggestions")
+
+    assert response.status_code == 200 and response.json() == []
+    assert (
+        scalar(world, "SELECT count(*) FROM app.delivery_assignments WHERE order_id = %s", order_id) == before
+    )
+    assert crew.other_rm.get(f"{MANAGE}/orders/{order_id}/suggestions").status_code == 404
+    assert crew.customer.get(f"{MANAGE}/orders/{order_id}/suggestions").status_code == 403
+    crew.km.post(f"{KITCHEN}/{order_id}/reject", json={"reason": "Integration test"})
+
+
 def test_rejection_needs_a_reason_and_never_returns_to_the_same_agent(world: World, crew: Crew) -> None:
     for agent in crew.agents:
         online(agent)
@@ -317,6 +334,8 @@ def test_pickup_needs_ready_and_the_customer_sees_code_and_location_only_after(
     assert sent.json() == {"accepted": 1, "refused": {}}
     view = crew.customer.get(f"/api/v1/orders/{order_id}").json()
     assert view["live_location"] is None and view["delivery_code"] is None
+    assert view["eta_available_after_pickup"] is True
+    assert view["eta_message"] == "ETA available after pickup"
     ready(crew, order_id)
     picked = agent.post(f"{DELIVERY}/orders/{order_id}/pickup")
     assert picked.json()["fulfilment_status"] == "OUT_FOR_DELIVERY"
@@ -328,6 +347,9 @@ def test_pickup_needs_ready_and_the_customer_sees_code_and_location_only_after(
     assert view["live_location"]["simulated"] is True and view["live_location"]["lat"] == pytest.approx(
         13.081
     )
+    assert view["eta_lower_seconds"] is not None and view["eta_upper_seconds"] is not None
+    assert view["eta_label"].startswith("Simulated · ")
+    assert view["eta_source"] in {"model", "estimated_range", "rough_estimate"}
     assert crew.other_customer.get(f"/api/v1/orders/{order_id}").status_code == 404
     assert (
         scalar(world, "SELECT is_test_fixture FROM app.delivery_otps WHERE order_id = %s", order_id) is True

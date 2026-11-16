@@ -326,6 +326,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/delivery/manage/orders/{order_id}/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Assignment Suggestions
+         * @description Read-only advisory suggestions using DDR-113 (3); this route never offers or assigns.
+         */
+        get: operations["assignment_suggestions_api_v1_delivery_manage_orders__order_id__suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/delivery/me": {
         parameters: {
             query?: never;
@@ -2210,6 +2230,23 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** AgentSuggestionOut */
+        AgentSuggestionOut: {
+            /**
+             * Advisory Only
+             * @default true
+             */
+            advisory_only: boolean;
+            /**
+             * Agent Id
+             * Format: uuid
+             */
+            agent_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Last Offered At */
+            last_offered_at: string | null;
+        };
         /** AiModelOut */
         AiModelOut: {
             /** Capabilities */
@@ -3625,6 +3662,26 @@ export interface components {
             delivery_fee_paise: number | null;
             /** Discount Paise */
             discount_paise: number;
+            /**
+             * Eta Advisory Only
+             * @default true
+             */
+            eta_advisory_only: boolean;
+            /**
+             * Eta Available After Pickup
+             * @default false
+             */
+            eta_available_after_pickup: boolean;
+            /** Eta Label */
+            eta_label?: string | null;
+            /** Eta Lower Seconds */
+            eta_lower_seconds?: number | null;
+            /** Eta Message */
+            eta_message?: string | null;
+            /** Eta Source */
+            eta_source?: string | null;
+            /** Eta Upper Seconds */
+            eta_upper_seconds?: number | null;
             /** Food Subtotal Paise */
             food_subtotal_paise: number | null;
             fulfilment_status: components["schemas"]["Fulfilment"];
@@ -5180,6 +5237,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assignment_suggestions_api_v1_delivery_manage_orders__order_id__suggestions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentSuggestionOut"][];
                 };
             };
             /** @description Validation Error */

@@ -10,11 +10,13 @@ Deny by default: customers act on their own orders only; another customer's orde
 
 from __future__ import annotations
 
+import math
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 
-from sqlalchemy import Connection
+from sqlalchemy import Connection, text
 from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from app.core.config import get_settings
@@ -22,6 +24,7 @@ from app.core.db import get_engine
 from app.core.permissions import Permission, Principal, can
 from app.core.request_context import current_request_id
 from app.modules.customers import service as customers
+from app.modules.delivery import eta as eta_model
 from app.modules.delivery import service as delivery
 from app.modules.inventory import service as inventory
 from app.modules.kitchen_ops import service as kitchens
@@ -32,6 +35,7 @@ from app.modules.payments import service as payments
 from app.modules.payments.domain import OUTCOME_STATUS, PaymentMethod, PaymentStatus, SimOutcome, is_prepaid
 from app.modules.pricing import domain as pricing_domain
 from app.modules.pricing import service as pricing
+from app.shared import geo
 from app.shared.actor import set_actor
 from app.shared.audit import write_event
 from app.shared.config_values import value as config_value
@@ -64,18 +68,63 @@ class OrderView:
     # Customer only, after pickup (DDR-113 (6), (8)): the code to give the agent and the latest position.
     delivery_code: str | None = None
     location: delivery.PointRow | None = None
+    eta: eta_model.Estimate | None = None
 
 
 def _view(conn: Connection, order: repo.OrderRow, *, customer_tracking: bool = False) -> OrderView:
     tracking = customer_tracking and order.fulfilment_status == F.OUT_FOR_DELIVERY
+    location = delivery.latest_point(conn, order.id) if tracking else None
+    eta = None
+    if location and order.destination_lat is not None and order.destination_lng is not None:
+        straight_km = _distance_km(location.lat, location.lng, order.destination_lat, order.destination_lng)
+        road = geo.road_adapter().road_distance(
+            geo.Point(location.lat, location.lng),
+            geo.Point(order.destination_lat, order.destination_lng),
+            Decimal(str(straight_km)),
+        )
+        profile_rows = _ready_eta_samples(conn)
+        if profile_rows:
+            evaluation = eta_model.evaluate(
+                profile_rows, min(r.day for r in profile_rows), max(r.day for r in profile_rows)
+            )
+            eta = eta_model.estimate(
+                float(road.km),
+                profile_rows,
+                simulated=location.source == "SIMULATED",
+                model_passed=evaluation.passed,
+            )
+        else:
+            eta = eta_model.estimate(float(road.km), None, simulated=location.source == "SIMULATED")
     return OrderView(
         order=order,
         items=repo.items(conn, order.id),
         payment=payments.for_order(conn, order.id),
         labels=d.display(F(order.fulfilment_status), order.assignment_accepted),
         delivery_code=delivery.code_for_customer(conn, order.id) if tracking else None,
-        location=delivery.latest_point(conn, order.id) if tracking else None,
+        location=location,
+        eta=eta,
     )
+
+
+def _distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    radius_km = 6371.0088
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dlat, dlon = math.radians(lat2 - lat1), math.radians(lon2 - lon1)
+    value = math.sin(dlat / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlon / 2) ** 2
+    return 2 * radius_km * math.asin(math.sqrt(value))
+
+
+def _ready_eta_samples(conn: Connection) -> tuple[eta_model.Sample, ...] | None:
+    ready = conn.execute(
+        text("SELECT 1 FROM ops.eta_profile_status() WHERE profile = :p AND build_status = 'ready'"),
+        {"p": eta_model.PROFILE},
+    ).scalar_one_or_none()
+    if not ready:
+        return None
+    rows = conn.execute(
+        text("SELECT sample_day, road_km, duration_seconds FROM ops.eta_profile_samples()")
+    ).all()
+    return tuple(eta_model.Sample(day, float(distance), float(duration)) for day, distance, duration in rows)
 
 
 def _require(principal: Principal, permission: Permission) -> None:

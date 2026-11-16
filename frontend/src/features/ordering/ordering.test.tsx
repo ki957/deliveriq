@@ -124,6 +124,13 @@ function order(overrides: Partial<Order> = {}): Order {
   return {
     id: ORDER,
     agent_assigned: false,
+    eta_advisory_only: true,
+    eta_available_after_pickup: true,
+    eta_label: null,
+    eta_lower_seconds: null,
+    eta_message: "ETA available after pickup",
+    eta_source: null,
+    eta_upper_seconds: null,
     delivery_address: "TEST – 1 Fixture Street",
     delivery_fee_paise: 4000,
     discount_paise: 0,

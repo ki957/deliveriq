@@ -15,6 +15,7 @@ from app.modules.delivery import domain as d
 from app.modules.delivery import service
 from app.modules.delivery.schemas import (
     AgentOut,
+    AgentSuggestionOut,
     AssignIn,
     AssignmentOut,
     AvailabilityIn,
@@ -230,6 +231,16 @@ def agents(principal: CurrentPrincipal) -> list[AgentOut]:
             live_status=r.live_status,
             live_order_id=r.live_order_id,
         )
+        for r in rows
+    ]
+
+
+@manage_router.get("/orders/{order_id}/suggestions", response_model=list[AgentSuggestionOut])
+def assignment_suggestions(order_id: uuid.UUID, principal: CurrentPrincipal) -> list[AgentSuggestionOut]:
+    """Read-only advisory suggestions using DDR-113 (3); this route never offers or assigns."""
+    rows = _call(lambda: service.assignment_suggestions(principal, order_id))
+    return [
+        AgentSuggestionOut(agent_id=r.id, display_name=r.name, last_offered_at=r.last_offered_at)
         for r in rows
     ]
 

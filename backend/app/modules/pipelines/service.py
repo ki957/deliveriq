@@ -27,7 +27,7 @@ from app.modules.pipelines import repository as repo
 TRIGGERABLE: dict[str, frozenset[str]] = {
     "p1_sop": frozenset({"sop", "fault:records", "fault:structural"}),
     "p2_elt": frozenset({"run", "fault:reconciliation"}),
-    "p3_synthetic": frozenset({"demo", "ml"}),
+    "p3_synthetic": frozenset({"demo", "ml", "ml_eta_v2"}),
     "k2_kitchen": frozenset({"draft"}),
     "k1_customer": frozenset({"draft"}),
 }
@@ -122,7 +122,7 @@ def available_inputs(pipeline: str) -> list[str]:
         if pipeline == "p3_synthetic":
             allowed = frozenset()
     if pipeline == "p3_synthetic":
-        allowed = allowed - {"ml"}
+        allowed = allowed - {"ml", "ml_eta_v2"}
     default = DEFAULT_INPUT.get(pipeline)
     return sorted(allowed, key=lambda ref: (ref != default, ref))
 
@@ -283,7 +283,7 @@ def _queue(
     if ref not in allowed:
         raise Conflict(f"{pipeline} does not accept input {ref}")
     if pipeline == "p3_synthetic" and (
-        not get_settings().is_local_or_test or (ref == "ml" and trigger != "cli")
+        not get_settings().is_local_or_test or (ref in {"ml", "ml_eta_v2"} and trigger != "cli")
     ):
         raise Conflict("P3 demo is local/test only; ML requires the CLI")
     if ref in FAULT_INPUTS:
