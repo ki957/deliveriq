@@ -510,7 +510,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
   - Untrusted content (reviews, tickets, orders, notes, RAG documents) never enters its context.
   - Global YAML changes possible only through the PR path.
   - RM and all other roles denied.
-- **Status:** Implementation in progress; Task 15C defaults are recorded in DDR-128.
+- **Status:** Implemented and locally verified: `make check`, `make frontend-check`, Builder integration tests and the Builder Agent E2E spec pass; CI is pending.
 
 ### Task 16 — Kitchen RAG + Kitchen Copilot
 
