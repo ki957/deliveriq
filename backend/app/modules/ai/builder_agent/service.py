@@ -211,7 +211,7 @@ def process_next_job(task_id: uuid.UUID | None = None) -> bool:
         confirmation = conn.execute(
             text("""
             SELECT id FROM ops.builder_agent_jobs
-            WHERE state = 'CONFIRM_REQUESTED' AND (:task_id IS NULL OR id = :task_id)
+            WHERE state = 'CONFIRM_REQUESTED' AND (CAST(:task_id AS uuid) IS NULL OR id = :task_id)
             ORDER BY updated_at, created_at
             FOR UPDATE SKIP LOCKED LIMIT 1
             """),
@@ -233,7 +233,7 @@ def process_next_job(task_id: uuid.UUID | None = None) -> bool:
             job = conn.execute(
                 text("""
                 SELECT id, user_id, request FROM ops.builder_agent_jobs
-                WHERE state = 'QUEUED' AND (:task_id IS NULL OR id = :task_id)
+                WHERE state = 'QUEUED' AND (CAST(:task_id AS uuid) IS NULL OR id = :task_id)
                 ORDER BY created_at
                 FOR UPDATE SKIP LOCKED LIMIT 1
                 """),
