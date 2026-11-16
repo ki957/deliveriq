@@ -147,9 +147,15 @@ agent-down: env-check
 	bash infra/agent/stop.sh
 
 agent-harness: env-check
+	@. ./.env; \
+	export APP_ENV DB_HOST=127.0.0.1 DB_PORT="$${POSTGRES_HOST_PORT:-5433}" DB_USER=app_api \
+	DB_PASSWORD="$$APP_API_PASSWORD" REDIS_URL=redis://127.0.0.1:1/0 OTP_PEPPER PSEUDONYM_KEY GITHUB_TOKEN; \
 	$(UV) run python -m app.cli.builder_agent_worker
 agent-integration: env-check
-	@set -a; . ./.env; set +a; \
+	@. ./.env; \
+	export APP_ENV DB_HOST=127.0.0.1 DB_PORT="$${POSTGRES_HOST_PORT:-5433}" DB_USER=app_api \
+	DB_PASSWORD="$$APP_API_PASSWORD" REDIS_URL=redis://127.0.0.1:1/0 OTP_PEPPER PSEUDONYM_KEY; \
+	export POSTGRES_DB APP_MIGRATOR_PASSWORD; \
 	DELIVERIQ_INTEGRATION=1 \
 	INTEGRATION_API_URL="http://127.0.0.1:$${API_HOST_PORT:-8000}" \
 	INTEGRATION_DB_PORT="$${POSTGRES_HOST_PORT:-5433}" \

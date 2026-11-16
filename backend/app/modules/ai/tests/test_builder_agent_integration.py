@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
 from typing import Any, cast
 
 import pytest
@@ -23,6 +24,14 @@ pytestmark = [
 ]
 
 BUILDER = "/api/v1/management/ai/builder"
+
+
+@pytest.fixture(autouse=True)
+def cleanup_builder_rows(world: World) -> Iterator[None]:
+    yield
+    if world.users:
+        world.db.execute("DELETE FROM ops.builder_agent_proposals WHERE user_id = ANY(%s)", (world.users,))
+        world.db.execute("DELETE FROM ops.builder_agent_jobs WHERE user_id = ANY(%s)", (world.users,))
 
 
 def test_builder_ca_reviews_diff_and_confirms_a_mock_pr(
