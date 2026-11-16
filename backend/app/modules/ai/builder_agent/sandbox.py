@@ -141,6 +141,8 @@ class AgentWorkspace:
                 "--rm",
                 "--network",
                 "none",
+                "--memory",
+                "1g",
                 "--read-only",
                 "--tmpfs",
                 "/tmp:rw,noexec,nosuid,size=64m",  # noqa: S108
