@@ -4,6 +4,8 @@ description: Use only after the owner says "approve" (push the branch, give the 
 ---
 Only run this after the owner has said "approve" for the current task.
 
+Never rebase a branch after it has been pushed. If a PR is behind `main`, have the owner click GitHub's **Update branch** button. If that update conflicts, run `git merge origin/main` locally (never rebase), resolve the conflict, run `make check` and `make frontend-check`, then push normally.
+
 1. Confirm the branch is not `main`: `git branch --show-current`.
 2. Confirm nothing secret is staged or committed: `git diff --cached --name-only` and `git show --name-only HEAD` must contain no `.env`, `*.pem`, `*.key` or credential files.
 3. `git push -u origin <branch>`. Never force-push and never push `main`.

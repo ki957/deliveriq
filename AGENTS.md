@@ -10,6 +10,7 @@ Hard limits that are never relaxed:
 - Never read, print, log or commit values from `.env` (for example `OTP_PEPPER`, `PSEUDONYM_KEY`); refer to secrets by key name.
 - Never hand-edit `frontend/src/shared/api/generated/`; regenerate it with `make openapi` and `cd frontend && npm run api:generate`.
 - Stage files by name (never `git add .` or `-A`); never push to `main`, force-push, `reset --hard`, `clean -f`, `branch -D` or use `--no-verify`; never change git config. The owner merges.
+- Never rebase a branch after it has been pushed. If a PR is behind `main`, the owner updates it with GitHub's **Update branch** button. If that update conflicts, use `git merge origin/main` locally, resolve the conflict, run `make check` and `make frontend-check`, then push normally.
 - One task at a time, on its own branch. Plan and decision sheet first; never invent values.
 - No SOP recipe is ever activated (DDR-50); real and synthetic data never share a table (DDR-74).
 
