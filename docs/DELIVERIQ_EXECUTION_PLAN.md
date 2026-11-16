@@ -559,6 +559,11 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 - **Depends on:** Tasks 15A, 15C, 17, 19, 20.
 - **Acceptance criteria:** Golden and failure paths pass; full RBAC matrix including CA/RM publication scope, pipeline permissions and AI harness permissions; concurrency; AI isolation and all guardrail-matrix tests (`PORTAL_REQUIREMENTS_MATRIX.md` §10); backup/restore drill; full accessibility pass (automated + manual keyboard/screen-reader); full mobile matrix; visual regression reviewed; resource report; all seven §5.2 leak controls pass.
+- **Manual keyboard/screen-reader checklist (owner to complete):**
+  1. Complete customer checkout with keyboard only; confirm visible focus, logical tab order, and keyboard operation of address, payment, and confirmation dialogs.
+  2. Accept and prepare an order in Kitchen; confirm queue and preparation status changes are announced without moving focus unexpectedly.
+  3. Accept, pick up, and deliver an order in Delivery; confirm every control has an understandable accessible name and the OTP is announced only on the customer screen.
+  4. Find the delivered order in Management with keyboard and a screen reader; confirm the status and TEST labels are announced as text.
 
 ### Task 22 — Demo handover
 
