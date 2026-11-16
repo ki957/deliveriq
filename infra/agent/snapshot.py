@@ -1,5 +1,8 @@
 """Check a clean source checkout and clone exactly its committed HEAD."""
 
+# Fixed git commands operate only on the explicitly supplied local repository paths.
+# ruff: noqa: S603, S607
+
 from __future__ import annotations
 
 import subprocess
