@@ -175,4 +175,4 @@ test-integration: env-check
 	DELIVERIQ_INTEGRATION=1 \
 	INTEGRATION_API_URL="$${INTEGRATION_API_URL:-http://127.0.0.1:$${API_HOST_PORT:-8000}}" \
 	INTEGRATION_DB_PORT="$${INTEGRATION_DB_PORT:-$${POSTGRES_HOST_PORT:-5433}}" \
-	$(UV) run pytest -m integration -v
+	$(UV) run pytest -m integration -v $(INTEGRATION_TESTS)
