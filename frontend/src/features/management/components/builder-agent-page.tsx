@@ -82,7 +82,10 @@ export function BuilderAgentPage() {
               </li>
             ))}
           </ul>
-          <pre className="max-h-[32rem] overflow-auto rounded-control border border-border bg-canvas p-3 text-xs">
+          <pre
+            tabIndex={0}
+            className="max-h-[32rem] overflow-auto rounded-control border border-border bg-canvas p-3 text-xs"
+          >
             <code>{current.diff}</code>
           </pre>
           {current.status === "opened" ? (
