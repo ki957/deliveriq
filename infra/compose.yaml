@@ -222,12 +222,68 @@ services:
     networks: [backend, edge]
     logging: *default-logging
 
+  egress-proxy:
+    profiles: [agent]
+    build:
+      context: .
+      dockerfile: infra/backend/Dockerfile
+      target: agent-proxy
+    image: deliveriq-agent-proxy:local
+    command: ["python", "/srv/agent/proxy.py", "/run/agent/ai_models.yaml"]
+    volumes:
+      - ./backend/config/ai_models.yaml:/run/agent/ai_models.yaml:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 3128), timeout=2).close()"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 64m
+    cpus: 0.25
+    restart: "no"
+    networks: [agent_net, egress]
+    logging: *default-logging
+
+  agent:
+    profiles: [agent]
+    build:
+      <<: *backend-build
+      target: agent
+    image: deliveriq-agent:local
+    working_dir: /workspace
+    command: ["sleep", "infinity"]
+    environment:
+      HOME: /tmp/home
+      http_proxy: http://egress-proxy:3128
+      https_proxy: http://egress-proxy:3128
+      HTTP_PROXY: http://egress-proxy:3128
+      HTTPS_PROXY: http://egress-proxy:3128
+      NO_PROXY: localhost,127.0.0.1,egress-proxy
+      no_proxy: localhost,127.0.0.1,egress-proxy
+    depends_on:
+      egress-proxy:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 1g
+    cpus: 1
+    restart: "no"
+    networks: [agent_net]
+    logging: *default-logging
+
 networks:
   # Internal: no outbound route. Redis and the migrate job live only here.
   backend:
     internal: true
   # Ordinary bridge used only to publish localhost ports (internal networks cannot publish ports).
   edge: {}
+  # Agent workload cannot reach backend services or route around its egress proxy.
+  agent_net:
+    internal: true
+  # Only the egress proxy joins this ordinary bridge.
+  egress: {}
 
 volumes:
   pg_data:

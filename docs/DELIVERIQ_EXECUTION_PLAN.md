@@ -485,14 +485,18 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 15B — Builder Agent sandbox
 
+- **Status:** Implemented and locally verified; awaiting owner review and merge.
 - **Depends on:** Tasks 2, 15.
 - **Scope:** `agent` Compose profile and sandbox isolation per DDR-70.
+- **Implementation decisions:** DDR-127 (1)–(3).
 - **Acceptance criteria:**
   - Sandbox starts on demand with a throwaway repository copy and is destroyed after each task.
   - No network route to the live DB or Redis; no `.env` or secrets mounted.
   - Outbound network limited to GitHub and the configured LLM provider hosts, allowlist generated from `ai_models.yaml` (DDR-85); CPU/memory capped.
   - The sandbox receives only the key of the provider its route uses, plus the GitHub token.
   - Unit tests run inside the sandbox; Playwright runs only in GitHub Actions.
+  - Verification inspects Compose mounts, environment names, networks and resource limits; from the sandbox, DB/Redis and non-allowlisted egress probes fail while GitHub/configured-provider HTTPS probes pass.
+  - Make targets start one task on demand and clean up after completion or an interrupted run.
 
 ### Task 15C — Builder Agent harness
 
