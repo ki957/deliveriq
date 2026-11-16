@@ -149,7 +149,8 @@ agent-down: env-check
 agent-harness: env-check
 	@. ./.env; \
 	export APP_ENV DB_HOST=127.0.0.1 DB_PORT="$${POSTGRES_HOST_PORT:-5433}" DB_USER=app_api \
-	DB_PASSWORD="$$APP_API_PASSWORD" REDIS_URL=redis://127.0.0.1:1/0 OTP_PEPPER PSEUDONYM_KEY GITHUB_TOKEN; \
+	DB_PASSWORD="$$APP_API_PASSWORD" POSTGRES_DB REDIS_URL=redis://127.0.0.1:1/0 \
+	OTP_PEPPER PSEUDONYM_KEY GITHUB_TOKEN; \
 	$(PY_PATH) $(UV) run python -m app.cli.builder_agent_worker
 agent-integration: env-check
 	@. ./.env; \
