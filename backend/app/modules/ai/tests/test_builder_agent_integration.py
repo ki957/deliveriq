@@ -9,6 +9,8 @@ from typing import Any, cast
 import pytest
 
 from app.ai import gateway
+from app.core.config import get_settings
+from app.core.db import get_engine
 from app.modules.ai.builder_agent import github, service
 from app.modules.identity.tests.test_auth_integration import World
 from app.modules.management.tests.test_management_integration import Team
@@ -27,13 +29,23 @@ BUILDER = "/api/v1/management/ai/builder"
 
 
 @pytest.fixture(autouse=True)
-def cleanup_builder_rows(world: World) -> Iterator[None]:
+def cleanup_builder_rows(world: World, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    monkeypatch.setenv("APP_ENV", os.environ.get("APP_ENV", "local"))
+    monkeypatch.setenv("DB_HOST", "127.0.0.1")
+    monkeypatch.setenv("DB_PORT", os.environ.get("INTEGRATION_DB_PORT", "5433"))
+    monkeypatch.setenv("DB_USER", "app_api")
+    monkeypatch.setenv("DB_PASSWORD", os.environ["APP_API_PASSWORD"])
+    monkeypatch.setenv("REDIS_URL", "redis://127.0.0.1:1/0")
+    get_settings.cache_clear()
+    get_engine.cache_clear()
     world.db.execute("DELETE FROM ops.builder_agent_proposals")
     world.db.execute("DELETE FROM ops.builder_agent_jobs")
     yield
     if world.users:
         world.db.execute("DELETE FROM ops.builder_agent_proposals WHERE user_id = ANY(%s)", (world.users,))
         world.db.execute("DELETE FROM ops.builder_agent_jobs WHERE user_id = ANY(%s)", (world.users,))
+    get_engine.cache_clear()
+    get_settings.cache_clear()
 
 
 def test_builder_ca_reviews_diff_and_confirms_a_mock_pr(
