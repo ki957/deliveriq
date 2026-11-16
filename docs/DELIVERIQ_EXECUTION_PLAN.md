@@ -558,7 +558,8 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 ### Task 21 — End-to-end hardening
 
 - **Depends on:** Tasks 15A, 15C, 17, 19, 20.
-- **Acceptance criteria:** Golden and failure paths pass; full RBAC matrix including CA/RM publication scope, pipeline permissions and AI harness permissions; concurrency; AI isolation and all guardrail-matrix tests (`PORTAL_REQUIREMENTS_MATRIX.md` §10); backup/restore drill; full accessibility pass (automated + manual keyboard/screen-reader); full mobile matrix; visual regression reviewed; resource report; all seven §5.2 leak controls pass.
+- **Acceptance criteria:** Golden and failure paths pass; full RBAC matrix including CA/RM publication scope, pipeline permissions and AI harness permissions; concurrency; AI isolation and all guardrail-matrix tests (`PORTAL_REQUIREMENTS_MATRIX.md` §10); backup/restore drill; full accessibility pass (automated + manual keyboard/screen-reader); full mobile matrix; visual regression reviewed; resource report; all eight §5.2 leak controls pass (DDR-129 corrects the stale “seven” count).
+- **Status:** Backend hardening code and tests are implemented; verification is in progress. Lane C owns UI, accessibility, mobile and E2E acceptance. Idle/P2 resource figures will be recorded after the stack-only measurement.
 
 ### Task 22 — Demo handover
 

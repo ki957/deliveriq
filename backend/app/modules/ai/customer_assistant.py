@@ -28,6 +28,10 @@ class NotFound(Exception):
     pass
 
 
+class Forbidden(Exception):
+    pass
+
+
 def _guard(question: str) -> tuple[bool, str]:
     if not get_settings().ai_prompt_guard_enabled:
         return False, "off"
@@ -99,6 +103,8 @@ def _record_guard_event(principal: Principal | None, status: str) -> None:
 def ask(
     principal: Principal | None, question: str, conversation_id: uuid.UUID | None
 ) -> tuple[str, list[str], str, str | None, str]:
+    if principal is not None and Role.CUSTOMER not in principal.roles:
+        raise Forbidden
     owner = principal.user_id if principal and Role.CUSTOMER in principal.roles else None
     if conversation_id is not None:
         if owner is None:

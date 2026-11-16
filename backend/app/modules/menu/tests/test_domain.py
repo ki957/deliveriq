@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
+from app.modules.menu import repository, service
 from app.modules.menu.domain import MENU_TRANSITIONS, Publication, can_transition, is_test_name
 
 pytestmark = pytest.mark.unit
@@ -27,3 +30,28 @@ def test_availability_toggle_and_retirement() -> None:
 )
 def test_test_prefix_uses_exact_en_dash(name: str, expected: bool) -> None:
     assert is_test_name(name) is expected
+
+
+def test_production_customer_menu_excludes_fixture_rows(monkeypatch: pytest.MonkeyPatch) -> None:
+    observed: list[bool] = []
+
+    class Connection:
+        def __enter__(self) -> Connection:
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+    class Engine:
+        def connect(self) -> Connection:
+            return Connection()
+
+    def published_filtered(_conn: object, **kwargs: object) -> list[object]:
+        observed.append(bool(kwargs["include_fixtures"]))
+        return []
+
+    monkeypatch.setattr(service, "get_settings", lambda: SimpleNamespace(app_env="production"))
+    monkeypatch.setattr(service, "get_engine", Engine)
+    monkeypatch.setattr(repository, "published_filtered", published_filtered)
+    assert service.customer_menu() == []
+    assert observed == [False]

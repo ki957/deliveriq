@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import re
+from types import SimpleNamespace
+
+import pytest
 
 from app.cli import fixtures as fx
 
@@ -29,3 +32,11 @@ def test_second_region_names_carry_the_test_prefix_and_the_mobile_is_unique() ->
     assert re.fullmatch(r"\+9100000000[0-9]{2}", mobile)
     taken = {m for _, m, *_ in fx.SEED_USERS} | {fx.E2E_AGENT[1]}
     assert mobile not in taken
+
+
+def test_fixture_loader_refuses_production(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(fx, "get_settings", lambda: SimpleNamespace(is_local_or_test=False))
+    assert fx.main(["load-all"]) == 2
+    assert "refused" in capsys.readouterr().err

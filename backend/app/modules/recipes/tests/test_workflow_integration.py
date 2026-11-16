@@ -44,15 +44,21 @@ def scalar(world: World, sql: str, *params: object) -> Any:
     return row[0]
 
 
-def new_test_item(world: World, *, description: str | None = "TEST – integration dish") -> Item:
+def new_test_item(
+    world: World,
+    *,
+    description: str | None = "TEST – integration dish",
+    kitchen_id: uuid.UUID | None = None,
+) -> Item:
     """A DRAFT TEST recipe with one ingredient line and a DRAFT menu item, inserted as the loader."""
     tag = uuid.uuid4().hex[:8]
+    target_kitchen = kitchen_id or world.kitchen_a
     with world.db.transaction():
         world.db.execute("SELECT set_config('app.actor_role', 'SYSTEM', true)")
         recipe = scalar(
             world,
             "INSERT INTO app.recipes (kitchen_id, name) VALUES (%s, %s) RETURNING id",
-            world.kitchen_a,
+            target_kitchen,
             f"TEST – Integration {tag}",
         )
         version = scalar(
@@ -74,7 +80,7 @@ def new_test_item(world: World, *, description: str | None = "TEST – integrati
             "price_paise, tax_classification, prep_time_minutes, image_is_placeholder, publication_status, "
             "is_test_fixture) VALUES (%s, %s, %s, %s, %s, true, 'TEST', 12300, 'TEST', 10, true, 'DRAFT', true) "
             "RETURNING id",
-            world.kitchen_a,
+            target_kitchen,
             recipe,
             category,
             f"TEST – Integration {tag}",
@@ -318,6 +324,39 @@ def test_publication_authority_and_audit(world: World, seeded: dict[str, httpx.C
         ("DRAFT", "READY_FOR_PUBLICATION", "REGIONAL_MANAGER", world.region_a, True),
         ("READY_FOR_PUBLICATION", "PUBLISHED", "REGIONAL_MANAGER", world.region_a, True),
     ]
+
+
+def test_central_admin_publishes_globally_but_regional_manager_stays_scoped(
+    world: World, seeded: dict[str, httpx.Client]
+) -> None:
+    item = new_test_item(world, kitchen_id=world.kitchen_b)
+    kitchen_manager_b = login(
+        world.user("KITCHEN_MANAGER", region=world.region_b, kitchen=world.kitchen_b), "kitchen"
+    )
+    try:
+        region_b_users = {**seeded, "KITCHEN_MANAGER": kitchen_manager_b}
+        walk_to_validated(region_b_users, item)
+        sign_all(region_b_users, item)
+        assert act(kitchen_manager_b, item.version, "activate").status_code == 200
+        rm_a = seeded["REGIONAL_MANAGER"]
+        assert (
+            rm_a.post(
+                f"/api/v1/menu/manage/items/{item.menu_item}/transitions",
+                json={"action": "mark_ready"},
+            ).status_code
+            == 404
+        )
+        for action in ("mark_ready", "publish"):
+            response = seeded["CENTRAL_ADMIN"].post(
+                f"/api/v1/menu/manage/items/{item.menu_item}/transitions", json={"action": action}
+            )
+            assert response.status_code == 200, response.text
+        assert (
+            scalar(world, "SELECT publication_status FROM app.menu_items WHERE id = %s", item.menu_item)
+            == "PUBLISHED"
+        )
+    finally:
+        kitchen_manager_b.close()
 
 
 def test_fixture_rows_would_block_a_production_start(world: World) -> None:

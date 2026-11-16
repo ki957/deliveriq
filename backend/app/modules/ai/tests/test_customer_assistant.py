@@ -129,6 +129,24 @@ def test_customer_assistant_uses_approved_prompt_and_logs_its_hash(monkeypatch: 
     assert request_params is not None and request_params["prompt_sha256"] == expected_hash
 
 
+def test_customer_provider_outage_does_not_persist_a_partial_conversation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    engine, _, _ = _setup(monkeypatch, guard=False)
+    monkeypatch.setattr(customer_assistant, "_public_live_context", lambda *_args: "public facts")
+
+    def unavailable(*_args: object, **_kwargs: object) -> tuple[str, str]:
+        raise gateway.GatewayError("Live AI provider is not configured")
+
+    monkeypatch.setattr(gateway, "complete", unavailable)
+    with pytest.raises(gateway.GatewayError, match="provider is not configured"):
+        customer_assistant.ask(CUSTOMER, "Where is my order?", None)
+    statements = [sql for sql, _ in engine.connection.statements]
+    assert not any("INSERT INTO app.ai_conversations" in sql for sql in statements)
+    assert not any("INSERT INTO app.ai_messages" in sql for sql in statements)
+    assert not any("INSERT INTO ops.ai_requests" in sql for sql in statements)
+
+
 def test_live_facts_are_tool_sourced_and_scoped_to_the_authenticated_customer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
