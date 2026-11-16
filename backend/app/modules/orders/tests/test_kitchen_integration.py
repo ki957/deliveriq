@@ -841,6 +841,7 @@ def test_competing_stock_reductions_are_serialized_and_reversible(world: World, 
     row = next(item for item in staff.km.get(INVENTORY).json() if item["name"] == "TEST – Ingredient 5")
     ingredient_id = row["ingredient_id"]
     amount = Decimal("6000")
+    reason = f"Integration test: competing reductions {uuid.uuid4()}"
     barrier = threading.Barrier(2)
     results: list[httpx.Response] = []
 
@@ -849,7 +850,7 @@ def test_competing_stock_reductions_are_serialized_and_reversible(world: World, 
         results.append(
             session.post(
                 f"{INVENTORY}/{ingredient_id}/adjust",
-                json={"delta": str(-amount), "reason": "Integration test: competing reductions"},
+                json={"delta": str(-amount), "reason": reason},
             )
         )
 
@@ -866,9 +867,8 @@ def test_competing_stock_reductions_are_serialized_and_reversible(world: World, 
         )
         assert Decimal(after["on_hand"]) == Decimal(row["on_hand"]) - amount
         applied = world.db.execute(
-            "SELECT count(*) FROM app.stock_movements WHERE ingredient_id = %s "
-            "AND reason = 'Integration test: competing reductions'",
-            (ingredient_id,),
+            "SELECT count(*) FROM app.stock_movements WHERE ingredient_id = %s AND reason = %s",
+            (ingredient_id, reason),
         ).fetchone()
         assert applied is not None and applied[0] == 1
     finally:
