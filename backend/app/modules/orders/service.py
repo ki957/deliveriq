@@ -83,13 +83,16 @@ def _view(conn: Connection, order: repo.OrderRow, *, customer_tracking: bool = F
             Decimal(str(straight_km)),
         )
         profile_rows = _ready_eta_samples(conn)
-        if (
-            profile_rows
-            and eta_model.evaluate(
+        if profile_rows:
+            evaluation = eta_model.evaluate(
                 profile_rows, min(r.day for r in profile_rows), max(r.day for r in profile_rows)
-            ).passed
-        ):
-            eta = eta_model.estimate(float(road.km), profile_rows, simulated=location.source == "SIMULATED")
+            )
+            eta = eta_model.estimate(
+                float(road.km),
+                profile_rows,
+                simulated=location.source == "SIMULATED",
+                model_passed=evaluation.passed,
+            )
         else:
             eta = eta_model.estimate(float(road.km), None, simulated=location.source == "SIMULATED")
     return OrderView(

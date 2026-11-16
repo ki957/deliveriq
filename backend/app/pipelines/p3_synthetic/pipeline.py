@@ -137,6 +137,7 @@ def run(ctx: RunContext) -> None:
                 "model_mae": evaluation.model_mae,
                 "baseline_mae": evaluation.baseline_mae,
                 "interval_coverage": evaluation.coverage,
+                "rule_interval_coverage": evaluation.rule_interval_coverage,
                 "passed": evaluation.passed,
                 "evaluation_scope": "Own generator data; pipeline evidence, not real-world accuracy",
             }

@@ -41,6 +41,7 @@ class Evaluation:
     model_mae: float
     baseline_mae: float
     coverage: float
+    rule_interval_coverage: float
     passed: bool
 
 
@@ -159,6 +160,30 @@ def _quantile(values: list[float], probability: float) -> float | None:
     return ordered[index]
 
 
+def held_out_rule_residuals(rows: tuple[Sample, ...], start: date, end: date) -> list[float]:
+    """Return rule-baseline residuals from the two chronological held-out windows."""
+    residuals: list[float] = []
+    for origin in (end - timedelta(days=13), end - timedelta(days=6)):
+        train = [r for r in rows if start <= r.day < origin]
+        test = [r for r in rows if origin <= r.day < origin + timedelta(days=7)]
+        if not train:
+            continue
+        residuals.extend(_residuals(test))
+    return residuals
+
+
+def _rule_calibration(rows: tuple[Sample, ...], start: date, end: date) -> tuple[float, float, float] | None:
+    """Calibrate the rule range from held-out baseline residuals at the 80% target."""
+    residuals = held_out_rule_residuals(rows, start, end)
+    low, high = _quantile(residuals, 0.1), _quantile(residuals, 0.9)
+    if low is None or high is None:
+        return None
+    coverage = sum(low <= residual <= high for residual in residuals) / len(residuals)
+    if coverage < TARGET_COVERAGE:
+        return None
+    return low, high, coverage
+
+
 def evaluate(rows: tuple[Sample, ...], start: date, end: date) -> Evaluation:
     """Two chronological seven-day origins over the final 14 days (DDR-124 pattern)."""
     errors: list[float] = []
@@ -181,23 +206,44 @@ def evaluate(rows: tuple[Sample, ...], start: date, end: date) -> Evaluation:
     model_mae = fmean(errors) if errors else 0.0
     baseline_mae = fmean(baseline_errors) if baseline_errors else 0.0
     coverage = sum(covered) / len(covered) if covered else 0.0
+    rule_calibration = _rule_calibration(rows, start, end)
+    rule_interval_coverage = rule_calibration[2] if rule_calibration else 0.0
     return Evaluation(
         model_mae,
         baseline_mae,
         coverage,
+        rule_interval_coverage,
         bool(errors) and model_mae < baseline_mae and coverage >= TARGET_COVERAGE,
     )
 
 
-def estimate(road_km: float, rows: tuple[Sample, ...] | None, *, simulated: bool) -> Estimate:
-    """Use the calibrated model when possible; otherwise return the always-available rule estimate."""
+def estimate(
+    road_km: float,
+    rows: tuple[Sample, ...] | None,
+    *,
+    simulated: bool,
+    model_passed: bool = True,
+) -> Estimate | None:
+    """Return a calibrated model/rule range, or a labelled point only without a ready profile."""
     baseline = road_km * 1000.0 / SPEED_MPS
     if rows:
-        residuals = _residuals(rows)
-        low, high = _quantile(residuals, 0.1), _quantile(residuals, 0.9)
-        if low is not None and high is not None and len(residuals) >= 2:
-            return Estimate(max(0, round(baseline + low)), max(0, round(baseline + high)), "model", simulated)
-    # The fallback remains explicitly labelled; it reports the exact rule estimate at both bounds
-    # rather than inventing a range width that has no approved basis.
+        if model_passed:
+            residuals = _residuals(rows)
+            low, high = _quantile(residuals, 0.1), _quantile(residuals, 0.9)
+            if low is not None and high is not None and len(residuals) >= 2:
+                return Estimate(
+                    max(0, round(baseline + low)), max(0, round(baseline + high)), "model", simulated
+                )
+        calibration = _rule_calibration(rows, min(r.day for r in rows), max(r.day for r in rows))
+        if calibration is None:
+            return None
+        low, high, _ = calibration
+        return Estimate(
+            max(0, round(baseline + low)),
+            max(0, round(baseline + high)),
+            "estimated_range",
+            simulated,
+        )
+    # Without a ready profile, no range width is supported by data.
     point = max(0, round(baseline))
-    return Estimate(point, point, "rule_based", simulated)
+    return Estimate(point, point, "rough_estimate", simulated)

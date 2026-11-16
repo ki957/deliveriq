@@ -348,7 +348,8 @@ def test_pickup_needs_ready_and_the_customer_sees_code_and_location_only_after(
         13.081
     )
     assert view["eta_lower_seconds"] is not None and view["eta_upper_seconds"] is not None
-    assert view["eta_label"] == "Simulated"
+    assert view["eta_label"].startswith("Simulated · ")
+    assert view["eta_source"] in {"model", "estimated_range", "rough_estimate"}
     assert crew.other_customer.get(f"/api/v1/orders/{order_id}").status_code == 404
     assert (
         scalar(world, "SELECT is_test_fixture FROM app.delivery_otps WHERE order_id = %s", order_id) is True

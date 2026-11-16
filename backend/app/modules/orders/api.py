@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.errors import error_body
 from app.modules.customers.schemas import serviceability_out
+from app.modules.delivery.eta import Estimate
 from app.modules.identity.dependencies import CurrentPrincipal, csrf_protect
 from app.modules.orders import service
 from app.modules.orders.schemas import (
@@ -53,6 +54,15 @@ REFUSALS: dict[int | str, dict[str, Any]] = {
 class _Refusal(Exception):
     def __init__(self, response: JSONResponse) -> None:
         self.response = response
+
+
+def _eta_label(estimate: Estimate) -> str:
+    suffix = {
+        "estimated_range": "estimated range",
+        "rough_estimate": "rough estimate, no range available",
+    }.get(estimate.source, "model range")
+    prefix = "Simulated" if estimate.simulated else "Trained on simulated data"
+    return f"{prefix} · {suffix}"
 
 
 def _call[T](fn: Callable[[], T]) -> T:
@@ -134,7 +144,7 @@ def order_out(view: service.OrderView) -> OrderOut:
         eta_lower_seconds=view.eta.lower_seconds if view.eta else None,
         eta_upper_seconds=view.eta.upper_seconds if view.eta else None,
         eta_source=view.eta.source if view.eta else None,
-        eta_label=("Simulated" if view.eta.simulated else "Trained on simulated data") if view.eta else None,
+        eta_label=_eta_label(view.eta) if view.eta else None,
     )
 
 
