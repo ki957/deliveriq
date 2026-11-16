@@ -72,7 +72,11 @@ export function BuilderAgentPage() {
           <p>{current.summary}</p>
           <p className="text-sm text-text-muted">
             Model: {current.logical_model ?? "strong"}. Unit tests:{" "}
-            {current.test_result.passed === true ? "passed" : "pending"}
+            {current.test_result.passed === true
+              ? current.test_result.runner === "mock"
+                ? "passed (mock sandbox runner; code not executed)"
+                : "passed"
+              : "pending"}
           </p>
           <h3 className="font-medium">Changed files</h3>
           <ul className="list-inside list-disc">

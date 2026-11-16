@@ -138,9 +138,12 @@ def _builder_call[T](fn: Callable[[], T]) -> T:
 
 @router.post("/builder/tasks", response_model=BuilderTaskOut, status_code=202)
 def propose_builder_task(body: BuilderTaskIn, principal: CurrentPrincipal) -> BuilderTaskOut:
-    return BuilderTaskOut.model_validate(
-        _builder_call(lambda: builder_agent.enqueue(principal, body.request))
-    )
+    task = _builder_call(lambda: builder_agent.enqueue(principal, body.request))
+    if builder_agent.uses_mock_sandbox_runner():
+        # The E2E API image has no Docker socket or sandbox profile. Exercise the
+        # flow synchronously with MockAgentWorkspace's explicit test-runner label.
+        builder_agent.process_next_job(uuid.UUID(str(task["task_id"])))
+    return BuilderTaskOut.model_validate(task)
 
 
 @router.get("/builder/tasks/{task_id}", response_model=BuilderTaskOut)
@@ -150,7 +153,10 @@ def get_builder_task(task_id: uuid.UUID, principal: CurrentPrincipal) -> Builder
 
 @router.post("/builder/tasks/{task_id}/confirm", response_model=BuilderConfirmOut)
 def confirm_builder_task(task_id: uuid.UUID, principal: CurrentPrincipal) -> BuilderConfirmOut:
-    return BuilderConfirmOut.model_validate(_builder_call(lambda: builder_agent.confirm(principal, task_id)))
+    confirmation = _builder_call(lambda: builder_agent.confirm(principal, task_id))
+    if builder_agent.uses_mock_sandbox_runner():
+        builder_agent.process_next_job(task_id)
+    return BuilderConfirmOut.model_validate(confirmation)
 
 
 @kitchen_router.post("/copilot", response_model=KitchenCopilotOut)

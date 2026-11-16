@@ -18,7 +18,7 @@ from app.core.config import get_settings
 from app.core.db import get_engine
 from app.core.permissions import Permission, Principal, Role, can
 from app.modules.ai.builder_agent import github, policy
-from app.modules.ai.builder_agent.sandbox import AgentWorkspace, SandboxError
+from app.modules.ai.builder_agent.sandbox import AgentWorkspace, MockAgentWorkspace, SandboxError
 from app.shared.audit import write_event
 
 HARNESS = "builder_agent"
@@ -74,11 +74,21 @@ def _repository_root() -> Path:
     raise Invalid("The Builder Agent repository snapshot is unavailable")
 
 
+def uses_mock_sandbox_runner() -> bool:
+    return get_settings().app_env == "test" and os.environ.get("BUILDER_AGENT_TEST_RUNNER") == "mock"
+
+
+def _new_workspace() -> AgentWorkspace | MockAgentWorkspace:
+    if uses_mock_sandbox_runner():
+        return MockAgentWorkspace()
+    return AgentWorkspace(_repository_root())
+
+
 def get_github_client() -> github.GitHubClient | github.MockGitHubClient:
     return github.github_client(local_or_test=get_settings().is_local_or_test)
 
 
-def _tool_result(workspace: AgentWorkspace, command: dict[str, Any]) -> dict[str, Any]:
+def _tool_result(workspace: AgentWorkspace | MockAgentWorkspace, command: dict[str, Any]) -> dict[str, Any]:
     tool = command.get("tool")
     try:
         if tool == "list_files":
@@ -114,9 +124,9 @@ def _build_proposal(request: str) -> dict[str, Any]:
         {"role": "system", "content": system},
         {"role": "user", "content": request.strip()},
     ]
-    workspace: AgentWorkspace | None = None
+    workspace: AgentWorkspace | MockAgentWorkspace | None = None
     try:
-        workspace = AgentWorkspace(_repository_root())
+        workspace = _new_workspace()
         tests: dict[str, Any] | None = None
         test_attempts = 0
         summary = ""
@@ -195,16 +205,17 @@ def enqueue(principal: Principal, request: str) -> dict[str, Any]:
     }
 
 
-def process_next_job() -> bool:
+def process_next_job(task_id: uuid.UUID | None = None) -> bool:
     """Process one queued task or CA confirmation on the host CLI bridge."""
     with get_engine().begin() as conn:
         confirmation = conn.execute(
             text("""
             SELECT id FROM ops.builder_agent_jobs
-            WHERE state = 'CONFIRM_REQUESTED'
+            WHERE state = 'CONFIRM_REQUESTED' AND (:task_id IS NULL OR id = :task_id)
             ORDER BY updated_at, created_at
             FOR UPDATE SKIP LOCKED LIMIT 1
-            """)
+            """),
+            {"task_id": task_id},
         ).first()
         if confirmation is not None:
             task_id = confirmation.id
@@ -222,10 +233,11 @@ def process_next_job() -> bool:
             job = conn.execute(
                 text("""
                 SELECT id, user_id, request FROM ops.builder_agent_jobs
-                WHERE state = 'QUEUED'
+                WHERE state = 'QUEUED' AND (:task_id IS NULL OR id = :task_id)
                 ORDER BY created_at
                 FOR UPDATE SKIP LOCKED LIMIT 1
-                """)
+                """),
+                {"task_id": task_id},
             ).first()
             if job is None:
                 return False
@@ -322,17 +334,20 @@ def _process_confirmation(task_id: uuid.UUID) -> bool:
     if row is None:
         return True
     try:
-        git = shutil.which("git")
-        if git is None:
-            raise Invalid("Git is unavailable to the host runner")
-        current_head = subprocess.run(  # noqa: S603
-            [git, "rev-parse", "HEAD"],
-            cwd=_repository_root(),
-            capture_output=True,
-            text=True,
-            timeout=10,
-            check=True,
-        ).stdout.strip()
+        if uses_mock_sandbox_runner():
+            current_head = row.base_sha.strip()
+        else:
+            git = shutil.which("git")
+            if git is None:
+                raise Invalid("Git is unavailable to the host runner")
+            current_head = subprocess.run(  # noqa: S603
+                [git, "rev-parse", "HEAD"],
+                cwd=_repository_root(),
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=True,
+            ).stdout.strip()
         if current_head != row.base_sha.strip():
             raise Invalid("The repository changed after review; prepare a fresh proposal")
         files = list(row.files)

@@ -12,7 +12,9 @@ test("CA reviews tested Builder Agent diff before opening a mocked pull request"
 
   const review = page.getByRole("region", { name: "Review Builder Agent diff" });
   await expect(review).toBeVisible();
-  await expect(review.getByText("Unit tests: passed")).toBeVisible({ timeout: 120_000 });
+  await expect(review.getByText(/Unit tests: passed \(mock sandbox runner; code not executed\)/)).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(review.getByText(/diff --git/)).toBeVisible();
   await expectNoAxeViolations(page);
   await review.getByRole("button", { name: "Confirm and open pull request" }).click();

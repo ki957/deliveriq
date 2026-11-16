@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import difflib
 import shutil
 import subprocess
 import sys
@@ -20,6 +21,78 @@ TEST_TIMEOUT_SECONDS = 300
 
 class SandboxError(RuntimeError):
     pass
+
+
+class MockAgentWorkspace:
+    """Explicit, labelled test-only workspace; it never executes repository code."""
+
+    RUNNER = "mock sandbox runner (APP_ENV=test; tests not executed)"
+    _BASE_SHA = "0" * 40
+
+    def __init__(self) -> None:
+        self._original: dict[str, str] = {}
+        self._written: dict[str, str] = {}
+
+    def close(self) -> None:
+        return
+
+    def __enter__(self) -> MockAgentWorkspace:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def list_files(self, directory: str = "") -> list[str]:
+        if directory:
+            policy.require_readable_context(directory)
+        return sorted(path for path in self._original if not directory or path.startswith(directory.rstrip("/") + "/"))
+
+    def read_file(self, relative: str) -> str:
+        normalized = policy.require_readable_context(relative)
+        return self._original.setdefault(normalized, f"# Mock sandbox fixture for {normalized}\n")
+
+    def write_file(self, relative: str, content: str) -> str:
+        normalized = policy.require_writable(relative)
+        if len(set(self._written) | {normalized}) > MAX_CHANGED_FILES:
+            raise SandboxError("The proposed change exceeds the file limit")
+        if len(content.encode("utf-8")) > MAX_FILE_BYTES:
+            raise SandboxError("The proposed file exceeds the size limit")
+        self._original.setdefault(normalized, f"# Mock sandbox fixture for {normalized}\n")
+        self._written[normalized] = content
+        return normalized
+
+    def run_unit_tests(self) -> dict[str, Any]:
+        return {
+            "passed": True,
+            "runner": "mock",
+            "summary": f"{self.RUNNER}; no code was executed.",
+        }
+
+    def diff(self) -> str:
+        patches: list[str] = []
+        for path, content in sorted(self._written.items()):
+            chunks = difflib.unified_diff(
+                self._original[path].splitlines(keepends=True),
+                content.splitlines(keepends=True),
+                fromfile=f"a/{path}",
+                tofile=f"b/{path}",
+                n=3,
+            )
+            patch = "".join(chunks)
+            if patch:
+                patches.append(f"diff --git a/{path} b/{path}\n{patch}")
+        result = "".join(patches)
+        if not result:
+            raise SandboxError("The agent proposed no reviewable changes")
+        if len(result.encode("utf-8")) > MAX_PATCH_BYTES:
+            raise SandboxError("The diff exceeds the review limit")
+        return result
+
+    def files(self) -> list[dict[str, str]]:
+        return [{"path": path, "content": content} for path, content in sorted(self._written.items())]
+
+    def base_sha(self) -> str:
+        return self._BASE_SHA
 
 
 class AgentWorkspace:
