@@ -314,7 +314,7 @@ def _process_confirmation(task_id: uuid.UUID) -> bool:
         git = shutil.which("git")
         if git is None:
             raise Invalid("Git is unavailable to the host runner")
-        current_head = subprocess.run(
+        current_head = subprocess.run(  # noqa: S603
             [git, "rev-parse", "HEAD"],
             cwd=_repository_root(),
             capture_output=True,
