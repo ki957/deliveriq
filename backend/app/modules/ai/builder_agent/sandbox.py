@@ -45,7 +45,9 @@ class MockAgentWorkspace:
     def list_files(self, directory: str = "") -> list[str]:
         if directory:
             policy.require_readable_context(directory)
-        return sorted(path for path in self._original if not directory or path.startswith(directory.rstrip("/") + "/"))
+        return sorted(
+            path for path in self._original if not directory or path.startswith(directory.rstrip("/") + "/")
+        )
 
     def read_file(self, relative: str) -> str:
         normalized = policy.require_readable_context(relative)
