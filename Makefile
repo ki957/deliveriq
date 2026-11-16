@@ -4,7 +4,8 @@
 
 .PHONY: help install lint format typecheck imports test test-integration verify-sources openapi \
         openapi-check check env-check build up down restart ps logs migrate stats fixtures \
-        e2e e2e-setup e2e-update frontend-check db-roles worker worker-down pipeline
+        e2e e2e-setup e2e-update frontend-check db-roles worker worker-down pipeline \
+        agent agent-check agent-down
 
 UV := env -u VIRTUAL_ENV uv
 PY_PATH := PYTHONPATH=backend
@@ -32,6 +33,9 @@ help:
 	@echo "  fixtures         Load local/test seed users and the TEST menu (refused outside local/test)"
 	@echo "  e2e              Playwright suites in the pinned container (axe, screenshots, phones)"
 	@echo "  e2e-update       Regenerate screenshot baselines (review before committing)"
+	@echo "  agent            Start an isolated one-task Builder Agent shell"
+	@echo "  agent-check      Run sandbox isolation checks and unit tests in the sandbox"
+	@echo "  agent-down       Stop and remove an interrupted Builder Agent run"
 	@echo "  frontend-check   Frontend typecheck, lint, unit tests, API client check, build"
 	@echo "  stats            docker stats snapshot"
 	@echo "  test-integration Integration tests against the running core stack"
@@ -131,6 +135,14 @@ e2e: e2e-setup
 # Regenerate screenshot baselines after an intended UI change; review the diff before committing.
 e2e-update: e2e-setup
 	PLAYWRIGHT_ARGS="--update-snapshots" $(COMPOSE) --profile e2e run --rm e2e
+
+# The agent workspace is a disposable tmpfs copy; it has no host repo or Docker socket mount.
+agent: env-check
+	bash infra/agent/run.sh shell
+agent-check: env-check
+	bash infra/agent/run.sh check
+agent-down: env-check
+	bash infra/agent/stop.sh
 
 frontend-check:
 	cd frontend && npm run typecheck && npm run lint && npm test && npm run api:check && npm run build
