@@ -31,3 +31,7 @@
 ## Operational Actions (Task 15A; DDR-120)
 
 The CA-only `/management/actions` route uses a separate simulated Actions harness. A typed request produces an exact-change dialog; confirmation sends a UUID idempotency key and the backend rejects changed state. Kitchen settings, agent assignment, dish-unavailability decisions and TEST menu publication reuse their owning services. Promotions, review moderation, regional settings and exceptional refunds state why they are unavailable. RM cannot open the page or use the endpoints.
+
+## Builder Agent (Task 15C; DDR-68, DDR-70, DDR-71, DDR-80)
+
+The CA-only `/management/builder-agent` page asks the `strong` model for a small change, runs unit tests in a disposable committed-HEAD workspace, and presents the exact diff before confirmation. Confirmation opens a pull request on a new `builder-agent/*` branch; the client has no main-branch update or merge operation. RM and all other roles receive 403 responses from the backend. Reviews, tickets, orders, notes and RAG documents are not loaded into model context.

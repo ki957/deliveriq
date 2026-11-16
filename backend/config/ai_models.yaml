@@ -9,6 +9,7 @@
   "harnesses": {
     "management_copilot": {"default_model": "fast", "required_capabilities": ["chat"]},
     "management_actions": {"default_model": "fast", "required_capabilities": ["chat", "structured_output", "tool_calling"]},
+    "builder_agent": {"default_model": "strong", "required_capabilities": ["chat", "structured_output"]},
     "kitchen_copilot": {"default_model": "fast", "required_capabilities": ["chat"]}
     ,"customer_assistant": {"default_model": "fast", "required_capabilities": ["chat"]}
   }

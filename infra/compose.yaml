@@ -123,6 +123,7 @@ services:
       <<: *backend-env
       DB_USER: app_api
       DB_PASSWORD: ${APP_API_PASSWORD:?}
+      BUILDER_AGENT_TEST_RUNNER: ${BUILDER_AGENT_TEST_RUNNER:-docker}
     volumes:
       - ./backend/app:/srv/backend/app:ro
     ports:

@@ -122,12 +122,15 @@ jobs:
           sed -i "s/^APP_UID=.*/APP_UID=$(id -u)/; s/^APP_GID=.*/APP_GID=$(id -g)/; s/^APP_ENV=.*/APP_ENV=test/" .env
       - name: Start core stack and load seed users
         run: make up && make worker && make fixtures
+        env:
+          BUILDER_AGENT_TEST_RUNNER: mock
       - name: Playwright (axe, screenshots, phone viewports)
         run: |
           set -o pipefail
           make e2e 2>&1 | tee e2e.log
         env:
           CI: "1"
+          BUILDER_AGENT_TEST_RUNNER: mock
       - name: Playwright failures as annotations
         if: failure()
         run: |

@@ -378,3 +378,40 @@ export function useConfirmAction() {
       ),
   );
 }
+
+export type BuilderTask = S["BuilderTaskOut"];
+export type BuilderConfirm = S["BuilderConfirmOut"];
+
+export function useProposeBuilderTask() {
+  return useMutation({
+    mutationFn: async (request: string) =>
+      unwrap(await api.POST("/api/v1/management/ai/builder/tasks", { body: { request } })),
+  });
+}
+
+export function useBuilderTask(taskId: string | undefined) {
+  return useQuery({
+    queryKey: ["management", "builder-task", taskId],
+    queryFn: async () =>
+      unwrap(
+        await api.GET("/api/v1/management/ai/builder/tasks/{task_id}", {
+          params: { path: { task_id: taskId ?? "" } },
+        }),
+      ),
+    enabled: Boolean(taskId),
+    refetchInterval: (query) =>
+      ["queued", "processing", "confirm_requested", "publishing"].includes(query.state.data?.status ?? "")
+        ? 1500
+        : false,
+  });
+}
+
+export function useConfirmBuilderTask() {
+  return useManagementMutation(async (taskId: string) =>
+    unwrap(
+      await api.POST("/api/v1/management/ai/builder/tasks/{task_id}/confirm", {
+        params: { path: { task_id: taskId } },
+      }),
+    ),
+  );
+}

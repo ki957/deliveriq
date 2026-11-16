@@ -971,6 +971,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/management/ai/builder/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Propose Builder Task */
+        post: operations["propose_builder_task_api_v1_management_ai_builder_tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/ai/builder/tasks/{task_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Builder Task */
+        get: operations["get_builder_task_api_v1_management_ai_builder_tasks__task_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/management/ai/builder/tasks/{task_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Builder Task */
+        post: operations["confirm_builder_task_api_v1_management_ai_builder_tasks__task_id__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/management/ai/conversations/{conversation_id}": {
         parameters: {
             query?: never;
@@ -2476,6 +2527,53 @@ export interface components {
             payable_paise: number;
             /** Tax Note */
             tax_note: string;
+        };
+        /** BuilderConfirmOut */
+        BuilderConfirmOut: {
+            /** Branch */
+            branch?: string | null;
+            /** Pull Request Url */
+            pull_request_url?: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Task Id
+             * Format: uuid
+             */
+            task_id: string;
+        };
+        /** BuilderTaskIn */
+        BuilderTaskIn: {
+            /** Request */
+            request: string;
+        };
+        /** BuilderTaskOut */
+        BuilderTaskOut: {
+            /** Branch */
+            branch?: string | null;
+            /** Changed Files */
+            changed_files: string[];
+            /** Diff */
+            diff: string;
+            /** Error Message */
+            error_message?: string | null;
+            /** Logical Model */
+            logical_model?: string | null;
+            /** Pull Request Url */
+            pull_request_url?: string | null;
+            /** Status */
+            status: string;
+            /** Summary */
+            summary: string;
+            /**
+             * Task Id
+             * Format: uuid
+             */
+            task_id: string;
+            /** Test Result */
+            test_result: {
+                [key: string]: unknown;
+            };
         };
         /** CancelIn */
         CancelIn: {
@@ -6370,6 +6468,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActionResultOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    propose_builder_task_api_v1_management_ai_builder_tasks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuilderTaskIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuilderTaskOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_builder_task_api_v1_management_ai_builder_tasks__task_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuilderTaskOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_builder_task_api_v1_management_ai_builder_tasks__task_id__confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuilderConfirmOut"];
                 };
             };
             /** @description Validation Error */

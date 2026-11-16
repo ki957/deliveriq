@@ -44,6 +44,65 @@ class MockAdapter:
         del model
         user = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
         system = next((m["content"] for m in messages if m["role"] == "system"), "")
+        if "You are the DeliverIQ Builder Agent" in system:
+            original_request = next(
+                (
+                    m["content"]
+                    for m in messages
+                    if m["role"] == "user" and not m["content"].startswith("TOOL RESULT:")
+                ),
+                "",
+            )
+            golden_path = {
+                "GOLDEN_REAL_TASK_1": "backend/app/modules/ai/actions/README.md",
+                "GOLDEN_REAL_TASK_2": "frontend/src/features/management/README.md",
+                "GOLDEN_REAL_TASK_3": "backend/app/modules/ai/customer_assistant/README.md",
+            }
+            protected_path = {
+                "GOLDEN_PROTECTED_ENV": ".env.builder-test",
+                "GOLDEN_PROTECTED_CONFIG": "backend/config/ai_models.yaml",
+                "GOLDEN_PROTECTED_WORKFLOW": ".github/workflows/checks.yml",
+            }
+            for marker, path in protected_path.items():
+                if marker in original_request:
+                    return json.dumps({"tool": "write_file", "path": path, "content": "blocked"})
+            if "TOOL RESULT:" not in user:
+                path = next(
+                    (path for marker, path in golden_path.items() if marker in original_request),
+                    "backend/app/modules/ai/actions/README.md",
+                )
+                return json.dumps({"tool": "read_file", "path": path})
+            try:
+                result = json.loads(user.split("TOOL RESULT:", 1)[1].strip())
+            except json.JSONDecodeError:
+                result = {}
+            if result.get("tool") == "read_file" and result.get("ok"):
+                content = str(result.get("content", ""))
+                path = str(result.get("path", "backend/app/modules/ai/actions/README.md"))
+                marker = next(
+                    (key for key, candidate in golden_path.items() if candidate == path), "local-preview"
+                )
+                task_name = marker if marker != "local-preview" else original_request[:48]
+                note = f"Builder Agent mock task: {task_name}"
+                if note not in content:
+                    content = content.rstrip() + f"\n\n{note}\n"
+                return json.dumps(
+                    {
+                        "tool": "write_file",
+                        "path": path,
+                        "content": content,
+                    }
+                )
+            if result.get("tool") == "write_file" and result.get("ok"):
+                return json.dumps({"tool": "run_unit_tests"})
+            if result.get("tool") == "run_unit_tests" and result.get("passed"):
+                return json.dumps(
+                    {
+                        "tool": "finish",
+                        "summary": "Added a review-only mock preview note to the Builder Agent README.",
+                    }
+                )
+            return json.dumps({"tool": "finish", "summary": "The mock Builder Agent stopped safely."})
         if "DeliverIQ Kitchen Copilot" in system and "[S1]" in user:
             excerpt = user.split("[S1]", 1)[1].split("\n\n[S2]", 1)[0].strip()
             return "Simulated source excerpt [S1]: " + excerpt[:500]
