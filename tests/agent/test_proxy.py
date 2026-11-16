@@ -58,6 +58,33 @@ def test_proxy_allows_github_and_exact_configured_provider_hosts(tmp_path: Path)
     assert configured_provider_hosts(config_path) == {"api.groq.com"}
 
 
+def test_provider_allowlist_tracks_host_changes_in_ai_models_config(tmp_path: Path) -> None:
+    config_path = tmp_path / "ai_models.yaml"
+    config_path.write_text(
+        json.dumps(
+            {"providers": {"selected": {"adapter": "openai_compatible", "host": "api.groq.com"}}}
+        ),
+        encoding="utf-8",
+    )
+    groq_hosts = configured_provider_hosts(config_path)
+
+    config_path.write_text(
+        json.dumps(
+            {
+                "providers": {
+                    "selected": {"adapter": "openai_compatible", "host": "openrouter.ai"}
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    openrouter_hosts = configured_provider_hosts(config_path)
+
+    assert groq_hosts == {"api.groq.com"}
+    assert openrouter_hosts == {"openrouter.ai"}
+    assert groq_hosts != openrouter_hosts
+
+
 @pytest.mark.parametrize("host", ["*.groq.com", "http://api.groq.com", "api.groq.com:8443"])
 def test_proxy_rejects_non_exact_https_provider_hosts(tmp_path: Path, host: str) -> None:
     config_path = tmp_path / "ai_models.yaml"
@@ -97,3 +124,27 @@ def test_agent_route_key_comes_from_selected_model_provider(tmp_path: Path) -> N
         "GITHUB_TOKEN",
         "GROQ_API_KEY",
     }
+
+
+def test_agent_environment_contains_only_selected_provider_key_and_github_token(
+    tmp_path: Path,
+) -> None:
+    override = generate_override(
+        tmp_path,
+        {
+            "harnesses": {"builder_agent": {"default_model": "strong"}},
+            "models": {"strong": {"provider": "groq"}},
+            "providers": {
+                "groq": {"adapter": "openai_compatible", "key_env": "GROQ_API_KEY"},
+                "openrouter": {
+                    "adapter": "openai_compatible",
+                    "key_env": "OPENROUTER_API_KEY",
+                },
+            },
+        },
+    )
+
+    environment_names = set(override["services"]["agent"]["environment"])
+    print("sandbox secret environment names: " + ", ".join(sorted(environment_names)))
+    assert environment_names == {"GITHUB_TOKEN", "GROQ_API_KEY"}
+    assert "OPENROUTER_API_KEY" not in environment_names

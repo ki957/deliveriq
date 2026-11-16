@@ -485,6 +485,7 @@ Each task lists **Depends on** (tasks and decisions), **Acceptance criteria** (m
 
 ### Task 15B — Builder Agent sandbox
 
+- **Status:** Implemented and locally verified; awaiting owner review and merge.
 - **Depends on:** Tasks 2, 15.
 - **Scope:** `agent` Compose profile and sandbox isolation per DDR-70.
 - **Implementation decisions:** DDR-127 (1)–(3).
